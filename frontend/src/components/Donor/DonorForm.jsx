@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   FaUser,
   FaCalendarAlt,
@@ -34,6 +34,7 @@ const INITIAL_FORM = {
 
 const DonorForm = () => {
   const [formData, setFormData] = useState(INITIAL_FORM)
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target
@@ -45,6 +46,20 @@ const DonorForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+
+    const requiredFields = [
+      'fullName', 'dob', 'gender', 'bloodGroup',
+      'phone', 'email', 'address', 'city', 'state',
+      'pincode', 'weight', 'hemoglobin',
+    ]
+
+    for (const field of requiredFields) {
+      if (!formData[field]) return
+    }
+
+    if (!formData.terms) return
+
+    navigate('/donor/success')
   }
 
   return (

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   FaBell,
   FaMapMarkerAlt,
@@ -74,6 +75,7 @@ const QUICK_LINKS = [
 const Home = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -103,12 +105,12 @@ const Home = () => {
                 {link.label}
               </a>
             ))}
-            <button type="button" className="navbar__cta navbar__cta--mobile" onClick={closeMenu}>
+            <button type="button" className="navbar__cta navbar__cta--mobile" onClick={() => { closeMenu(); navigate('/donor/registration'); }}>
               Become a Donor
             </button>
           </nav>
 
-          <button type="button" className="navbar__cta navbar__cta--desktop">
+          <button type="button" className="navbar__cta navbar__cta--desktop" onClick={() => navigate('/donor/registration')}>
             Become a Donor
           </button>
 
@@ -146,7 +148,7 @@ const Home = () => {
               <button type="button" className="hero__btn hero__btn--primary">
                 Request Blood Now
               </button>
-              <button type="button" className="hero__btn hero__btn--secondary">
+              <button type="button" className="hero__btn hero__btn--secondary" onClick={() => navigate('/donor/registration')}>
                 Become a Donor
               </button>
             </div>
@@ -166,11 +168,9 @@ const Home = () => {
           </div>
 
           <div className="hero__visual">
-            <div className="hero__hand-wrapper">
+            <div className="hero-illustration">
+              <img src={bloodDrop} alt="Blood drop" className="hero__blood-drop" />
               <img src={hand} alt="Hand holding blood drop" className="hero__hand" />
-              <div className="hero__drop-wrapper">
-                <img src={bloodDrop} alt="Blood drop" className="hero__blood-drop" />
-              </div>
             </div>
 
             <img src={dottedCircle} alt="" className="hero__dotted-circle" />
@@ -285,7 +285,7 @@ const Home = () => {
             <button type="button" className="cta__btn cta__btn--outline">
               Request Blood
             </button>
-            <button type="button" className="cta__btn cta__btn--solid">
+            <button type="button" className="cta__btn cta__btn--solid" onClick={() => navigate('/donor/registration')}>
               Become a Donor
             </button>
           </div>

@@ -1,0 +1,105 @@
+/* ============================================================
+   DONOR SUCCESS PAGE — Full Styles
+   ============================================================ */
+
+/* ─── CSS Custom Properties ─── */
+:root {
+  --success-primary: #E53935;
+  --success-dark: #C62828;
+  --success-accent: #EF4444;
+  --success-text: #1F2937;
+  --success-text-light: #6B7280;
+  --success-text-muted: #9CA3AF;
+  --success-bg: #ffffff;
+  --success-bg-soft: #FFFAFA;
+  --success-bg-pink: #FFF1F1;
+  --success-bg-pink-deep: #FFE8E8;
+  --success-border: #f3f4f6;
+  --success-border-hover: #fecaca;
+  --success-shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
+  --success-shadow-md: 0 4px 32px rgba(0, 0, 0, 0.06);
+  --success-shadow-lg: 0 8px 40px rgba(239, 68, 68, 0.1);
+  --success-radius-sm: 12px;
+  --success-radius-md: 16px;
+  --success-radius-lg: 24px;
+}
+
+/* ─── Page Wrapper ─── */
+.donor-success-page {
+  width: 100%;
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  color: var(--success-text);
+  background: var(--success-bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Main Content ─── */
+.donor-success-main {
+  flex: 1;
+  width: 100%;
+  padding-bottom: 80px;
+  background: linear-gradient(
+    180deg,
+    #FFFFFF 0%,
+    #FFF8F8 15%,
+    #FFFFFF 40%,
+    #FFFBFB 60%,
+    #FFFFFF 80%,
+    #FFF8F8 100%
+  );
+}
+
+/* ============================================================
+   TWO-COLUMN LAYOUT
+   ============================================================ */
+.donor-success-two-col {
+  width: calc(100% - 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 56px 0 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+  align-items: start;
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (≤1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+  .donor-success-main {
+    padding-bottom: 60px;
+  }
+
+  .donor-success-two-col {
+    width: calc(100% - 48px);
+    padding: 44px 0 0;
+    gap: 28px;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (≤640px)
+   ============================================================ */
+@media (max-width: 640px) {
+  .donor-success-main {
+    padding-bottom: 48px;
+    background: linear-gradient(
+      180deg,
+      #FFFFFF 0%,
+      #FFF8F8 20%,
+      #FFFFFF 50%,
+      #FFFBFB 80%,
+      #FFFFFF 100%
+    );
+  }
+
+  .donor-success-two-col {
+    width: 100%;
+    padding: 36px 16px 0;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

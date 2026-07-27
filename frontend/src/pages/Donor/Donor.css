@@ -14,6 +14,30 @@
   width: 100%;
 }
 
+/* ─── Back Button ─── */
+.donor-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0 0 40px;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #E53935;
+  background: #fff;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.donor-back-btn:hover {
+  background: #FFF1F1;
+  border-color: #E53935;
+  transform: translateX(-2px);
+}
+
 /* ============================================================
    SECTION 2 — FORM LAYOUT
    ============================================================ */
@@ -529,6 +553,10 @@
    RESPONSIVE — TABLET (≤1024px)
    ============================================================ */
 @media (max-width: 1024px) {
+  .donor-back-btn {
+    margin-left: 40px;
+  }
+
   .donor-form-section {
     grid-template-columns: 1fr;
     padding: 40px;
@@ -557,6 +585,12 @@
    RESPONSIVE — MOBILE (≤640px)
    ============================================================ */
 @media (max-width: 640px) {
+  .donor-back-btn {
+    margin: 16px 0 0 20px;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
   .donor-form-section {
     padding: 20px;
     gap: 20px;
