@@ -1,0 +1,97 @@
+/* ===========================================================
+   HemoConnect360 – Global Design Tokens
+   =========================================================== */
+:root {
+  /* Colors */
+  --color-primary: #E53935;
+  --color-primary-dark: #C62828;
+  --color-bg: #FAFAFA;
+  --color-white: #FFFFFF;
+  --color-text-dark: #1F2937;
+  --color-text-gray: #6B7280;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+  --gradient-hero: linear-gradient(135deg, #FFF5F5 0%, #FFE8E8 55%, #FFF0F0 100%);
+
+  /* Radius & Shadow */
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-pill: 999px;
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 16px 40px rgba(229, 57, 53, 0.18);
+
+  /* Spacing */
+  --section-padding: 100px 8%;
+  --section-padding-mobile: 60px 6%;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.35s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* -----------------------------------------------------------
+   IMPORTANT: Vite's default scaffold ships with
+   `#root { max-width: 1280px; margin: 0 auto; padding: 2rem;
+   text-align: center; }` inside App.css / index.css.
+   That rule is what squeezes this page into a narrow centered
+   column with grey bars on either side. The reset below
+   cancels it out so the layout always spans the full viewport
+   width. If you still see side margins, delete that rule from
+   your project's App.css / index.css directly.
+   ----------------------------------------------------------- */
+html,
+body,
+#root {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  display: block;
+  place-items: unset;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text-dark);
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeInUp 0.7s ease both;
+}
