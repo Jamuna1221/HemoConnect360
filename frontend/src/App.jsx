@@ -16,7 +16,6 @@ import RequesterProfile from './pages/Requester/RequesterProfile'
 
 function App() {
   return (
-<<<<<<< HEAD
     <RequesterProvider>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -31,16 +30,10 @@ function App() {
         <Route path="/requester/history" element={<RequestHistory />} />
         <Route path="/requester/request-details/:id" element={<RequestDetails />} />
         <Route path="/requester/profile" element={<RequesterProfile />} />
+        <Route path="/donor/success" element={<DonorSuccess />} />
+        <Route path="/terms-and-conditions" element={<TermsConditions />} />
       </Routes>
     </RequesterProvider>
-=======
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/donor/registration" element={<Donor />} />
-      <Route path="/donor/success" element={<DonorSuccess />} />
-      <Route path="/terms-and-conditions" element={<TermsConditions />} />
-    </Routes>
->>>>>>> 94ec3133eedb0cbd3d77ab4686fb7b189d73ff3b
   )
 }
 

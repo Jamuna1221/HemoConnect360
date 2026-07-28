@@ -16,8 +16,6 @@ app.get("/test-db", async (req, res) => {
     .from("donors") // we'll create this table next
     .select("*");
   
-
-  
   if (error) {
     return res.status(500).json({
       success: false,

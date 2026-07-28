@@ -107,20 +107,12 @@ const Home = () => {
                 {link.label}
               </a>
             ))}
-<<<<<<< HEAD
             <button type="button" className="navbar__cta navbar__cta--mobile" onClick={goToDonorRegistration}>
-=======
-            <button type="button" className="navbar__cta navbar__cta--mobile" onClick={() => { closeMenu(); navigate('/donor/registration'); }}>
->>>>>>> 94ec3133eedb0cbd3d77ab4686fb7b189d73ff3b
               Become a Donor
             </button>
           </nav>
 
-<<<<<<< HEAD
           <button type="button" className="navbar__cta navbar__cta--desktop" onClick={goToDonorRegistration}>
-=======
-          <button type="button" className="navbar__cta navbar__cta--desktop" onClick={() => navigate('/donor/registration')}>
->>>>>>> 94ec3133eedb0cbd3d77ab4686fb7b189d73ff3b
             Become a Donor
           </button>
 
@@ -158,11 +150,7 @@ const Home = () => {
               <button type="button" className="hero__btn hero__btn--primary" onClick={goToRequesterLogin}>
                 Request Blood Now
               </button>
-<<<<<<< HEAD
               <button type="button" className="hero__btn hero__btn--secondary" onClick={goToDonorRegistration}>
-=======
-              <button type="button" className="hero__btn hero__btn--secondary" onClick={() => navigate('/donor/registration')}>
->>>>>>> 94ec3133eedb0cbd3d77ab4686fb7b189d73ff3b
                 Become a Donor
               </button>
             </div>
@@ -299,11 +287,7 @@ const Home = () => {
             <button type="button" className="cta__btn cta__btn--outline" onClick={goToRequesterLogin}>
               Request Blood
             </button>
-<<<<<<< HEAD
             <button type="button" className="cta__btn cta__btn--solid" onClick={goToDonorRegistration}>
-=======
-            <button type="button" className="cta__btn cta__btn--solid" onClick={() => navigate('/donor/registration')}>
->>>>>>> 94ec3133eedb0cbd3d77ab4686fb7b189d73ff3b
               Become a Donor
             </button>
           </div>
