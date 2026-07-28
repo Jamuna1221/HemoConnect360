@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import RequesterNavbar from '../../components/Requester/RequesterNavbar';
 import Footer from '../../components/Footer/Footer';
 import { useRequester } from '../../context/RequesterContext';
@@ -23,8 +23,8 @@ const currentStepIndex = (status) => {
 
 const TrackRequest = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-const { user } = useRequester();
+const navigate = useNavigate();
+  const { user } = useRequester();
   const latestRequest = location.state?.request || location.state?.requestData;
 
   const [requestData, setRequestData] = useState(latestRequest || null);
@@ -128,36 +128,26 @@ const { user } = useRequester();
             })}
           </div>
 
-          <AnimatePresence>
-            {donorVisible && (
-              <motion.div
-                className="trk-donor-card"
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-              >
-                <div className="trk-donor-header">
-                  <span className="trk-donor-badge">Donor Found</span>
+          {currentStep >= 3 && (
+            <motion.div
+              className="trk-donor-card"
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <div className="trk-donor-header">
+                <span className="trk-donor-badge">Donor Found</span>
+              </div>
+              <div className="trk-donor-info">
+                <div className="trk-donor-avatar">D</div>
+                <div className="trk-donor-details">
+                  <h4 className="trk-donor-name">Donor assigned</h4>
+                  <p className="trk-donor-meta">{requestData?.bloodGroup} required</p>
                 </div>
-                <div className="trk-donor-info">
-                  <div className="trk-donor-avatar">
-                    {donor.name.charAt(0)}
-                  </div>
-                  <div className="trk-donor-details">
-                    <h4 className="trk-donor-name">
-                      {donor.name}
-                      {donor.verified && <span className="trk-verified">✓</span>}
-                    </h4>
-                    <p className="trk-donor-meta">
-                      {donor.bloodGroup} • {donor.distance} away • {donor.donated}
-                    </p>
-                  </div>
-                  <button className="trk-call-btn">📞 Call</button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <button className="trk-call-btn">📞 Call</button>
+              </div>
+            </motion.div>
+          )}
 
           <div className="trk-emergency-card">
             <span className="trk-emergency-icon">🚨</span>
