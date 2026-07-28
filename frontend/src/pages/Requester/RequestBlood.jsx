@@ -56,12 +56,12 @@ const RequestBlood = () => {
     return Object.keys(errs).length === 0
   }
 
-  const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validate()) return
     setLoading(true)
-    setTimeout(() => {
-      const newRequest = addRequest({
+    try {
+      const newRequest = await addRequest({
         patientName: form.patientName,
         patientAge: Number(form.patientAge),
         patientGender: form.patientGender,
@@ -80,7 +80,9 @@ const RequestBlood = () => {
       })
       setLoading(false)
       navigate('/requester/confirmation', { state: { request: newRequest } })
-    }, 1500)
+    } catch {
+      setLoading(false)
+    }
   }
 
   if (!user) return null

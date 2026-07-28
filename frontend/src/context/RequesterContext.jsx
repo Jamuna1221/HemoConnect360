@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { clearRequesterToken, requesterPhoneLogin, updateRequesterProfile } from '../services/requesterService'
+import { clearRequesterToken, requesterPhoneLogin, updateRequesterProfile, createBloodRequest, listBloodRequests, cancelBloodRequest } from '../services/requesterService'
 
 const RequesterContext = createContext(null)
 
@@ -111,7 +111,7 @@ const loginUser = async (userData) => {
     }
   }
 
-  const addRequest = (requestData) => {
+  const addRequest = async (requestData) => {
     const newRequest = {
       ...requestData,
       id: `REQ-${Date.now().toString(36).toUpperCase()}`,
@@ -126,7 +126,38 @@ const loginUser = async (userData) => {
         { step: 'completed', label: 'Completed', time: null, completed: false },
       ],
     }
-    setRequests((prev) => [newRequest, ...prev])
+
+    setRequests((prev) => {
+      const updated = [newRequest, ...prev]
+      if (user?.phone) {
+        localStorage.setItem(`requester_requests_${user.phone}`, JSON.stringify(updated))
+      }
+      return updated
+    })
+
+    try {
+      const synced = await createBloodRequest({
+        patientName: requestData.patientName,
+        patientAge: requestData.patientAge,
+        patientGender: requestData.patientGender,
+        bloodGroup: requestData.bloodGroup,
+        units: requestData.units,
+        hospitalName: requestData.hospitalName,
+        city: requestData.city,
+        address: requestData.address,
+        requiredBy: requestData.requiredBy,
+        priority: requestData.priority,
+        contactName: requestData.contactName,
+        contactPhone: requestData.contactPhone,
+        contactEmail: requestData.contactEmail || '',
+        notes: requestData.notes || '',
+      })
+      setRequests((prev) =>
+        prev.map((r) => (r.id === newRequest.id ? { ...synced, timeline: newRequest.timeline } : r))
+      )
+    } catch {
+    }
+
     return newRequest
   }
 
@@ -136,10 +167,15 @@ const loginUser = async (userData) => {
     )
   }
 
-  const cancelRequest = (id) => {
+  const cancelRequest = async (id) => {
     setRequests((prev) =>
       prev.map((r) => (r.id === id ? { ...r, status: 'cancelled' } : r))
     )
+
+    try {
+      await cancelBloodRequest(id)
+    } catch {
+    }
   }
 
   const markNotificationRead = (id) => {
