@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+.req-dash-page { width: 100%; font-family: 'Poppins', sans-serif; color: #222; background: #FAFAFA; min-height: 100vh; }
+.req-dash-main { width: 100%; padding: 40px 6%; min-height: calc(100vh - 85px); }
+.req-dash-container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+.req-dash-header { display: flex; align-items: center; justify-content: space-between; }
+.req-dash-greeting h1 { font-size: 28px; font-weight: 800; color: #1F2937; margin: 0 0 6px; }
+.req-dash-greeting p { font-size: 14px; color: #6B7280; margin: 0; display: flex; align-items: center; gap: 8px; }
+.req-dash-notif-badge { padding: 6px 14px; background: #FFF5F5; color: #E53935; border-radius: 20px; font-size: 13px; font-weight: 600; }
+.req-dash-emergency { display: flex; align-items: center; gap: 16px; background: linear-gradient(135deg, #FFF5F5 0%, #FFE8E8 100%); border: 1px solid rgba(229,57,53,0.15); border-radius: 16px; padding: 20px 24px; }
+.req-dash-emergency-icon { font-size: 28px; color: #E53935; flex-shrink: 0; }
+.req-dash-emergency-content { flex: 1; }
+.req-dash-emergency-content strong { font-size: 16px; color: #1F2937; display: block; margin-bottom: 2px; }
+.req-dash-emergency-content p { font-size: 13px; color: #6B7280; margin: 0; }
+.req-dash-emergency-content a { color: #E53935; font-weight: 700; text-decoration: none; }
+.req-dash-emergency-btn { display: flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #E53935 0%, #C62828 100%); color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; white-space: nowrap; transition: transform 0.3s ease; }
+.req-dash-emergency-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(229,57,53,0.3); }
+.req-dash-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.req-dash-action-card { background: #fff; border-radius: 20px; padding: 28px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.3s ease; display: flex; flex-direction: column; gap: 14px; }
+.req-dash-action-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+.req-dash-action-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.req-dash-action-card h3 { font-size: 17px; font-weight: 700; color: #1F2937; margin: 0; }
+.req-dash-action-card p { font-size: 13px; color: #6B7280; margin: 0; line-height: 1.5; }
+.req-dash-section { background: #fff; border-radius: 20px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+.req-dash-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.req-dash-section-header h2 { font-size: 20px; font-weight: 700; color: #1F2937; margin: 0; display: flex; align-items: center; gap: 10px; }
+.req-dash-view-all { font-size: 14px; font-weight: 600; color: #E53935; text-decoration: none; }
+.req-dash-view-all:hover { text-decoration: underline; }
+.req-dash-requests { display: flex; flex-direction: column; gap: 12px; }
+.req-dash-request-card { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: #FAFAFA; border-radius: 14px; cursor: pointer; transition: background 0.3s ease; }
+.req-dash-request-card:hover { background: #F5F5F5; }
+.req-dash-request-left { display: flex; align-items: center; gap: 14px; }
+.req-dash-request-priority { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.req-dash-request-priority--critical { background: #FEE2E2; color: #DC2626; }
+.req-dash-request-priority--urgent { background: #FEF3C7; color: #D97706; }
+.req-dash-request-priority--standard { background: #DCFCE7; color: #16A34A; }
+.req-dash-request-left h4 { font-size: 15px; font-weight: 700; color: #1F2937; margin: 0 0 2px; }
+.req-dash-request-left p { font-size: 13px; color: #6B7280; margin: 0; }
+.req-dash-request-status { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: capitalize; }
+.req-dash-request-status--submitted { background: #FEF3C7; color: #D97706; }
+.req-dash-request-status--searching_donors { background: #FEF3C7; color: #D97706; }
+.req-dash-request-status--donor_accepted { background: #DCFCE7; color: #16A34A; }
+.req-dash-request-status--completed { background: #F3F4F6; color: #6B7280; }
+.req-dash-empty { text-align: center; padding: 40px 20px; }
+.req-dash-empty-icon { font-size: 48px; color: #E5E5E5; margin-bottom: 16px; }
+.req-dash-empty p { font-size: 15px; color: #6B7280; margin: 0 0 20px; }
+.req-dash-empty-btn { padding: 12px 28px; background: linear-gradient(135deg, #E53935 0%, #C62828 100%); color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; }
+.req-dash-tips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.req-dash-tip-card { padding: 20px; background: #FAFAFA; border-radius: 16px; transition: transform 0.3s ease; }
+.req-dash-tip-card:hover { transform: translateY(-3px); }
+.req-dash-tip-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #FFE5E5, #FFCDD2); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #E53935; margin-bottom: 14px; }
+.req-dash-tip-card h4 { font-size: 15px; font-weight: 700; color: #1F2937; margin: 0 0 6px; }
+.req-dash-tip-card p { font-size: 13px; color: #6B7280; margin: 0; line-height: 1.5; }
+.req-dash-notifications { display: flex; flex-direction: column; gap: 10px; }
+.req-dash-notif-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 18px; background: #FAFAFA; border-radius: 14px; }
+.req-dash-notif-item--unread { background: #FFF5F5; border-left: 3px solid #E53935; }
+.req-dash-notif-dot { width: 10px; height: 10px; border-radius: 50%; background: #E53935; flex-shrink: 0; margin-top: 6px; }
+.req-dash-notif-item:not(.req-dash-notif-item--unread) .req-dash-notif-dot { background: #ddd; }
+.req-dash-notif-item h4 { font-size: 14px; font-weight: 700; color: #1F2937; margin: 0 0 4px; }
+.req-dash-notif-item span { font-size: 12px; color: #9CA3AF; }
+
+@media (max-width: 1024px) { .req-dash-actions { grid-template-columns: repeat(2, 1fr); } .req-dash-tips { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .req-dash-main { padding: 20px 4%; } .req-dash-header { flex-direction: column; gap: 16px; align-items: flex-start; } .req-dash-greeting h1 { font-size: 22px; } .req-dash-actions, .req-dash-tips { grid-template-columns: 1fr; } .req-dash-emergency { flex-direction: column; text-align: center; } .req-dash-emergency-btn { width: 100%; justify-content: center; } }

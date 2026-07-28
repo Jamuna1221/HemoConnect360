@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   FaBell,
   FaMapMarkerAlt,
@@ -74,6 +75,7 @@ const QUICK_LINKS = [
 const Home = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -82,6 +84,8 @@ const Home = () => {
   }, []);
 
   const closeMenu = () => setMenuOpen(false);
+  const goToRequesterLogin = () => navigate('/requester/login');
+  const goToDonorRegistration = () => navigate('/donor/registration');
 
   return (
     <div className="home">
@@ -103,12 +107,12 @@ const Home = () => {
                 {link.label}
               </a>
             ))}
-            <button type="button" className="navbar__cta navbar__cta--mobile" onClick={closeMenu}>
+            <button type="button" className="navbar__cta navbar__cta--mobile" onClick={goToDonorRegistration}>
               Become a Donor
             </button>
           </nav>
 
-          <button type="button" className="navbar__cta navbar__cta--desktop">
+          <button type="button" className="navbar__cta navbar__cta--desktop" onClick={goToDonorRegistration}>
             Become a Donor
           </button>
 
@@ -143,10 +147,10 @@ const Home = () => {
             </p>
 
             <div className="hero__actions">
-              <button type="button" className="hero__btn hero__btn--primary">
+              <button type="button" className="hero__btn hero__btn--primary" onClick={goToRequesterLogin}>
                 Request Blood Now
               </button>
-              <button type="button" className="hero__btn hero__btn--secondary">
+              <button type="button" className="hero__btn hero__btn--secondary" onClick={goToDonorRegistration}>
                 Become a Donor
               </button>
             </div>
@@ -282,10 +286,10 @@ const Home = () => {
             <p className="cta__subtext">Join HemoConnect360 and make a difference.</p>
           </div>
           <div className="cta__actions">
-            <button type="button" className="cta__btn cta__btn--outline">
+            <button type="button" className="cta__btn cta__btn--outline" onClick={goToRequesterLogin}>
               Request Blood
             </button>
-            <button type="button" className="cta__btn cta__btn--solid">
+            <button type="button" className="cta__btn cta__btn--solid" onClick={goToDonorRegistration}>
               Become a Donor
             </button>
           </div>
