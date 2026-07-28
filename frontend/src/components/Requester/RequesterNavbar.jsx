@@ -54,6 +54,7 @@ const RequesterNavbar = () => {
             </Link>
           ))}
           <div className="req-navbar__cta-group req-navbar__cta-group--mobile">
+            <span className="req-navbar__phone">{user?.phone}</span>
             <button type="button" className="req-navbar__bell" onClick={() => { setShowNotif(!showNotif); closeMenu() }}>
               <FaBell />
               {unreadCount > 0 && <span className="req-navbar__badge">{unreadCount}</span>}
@@ -92,6 +93,7 @@ const RequesterNavbar = () => {
           <button type="button" className="req-navbar__profile-btn" onClick={() => { navigate('/requester/profile'); closeMenu() }}>
             <FaUser />
           </button>
+          <span className="req-navbar__phone">{user?.phone}</span>
           <button type="button" className="req-navbar__logout-btn" onClick={handleLogout}>
             <FaSignOutAlt /> Logout
           </button>

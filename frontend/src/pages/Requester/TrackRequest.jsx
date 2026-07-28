@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import Navbar from '../../components/Navbar/Navbar';
+import RequesterNavbar from '../../components/Requester/RequesterNavbar';
 import Footer from '../../components/Footer/Footer';
+import { useRequester } from '../../context/RequesterContext';
 import './TrackRequest.css';
 
 const steps = [
@@ -17,22 +18,18 @@ const steps = [
 const TrackRequest = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const requestData = location.state?.requestData || {
-    requestId: 'REQ-2026-4821',
-    bloodGroup: 'A+',
-    units: 2,
-    hospital: 'City General Hospital',
-    urgency: 'urgent',
-  };
+  const { user, requests } = useRequester();
+  const latestRequest = requests[0];
+  const requestData = location.state?.request || location.state?.requestData || latestRequest;
 
   const [currentStep, setCurrentStep] = useState(0);
   const [donorVisible, setDonorVisible] = useState(false);
 
   useEffect(() => {
-    if (!localStorage.getItem('requesterSession')) {
+    if (!user) {
       navigate('/requester/login');
     }
-  }, [navigate]);
+  }, [user, navigate]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -52,6 +49,8 @@ const TrackRequest = () => {
     }
   }, [currentStep]);
 
+  if (!user) return null;
+
   const donor = {
     name: 'Rajesh Kumar',
     bloodGroup: 'A+',
@@ -63,7 +62,7 @@ const TrackRequest = () => {
 
   return (
     <div className="requester-page">
-      <Navbar />
+      <RequesterNavbar />
       <main className="trk-container">
         <motion.div
           className="trk-card"
@@ -73,7 +72,7 @@ const TrackRequest = () => {
         >
           <div className="trk-header">
             <h2 className="trk-title">Track Your Request</h2>
-            <span className="trk-request-id">{requestData.requestId}</span>
+            <span className="trk-request-id">{requestData?.id || 'No active request'}</span>
           </div>
 
           <div className="trk-map-placeholder">

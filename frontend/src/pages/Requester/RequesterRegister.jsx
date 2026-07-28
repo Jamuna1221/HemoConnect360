@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { FaUser, FaPhone, FaLock, FaCalendarAlt, FaVenusMars, FaCity, FaMapMarkerAlt, FaArrowLeft, FaTint, FaShieldAlt, FaHospital, FaHandHoldingHeart } from 'react-icons/fa'
+import { FaUser, FaPhone, FaCalendarAlt, FaVenusMars, FaCity, FaMapMarkerAlt, FaArrowLeft, FaTint, FaShieldAlt, FaHospital, FaHandHoldingHeart } from 'react-icons/fa'
 import { useRequester } from '../../context/RequesterContext'
 import './RequesterRegister.css'
 
@@ -8,44 +8,41 @@ const RequesterRegister = () => {
   const navigate = useNavigate()
   const { loginUser } = useRequester()
 
-  const [form, setForm] = useState({ fullName: '', phone: '', age: '', gender: '', city: '', address: '', bloodNeededFor: '', password: '', confirmPassword: '' })
+  const [form, setForm] = useState({ fullName: '', phone: '', age: '', gender: '', city: '', address: '', bloodNeededFor: '' })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+    setForm((prev) => ({ ...prev, [name]: name === 'phone' ? value.replace(/\D/g, '') : value }))
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }))
   }
 
   const validate = () => {
     const errs = {}
     if (!form.fullName.trim()) errs.fullName = 'Full name is required'
-    if (!form.phone.trim() || form.phone.length < 10) errs.phone = 'Valid phone number is required'
+    if (!/^\d{10}$/.test(form.phone.trim())) errs.phone = 'Valid 10-digit phone number is required'
     if (!form.age || form.age < 1) errs.age = 'Valid age is required'
     if (!form.gender) errs.gender = 'Gender is required'
     if (!form.city.trim()) errs.city = 'City is required'
     if (!form.address.trim()) errs.address = 'Address is required'
     if (!form.bloodNeededFor.trim()) errs.bloodNeededFor = 'This field is required'
-    if (!form.password || form.password.length < 6) errs.password = 'Password must be at least 6 characters'
-    if (form.password !== form.confirmPassword) errs.confirmPassword = 'Passwords do not match'
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validate()) return
     setLoading(true)
-    setTimeout(() => {
+    try {
       const user = { ...form, isLoggedIn: true }
-      const existingUsers = JSON.parse(localStorage.getItem('requesterUsers') || '[]')
-      existingUsers.push(user)
-      localStorage.setItem('requesterUsers', JSON.stringify(existingUsers))
-      loginUser(user)
+      await loginUser(user)
       setLoading(false)
       navigate('/requester/dashboard')
-    }, 1500)
+    } catch {
+      setLoading(false)
+    }
   }
 
   return (
@@ -109,16 +106,6 @@ const RequesterRegister = () => {
                   <label>Blood Needed For *</label>
                   <input name="bloodNeededFor" value={form.bloodNeededFor} onChange={handleChange} placeholder="e.g. Surgery, Accident, Thalassemia" />
                   {errors.bloodNeededFor && <span className="req-register-error">{errors.bloodNeededFor}</span>}
-                </div>
-                <div className="req-register-field">
-                  <label><FaLock /> Password *</label>
-                  <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Min 6 characters" />
-                  {errors.password && <span className="req-register-error">{errors.password}</span>}
-                </div>
-                <div className="req-register-field">
-                  <label><FaLock /> Confirm Password *</label>
-                  <input name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} placeholder="Confirm password" />
-                  {errors.confirmPassword && <span className="req-register-error">{errors.confirmPassword}</span>}
                 </div>
               </div>
               <button type="submit" className="req-register-btn" disabled={loading}>

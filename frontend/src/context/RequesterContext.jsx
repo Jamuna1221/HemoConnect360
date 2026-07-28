@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { clearRequesterToken, requesterPhoneLogin, updateRequesterProfile } from '../services/requesterService'
 
 const RequesterContext = createContext(null)
 
@@ -11,9 +12,19 @@ const getStoredUser = () => {
   }
 }
 
-const getStoredRequests = () => {
+const getStoredRequests = (phone) => {
+  if (!phone) return []
   try {
-    const data = localStorage.getItem('requester_requests')
+    const data = localStorage.getItem(`requester_requests_${phone}`)
+    return data ? JSON.parse(data) : []
+  } catch {
+    return []
+  }
+}
+
+const getStoredRequesterUsers = () => {
+  try {
+    const data = localStorage.getItem('requesterUsers')
     return data ? JSON.parse(data) : []
   } catch {
     return []
@@ -22,7 +33,7 @@ const getStoredRequests = () => {
 
 export const RequesterProvider = ({ children }) => {
   const [user, setUser] = useState(getStoredUser)
-  const [requests, setRequests] = useState(getStoredRequests)
+  const [requests, setRequests] = useState(() => getStoredRequests(getStoredUser()?.phone))
   const [notifications, setNotifications] = useState([
     { id: 1, text: 'Welcome to HemoConnect360 Requester Portal', time: 'Just now', read: false },
     { id: 2, text: 'Your account is ready. Start requesting blood.', time: '1 min ago', read: false },
@@ -33,15 +44,71 @@ export const RequesterProvider = ({ children }) => {
   }, [user])
 
   useEffect(() => {
-    localStorage.setItem('requester_requests', JSON.stringify(requests))
-  }, [requests])
+    setRequests(getStoredRequests(user?.phone))
+  }, [user?.phone])
 
-  const loginUser = (userData) => {
-    setUser(userData)
+  useEffect(() => {
+    if (user?.phone) {
+      localStorage.setItem(`requester_requests_${user.phone}`, JSON.stringify(requests))
+    }
+  }, [requests, user?.phone])
+
+  const saveUserLocally = (userData) => {
+    const phone = userData.phone?.trim()
+    if (!phone) return null
+
+    const existingUsers = getStoredRequesterUsers()
+    const existingUser = existingUsers.find((u) => u.phone === phone)
+    const nextUser = { ...(existingUser || {}), ...userData, phone, isLoggedIn: true }
+    const nextUsers = existingUser
+      ? existingUsers.map((u) => (u.phone === phone ? nextUser : u))
+      : [...existingUsers, nextUser]
+
+    localStorage.setItem('requesterUsers', JSON.stringify(nextUsers))
+    setUser(nextUser)
+    return nextUser
+  }
+
+const loginUser = async (userData) => {
+    const phone = userData.phone?.trim()
+    if (!phone) return null
+
+    try {
+      const account = await requesterPhoneLogin(phone)
+      const hasProfileDetails = ['fullName', 'age', 'gender', 'city', 'address', 'bloodNeededFor', 'email']
+        .some((field) => userData[field])
+      const syncedAccount = hasProfileDetails ? await updateRequesterProfile(userData) : account
+      const nextUser = { ...syncedAccount.profile, isLoggedIn: true }
+      const requestHistory = syncedAccount.requestHistory || []
+      localStorage.setItem(`requester_requests_${nextUser.phone}`, JSON.stringify(requestHistory))
+      setRequests(requestHistory)
+      return saveUserLocally(nextUser)
+    } catch (error) {
+      saveUserLocally(userData)
+      throw error
+    }
   }
 
   const logoutUser = () => {
+    clearRequesterToken()
     setUser(null)
+  }
+
+  const saveProfile = async (profileData) => {
+    const nextUser = { ...(user || {}), ...profileData }
+    saveUserLocally(nextUser)
+
+    try {
+      const account = await updateRequesterProfile(profileData)
+      const savedUser = { ...account.profile, isLoggedIn: true }
+      const requestHistory = account.requestHistory || []
+      localStorage.setItem(`requester_requests_${savedUser.phone}`, JSON.stringify(requestHistory))
+      setRequests(requestHistory)
+      saveUserLocally(savedUser)
+      return { success: true, user: savedUser }
+    } catch (error) {
+      return { success: false, user: nextUser, message: error.message }
+    }
   }
 
   const addRequest = (requestData) => {
@@ -87,6 +154,7 @@ export const RequesterProvider = ({ children }) => {
     notifications,
     loginUser,
     logoutUser,
+    saveProfile,
     addRequest,
     updateRequest,
     cancelRequest,

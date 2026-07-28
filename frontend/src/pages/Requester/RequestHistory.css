@@ -19,7 +19,7 @@
 .req-history-empty-icon { font-size: 48px; color: #E5E5E5; margin-bottom: 16px; }
 .req-history-empty h2 { font-size: 22px; font-weight: 800; color: #1F2937; margin: 0 0 8px; }
 .req-history-empty p { font-size: 14px; color: #6B7280; margin: 0 0 24px; }
-.req-history-empty-btn { display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #E53935, #C62828); color: #fff; border-radius: 12px; font-size: 14px; font-weight: 700; text-decoration: none; font-family: 'Poppins', sans-serif; transition: transform 0.3s ease; }
+.req-history-empty-btn { display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #E53935, #C62828); color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; text-decoration: none; font-family: 'Poppins', sans-serif; cursor: pointer; transition: transform 0.3s ease; }
 .req-history-empty-btn:hover { transform: translateY(-2px); }
 .req-history-list { display: flex; flex-direction: column; gap: 14px; }
 .req-history-card { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); transition: transform 0.3s ease, box-shadow 0.3s ease; }
@@ -41,7 +41,7 @@
 .req-history-status--accepted { background: #DCFCE7; color: #16A34A; }
 .req-history-status--completed { background: #F3F4F6; color: #6B7280; }
 .req-history-status--cancelled { background: #FEE2E2; color: #DC2626; }
-.req-history-view-btn { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border: 1.5px solid #E53935; border-radius: 10px; color: #E53935; font-size: 12px; font-weight: 700; text-decoration: none; white-space: nowrap; transition: all 0.3s ease; }
+.req-history-view-btn { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border: 1.5px solid #E53935; border-radius: 10px; background: #fff; color: #E53935; font-size: 12px; font-weight: 700; font-family: 'Poppins', sans-serif; text-decoration: none; white-space: nowrap; cursor: pointer; transition: all 0.3s ease; }
 .req-history-view-btn:hover { background: #E53935; color: #fff; }
 
 @media (max-width: 768px) { .req-history-main { padding: 20px 4%; } .req-history-card { flex-direction: column; align-items: flex-start; gap: 14px; } .req-history-card-right { width: 100%; justify-content: space-between; } }

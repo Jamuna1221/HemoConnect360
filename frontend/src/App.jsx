@@ -34,6 +34,8 @@ function App() {
         <Route path="/requester/history" element={<RequestHistory />} />
         <Route path="/requester/request-details/:id" element={<RequestDetails />} />
         <Route path="/requester/profile" element={<RequesterProfile />} />
+        <Route path="/donor/success" element={<DonorSuccess />} />
+        <Route path="/terms-and-conditions" element={<TermsConditions />} />
       </Routes>
     </RequesterProvider>
   )
