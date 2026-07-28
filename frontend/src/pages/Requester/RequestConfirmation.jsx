@@ -1,31 +1,28 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Navbar from '../../components/Navbar/Navbar';
+import RequesterNavbar from '../../components/Requester/RequesterNavbar';
 import Footer from '../../components/Footer/Footer';
+import { useRequester } from '../../context/RequesterContext';
 import './RequestConfirmation.css';
 
 const RequestConfirmation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const requestData = location.state?.requestData || {
-    requestId: 'REQ-2026-4821',
-    bloodGroup: 'A+',
-    units: 2,
-    hospital: 'City General Hospital',
-    patientName: 'John Smith',
-    urgency: 'urgent',
-  };
+  const { user } = useRequester();
+  const requestData = location.state?.request || location.state?.requestData;
 
   useEffect(() => {
-    if (!localStorage.getItem('requesterSession')) {
+    if (!user) {
       navigate('/requester/login');
     }
-  }, [navigate]);
+  }, [user, navigate]);
+
+  if (!user) return null;
 
   return (
     <div className="requester-page">
-      <Navbar />
+      <RequesterNavbar />
       <main className="rc-container">
         <motion.div
           className="rc-success-card"
@@ -90,15 +87,15 @@ const RequestConfirmation = () => {
           >
             <div className="rc-info-card">
               <span className="rc-info-label">Request ID</span>
-              <span className="rc-info-value">{requestData.requestId}</span>
+              <span className="rc-info-value">{requestData?.id || 'Submitted'}</span>
             </div>
             <div className="rc-info-card">
               <span className="rc-info-label">Blood Group</span>
-              <span className="rc-info-value rc-blood-group">{requestData.bloodGroup}</span>
+              <span className="rc-info-value rc-blood-group">{requestData?.bloodGroup}</span>
             </div>
             <div className="rc-info-card">
               <span className="rc-info-label">Units Required</span>
-              <span className="rc-info-value">{requestData.units} Units</span>
+              <span className="rc-info-value">{requestData?.units} Units</span>
             </div>
           </motion.div>
 
@@ -137,7 +134,7 @@ const RequestConfirmation = () => {
           >
             <button
               className="rc-btn rc-btn-track"
-              onClick={() => navigate('/requester/track', { state: { requestData } })}
+              onClick={() => navigate('/requester/track', { state: { request: requestData } })}
             >
               Track Request
             </button>

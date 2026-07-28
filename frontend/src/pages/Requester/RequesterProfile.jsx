@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaUser, FaPhone, FaCalendarAlt, FaVenusMars, FaCity, FaMapMarkerAlt, FaHeartbeat, FaSignOutAlt, FaHospital, FaEdit, FaShieldAlt, FaKey } from 'react-icons/fa'
+import { FaUser, FaPhone, FaCalendarAlt, FaVenusMars, FaCity, FaMapMarkerAlt, FaHeartbeat, FaSignOutAlt, FaHospital, FaEdit, FaShieldAlt } from 'react-icons/fa'
 import { useRequester } from '../../context/RequesterContext'
 import RequesterNavbar from '../../components/Requester/RequesterNavbar'
 import Footer from '../../components/Footer/Footer'
@@ -14,13 +14,41 @@ const SAVED_HOSPITALS = [
 
 const RequesterProfile = () => {
   const navigate = useNavigate()
-  const { user, logoutUser } = useRequester()
+  const { user, logoutUser, saveProfile } = useRequester()
+  const [isEditing, setIsEditing] = useState(false)
+  const [form, setForm] = useState({ fullName: '', age: '', gender: '', city: '', address: '', bloodNeededFor: '', email: '' })
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
 
   useEffect(() => { if (!user) navigate('/requester/login') }, [user, navigate])
+
+  useEffect(() => {
+    if (!user) return
+    setForm({
+      fullName: user.fullName || '',
+      age: user.age || '',
+      gender: user.gender || '',
+      city: user.city || '',
+      address: user.address || '',
+      bloodNeededFor: user.bloodNeededFor || '',
+      email: user.email || '',
+    })
+  }, [user])
 
   if (!user) return null
 
   const handleLogout = () => { logoutUser(); navigate('/') }
+  const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  const handleCancel = () => { setIsEditing(false); setMessage('') }
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setMessage('')
+    const result = await saveProfile(form)
+    setSaving(false)
+    setIsEditing(false)
+    setMessage(result.success ? 'Profile saved successfully.' : 'Profile saved locally. Backend sync failed.')
+  }
 
   return (
     <div className="req-profile-page">
@@ -33,8 +61,28 @@ const RequesterProfile = () => {
               <div className="req-profile-avatar"><FaUser className="req-profile-avatar-icon" /></div>
               <h2>{user.fullName || 'Requester User'}</h2>
               <p className="req-profile-phone"><FaPhone /> {user.phone || '+91 98765 43210'}</p>
-              <button className="req-profile-edit-btn"><FaEdit /> Edit Profile</button>
+              <button className="req-profile-edit-btn" onClick={() => { setIsEditing(true); setMessage('') }}><FaEdit /> Edit Profile</button>
+              {message && <p className="req-profile-message">{message}</p>}
             </div>
+
+            {isEditing && (
+              <form className="req-profile-card req-profile-edit-card" onSubmit={handleSubmit}>
+                <div className="req-profile-card-header"><h3><FaEdit /> Edit Profile</h3></div>
+                <div className="req-profile-edit-grid">
+                  <label>Full Name<input name="fullName" value={form.fullName} onChange={handleChange} placeholder="Full name" /></label>
+                  <label>Age<input name="age" type="number" min="1" max="120" value={form.age} onChange={handleChange} placeholder="Age" /></label>
+                  <label>Gender<select name="gender" value={form.gender} onChange={handleChange}><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></label>
+                  <label>City<input name="city" value={form.city} onChange={handleChange} placeholder="City" /></label>
+                  <label>Address<input name="address" value={form.address} onChange={handleChange} placeholder="Address" /></label>
+                  <label>Blood Needed For<input name="bloodNeededFor" value={form.bloodNeededFor} onChange={handleChange} placeholder="Reason" /></label>
+                  <label className="req-profile-edit-full">Email<input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email" /></label>
+                </div>
+                <div className="req-profile-edit-actions">
+                  <button type="button" className="req-profile-cancel-btn" onClick={handleCancel} disabled={saving}>Cancel</button>
+                  <button type="submit" className="req-profile-save-btn" disabled={saving}>{saving ? 'Saving...' : 'Save Profile'}</button>
+                </div>
+              </form>
+            )}
 
             <div className="req-profile-card">
               <div className="req-profile-card-header"><h3><FaUser /> Personal Details</h3></div>
@@ -63,10 +111,10 @@ const RequesterProfile = () => {
             </div>
 
             <div className="req-profile-card">
-              <div className="req-profile-card-header"><h3><FaKey /> Security</h3></div>
+              <div className="req-profile-card-header"><h3><FaShieldAlt /> Account Access</h3></div>
               <div className="req-profile-fields">
-                <div className="req-profile-field"><div className="req-profile-field-icon"><FaKey /></div><div><span>Password</span><strong>{'\u2022'.repeat(8)}</strong></div></div>
-                <div className="req-profile-field"><div className="req-profile-field-icon"><FaShieldAlt /></div><div><span>Two-Factor Auth</span><strong className="req-profile-badge">Enabled</strong></div></div>
+                <div className="req-profile-field"><div className="req-profile-field-icon"><FaPhone /></div><div><span>Primary Account Key</span><strong>{user.phone}</strong></div></div>
+                <div className="req-profile-field"><div className="req-profile-field-icon"><FaShieldAlt /></div><div><span>Requester Access</span><strong className="req-profile-badge">Phone-only login</strong></div></div>
               </div>
             </div>
 

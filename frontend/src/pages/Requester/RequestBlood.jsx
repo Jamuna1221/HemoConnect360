@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FaTint, FaUser, FaHospital, FaExclamationCircle, FaPhoneAlt, FaStickyNote, FaCalendarAlt, FaEnvelope, FaArrowLeft, FaPaperPlane } from 'react-icons/fa'
 import RequesterNavbar from '../../components/Requester/RequesterNavbar'
@@ -23,8 +23,8 @@ const INITIAL_FORM = {
 
 const RequestBlood = () => {
   const navigate = useNavigate()
-  const { addRequest } = useRequester()
-  const [form, setForm] = useState(INITIAL_FORM)
+  const { addRequest, user } = useRequester()
+  const [form, setForm] = useState(() => ({ ...INITIAL_FORM, contactName: user?.fullName || '', contactPhone: user?.phone || '' }))
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
@@ -33,6 +33,10 @@ const RequestBlood = () => {
     setForm((prev) => ({ ...prev, [name]: value }))
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }))
   }
+
+  useEffect(() => {
+    if (!user) navigate('/requester/login')
+  }, [user, navigate])
 
   const validate = () => {
     const errs = {}
@@ -70,6 +74,7 @@ const RequestBlood = () => {
         priority: form.priority,
         contactName: form.contactName,
         contactPhone: form.contactPhone,
+        requesterPhone: user.phone,
         contactEmail: form.contactEmail,
         notes: form.notes,
       })
@@ -77,6 +82,8 @@ const RequestBlood = () => {
       navigate('/requester/confirmation', { state: { request: newRequest } })
     }, 1500)
   }
+
+  if (!user) return null
 
   return (
     <div className="req-blood-page">
