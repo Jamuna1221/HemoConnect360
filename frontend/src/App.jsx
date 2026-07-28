@@ -20,7 +20,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/donor/registration" element={<Donor />} />
+        <Route path="/donor/success" element={<DonorSuccess />} />
         <Route path="/terms-and-conditions" element={<TermsConditions />} />
+
         <Route path="/requester/login" element={<RequesterLogin />} />
         <Route path="/requester/register" element={<RequesterRegistration />} />
         <Route path="/requester/dashboard" element={<RequesterDashboard />} />
