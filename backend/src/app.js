@@ -3,6 +3,7 @@ import cors from "cors";
 import { apiRoutes } from "./config/apiRoutes.js";
 import { env } from "./config/env.js";
 import requesterRoutes from "./modules/requesters/requester.routes.js";
+import bloodRequestRoutes from "./modules/blood-requests/bloodRequest.routes.js";
 import { notFoundHandler, errorHandler } from "./shared/http/errorHandlers.js";
 
 const app = express();
@@ -15,6 +16,7 @@ app.get(apiRoutes.health, (req, res) => {
 });
 
 app.use(apiRoutes.requesters.base, requesterRoutes);
+app.use(apiRoutes.bloodRequests.base, bloodRequestRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

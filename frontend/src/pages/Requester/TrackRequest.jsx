@@ -4,26 +4,31 @@ import { motion, AnimatePresence } from 'framer-motion';
 import RequesterNavbar from '../../components/Requester/RequesterNavbar';
 import Footer from '../../components/Footer/Footer';
 import { useRequester } from '../../context/RequesterContext';
+import { getBloodRequest } from '../../services/requesterService';
 import './TrackRequest.css';
 
-const steps = [
-  { label: 'Submitted', icon: '✓' },
-  { label: 'Searching', icon: '🔍' },
-  { label: 'Donors Notified', icon: '📢' },
-  { label: 'Donor Accepted', icon: '🤝' },
-  { label: 'Blood Donated', drop: '💉' },
-  { label: 'Completed', icon: '✅' },
-];
+const STATUS_STEPS = [
+  { status: 'submitted',   label: 'Submitted' },
+  { status: 'searching',   label: 'Searching' },
+  { status: 'notified',    label: 'Donors Notified' },
+  { status: 'accepted',    label: 'Donor Accepted' },
+  { status: 'donated',     label: 'Blood Donated' },
+  { status: 'completed',   label: 'Completed' },
+]
+
+const currentStepIndex = (status) => {
+  const idx = STATUS_STEPS.findIndex((s) => s.status === status)
+  return idx === -1 ? 0 : idx
+}
 
 const TrackRequest = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, requests } = useRequester();
-  const latestRequest = requests[0];
-  const requestData = location.state?.request || location.state?.requestData || latestRequest;
+const { user } = useRequester();
+  const latestRequest = location.state?.request || location.state?.requestData;
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const [donorVisible, setDonorVisible] = useState(false);
+  const [requestData, setRequestData] = useState(latestRequest || null);
+  const currentStep = currentStepIndex(requestData?.status);
 
   useEffect(() => {
     if (!user) {
@@ -32,33 +37,34 @@ const TrackRequest = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentStep((prev) => {
-        if (prev < steps.length - 1) return prev + 1;
-        clearInterval(interval);
-        return prev;
-      });
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!requestData?.id) return;
 
-  useEffect(() => {
-    if (currentStep >= 3) {
-      const timer = setTimeout(() => setDonorVisible(true), 800);
-      return () => clearTimeout(timer);
+    const fetch = async () => {
+      try {
+        const synced = await getBloodRequest(requestData.id)
+        setRequestData(synced)
+      } catch {}
     }
-  }, [currentStep]);
+
+    fetch()
+    const interval = setInterval(fetch, 8000)
+    return () => clearInterval(interval)
+  }, [requestData?.id])
 
   if (!user) return null;
 
-  const donor = {
-    name: 'Rajesh Kumar',
-    bloodGroup: 'A+',
-    phone: '+91 98765 43210',
-    distance: '3.2 km',
-    verified: true,
-    donated: '3 times',
-  };
+  if (!requestData) return (
+    <div className="requester-page">
+      <RequesterNavbar />
+      <main className="trk-container">
+        <div className="trk-card" style={{ textAlign: 'center', padding: '60px 40px' }}>
+          <h2 style={{ color: '#6B7280' }}>No active request to track.</h2>
+          <button className="req-confirm-btn req-confirm-btn--primary" style={{ marginTop: 20 }} onClick={() => navigate('/requester/request-blood')}>Request Blood</button>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
 
   return (
     <div className="requester-page">
@@ -84,7 +90,7 @@ const TrackRequest = () => {
           </div>
 
           <div className="trk-timeline">
-            {steps.map((step, index) => {
+            {STATUS_STEPS.map((step, index) => {
               const isDone = index < currentStep;
               const isCurrent = index === currentStep;
               return (
@@ -96,7 +102,7 @@ const TrackRequest = () => {
                     <div className="trk-step-dot">
                       {isDone ? '✓' : isCurrent ? <span className="trk-step-pulse" /> : ''}
                     </div>
-                    {index < steps.length - 1 && (
+                    {index < STATUS_STEPS.length - 1 && (
                       <div className={`trk-connector ${isDone ? 'trk-connector-done' : ''}`} />
                     )}
                   </div>

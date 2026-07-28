@@ -1,145 +1,155 @@
-import React, { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import RequesterNavbar from '../../components/Requester/RequesterNavbar';
-import Footer from '../../components/Footer/Footer';
-import { useRequester } from '../../context/RequesterContext';
-import './RequestConfirmation.css';
+import { useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { FaCheck, FaTint, FaHospital, FaMapMarkerAlt, FaUser, FaCalendarAlt, FaPhone, FaHeartbeat } from 'react-icons/fa'
+import RequesterNavbar from '../../components/Requester/RequesterNavbar'
+import Footer from '../../components/Footer/Footer'
+import { useRequester } from '../../context/RequesterContext'
+import './RequestConfirmation.css'
 
 const RequestConfirmation = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user } = useRequester();
-  const requestData = location.state?.request || location.state?.requestData;
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { user } = useRequester()
+  const requestData = location.state?.request || location.state?.requestData
 
   useEffect(() => {
     if (!user) {
-      navigate('/requester/login');
+      navigate('/requester/login')
     }
-  }, [user, navigate]);
+  }, [user, navigate])
 
-  if (!user) return null;
+  if (!user) return null
 
   return (
-    <div className="requester-page">
+    <div className="req-confirm-page">
       <RequesterNavbar />
-      <main className="rc-container">
+      <main className="req-confirm-main">
         <motion.div
-          className="rc-success-card"
-          initial={{ opacity: 0, scale: 0.8 }}
+          className="req-confirm-container req-confirm-container--visible"
+          initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
+          transition={{ duration: 0.5 }}
         >
-          <div className="rc-check-wrapper">
-            <div className="rc-pulse-ring rc-pulse-ring-1" />
-            <div className="rc-pulse-ring rc-pulse-ring-2" />
-            <div className="rc-pulse-ring rc-pulse-ring-3" />
-            <motion.div
-              className="rc-check-circle"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.3, duration: 0.4, type: 'spring', stiffness: 200 }}
-            >
-              <svg viewBox="0 0 52 52" className="rc-check-svg">
-                <motion.circle
-                  cx="26"
-                  cy="26"
-                  r="24"
-                  fill="none"
-                  stroke="#22C55E"
-                  strokeWidth="3"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ delay: 0.5, duration: 0.6 }}
-                />
-                <motion.path
-                  d="M15 27l7 7 15-15"
-                  fill="none"
-                  stroke="#22C55E"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ delay: 0.9, duration: 0.4 }}
-                />
-              </svg>
-            </motion.div>
-          </div>
+          <motion.div
+            className="req-confirm-success"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.4, type: 'spring', stiffness: 200 }}
+          >
+            <div className="req-confirm-check-circle">
+              <FaCheck className="req-confirm-check-icon" />
+            </div>
+          </motion.div>
 
-          <motion.h2
-            className="rc-title"
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
             Request Submitted Successfully!
-          </motion.h2>
-          <p className="rc-subtitle">
-            Your blood request has been received and donors are being searched.
-          </p>
-
-          <motion.div
-            className="rc-info-cards"
+          </motion.h1>
+          <motion.p
+            className="req-confirm-subtitle"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
+            transition={{ delay: 0.7 }}
           >
-            <div className="rc-info-card">
-              <span className="rc-info-label">Request ID</span>
-              <span className="rc-info-value">{requestData?.id || 'Submitted'}</span>
-            </div>
-            <div className="rc-info-card">
-              <span className="rc-info-label">Blood Group</span>
-              <span className="rc-info-value rc-blood-group">{requestData?.bloodGroup}</span>
-            </div>
-            <div className="rc-info-card">
-              <span className="rc-info-label">Units Required</span>
-              <span className="rc-info-value">{requestData?.units} Units</span>
-            </div>
+            Your blood request has been received and donors are being searched.
+          </motion.p>
+
+          <motion.div
+            className="req-confirm-donor-counter"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+          >
+            <FaTint className="req-confirm-donor-icon" />
+            <span className="req-confirm-donor-number">{requestData?.units || '?'}</span>
+            <p>Units of {requestData?.bloodGroup || 'blood'} requested</p>
           </motion.div>
 
           <motion.div
-            className="rc-searching-section"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            className="req-confirm-details"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.0 }}
           >
-            <div className="rc-searching-header">
-              <div className="rc-searching-dots">
-                <span className="rc-dot rc-dot-1" />
-                <span className="rc-dot rc-dot-2" />
-                <span className="rc-dot rc-dot-3" />
+            <h2>Request Summary</h2>
+            <div className="req-confirm-grid">
+              <div className="req-confirm-detail">
+                <FaTint className="req-confirm-detail-icon" />
+                <div>
+                  <span>Blood Group</span>
+                  <strong>{requestData?.bloodGroup}</strong>
+                </div>
               </div>
-              <span>Searching for matching donors near you...</span>
+              <div className="req-confirm-detail">
+                <FaUser className="req-confirm-detail-icon" />
+                <div>
+                  <span>Patient</span>
+                  <strong>{requestData?.patientName}</strong>
+                </div>
+              </div>
+              <div className="req-confirm-detail">
+                <FaHospital className="req-confirm-detail-icon" />
+                <div>
+                  <span>Hospital</span>
+                  <strong>{requestData?.hospitalName}</strong>
+                </div>
+              </div>
+              <div className="req-confirm-detail">
+                <FaMapMarkerAlt className="req-confirm-detail-icon" />
+                <div>
+                  <span>City</span>
+                  <strong>{requestData?.city}</strong>
+                </div>
+              </div>
+              <div className="req-confirm-detail">
+                <FaCalendarAlt className="req-confirm-detail-icon" />
+                <div>
+                  <span>Required By</span>
+                  <strong>{requestData?.requiredBy}</strong>
+                </div>
+              </div>
+              <div className="req-confirm-detail">
+                <FaHeartbeat className="req-confirm-detail-icon" />
+                <div>
+                  <span>Priority</span>
+                  <strong>{requestData?.priority}</strong>
+                </div>
+              </div>
+              <div className="req-confirm-detail">
+                <FaPhone className="req-confirm-detail-icon" />
+                <div>
+                  <span>Contact</span>
+                  <strong>{requestData?.contactName}</strong>
+                </div>
+              </div>
+              <div className="req-confirm-detail">
+                <FaTint className="req-confirm-detail-icon" />
+                <div>
+                  <span>Request ID</span>
+                  <strong>{requestData?.id}</strong>
+                </div>
+              </div>
             </div>
-            <div className="rc-progress-track">
-              <motion.div
-                className="rc-progress-fill"
-                initial={{ width: '0%' }}
-                animate={{ width: '45%' }}
-                transition={{ delay: 1.2, duration: 2, ease: 'easeInOut' }}
-              />
-            </div>
-            <p className="rc-searching-note">
-              We are notifying compatible donors in your area. This may take a few minutes.
-            </p>
           </motion.div>
 
           <motion.div
-            className="rc-actions"
+            className="req-confirm-actions"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.4 }}
+            transition={{ delay: 1.2 }}
           >
             <button
-              className="rc-btn rc-btn-track"
+              className="req-confirm-btn req-confirm-btn--primary"
               onClick={() => navigate('/requester/track', { state: { request: requestData } })}
             >
               Track Request
             </button>
             <button
-              className="rc-btn rc-btn-dashboard"
+              className="req-confirm-btn req-confirm-btn--secondary"
               onClick={() => navigate('/requester/dashboard')}
             >
               Go to Dashboard
@@ -149,7 +159,7 @@ const RequestConfirmation = () => {
       </main>
       <Footer />
     </div>
-  );
-};
+  )
+}
 
-export default RequestConfirmation;
+export default RequestConfirmation

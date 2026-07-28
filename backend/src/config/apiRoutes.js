@@ -6,4 +6,11 @@ export const apiRoutes = {
     me: "/me",
     profile: "/me/profile",
   },
+  bloodRequests: {
+    base: "/api/blood-requests",
+    create: "/",
+    list: "/",
+    detail: "/:id",
+    cancel: "/:id/cancel",
+  },
 };

@@ -37,3 +37,40 @@ export const updateRequesterProfile = async (profile) => {
   setRequesterToken(payload.data?.token)
   return payload.data
 }
+
+export const createBloodRequest = async (data) => {
+  const payload = await apiRequest('/blood-requests', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  })
+
+  return payload.data
+}
+
+export const listBloodRequests = async () => {
+  const payload = await apiRequest('/blood-requests', {
+    method: 'GET',
+    headers: authHeaders(),
+  })
+
+  return payload.data
+}
+
+export const cancelBloodRequest = async (id) => {
+  const payload = await apiRequest(`/blood-requests/${id}/cancel`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+  })
+
+  return payload.data
+}
+
+export const getBloodRequest = async (id) => {
+  const payload = await apiRequest(`/blood-requests/${id}`, {
+    method: 'GET',
+    headers: authHeaders(),
+  })
+
+  return payload.data
+}
