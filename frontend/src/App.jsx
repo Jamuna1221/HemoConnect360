@@ -4,6 +4,7 @@ import Home from './pages/Home/Home'
 import Donor from './pages/Donor/Donor'
 import DonorSuccess from './pages/DonorSuccess/DonorSuccess'
 import TermsConditions from './pages/TermsConditions/TermsConditions'
+import DonorDashboard from './pages/DonorDashboard/DonorDashboard'
 import RequesterLogin from './pages/Requester/RequesterLogin'
 import RequesterRegistration from './pages/Requester/RequesterRegister'
 import RequesterDashboard from './pages/Requester/RequesterDashboard'
@@ -21,6 +22,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/donor/registration" element={<Donor />} />
         <Route path="/donor/success" element={<DonorSuccess />} />
+        <Route path="/donor/dashboard" element={<DonorDashboard />} />
         <Route path="/terms-and-conditions" element={<TermsConditions />} />
 
         <Route path="/requester/login" element={<RequesterLogin />} />

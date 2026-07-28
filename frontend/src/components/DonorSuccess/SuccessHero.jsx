@@ -50,7 +50,7 @@ const SuccessHero = () => {
             You are now part of a community that saves lives.
           </p>
           <div className="success-hero__actions">
-            <Link to="/" className="success-hero__btn success-hero__btn--primary">
+            <Link to="/donor/dashboard" className="success-hero__btn success-hero__btn--primary">
               <FaUser /> Go to Dashboard
             </Link>
             <Link to="/#how-it-works" className="success-hero__btn success-hero__btn--secondary">
