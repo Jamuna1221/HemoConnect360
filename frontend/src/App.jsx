@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import { RequesterProvider } from './context/RequesterContext'
 import Home from './pages/Home/Home'
 import Donor from './pages/Donor/Donor'
+import DonorSuccess from './pages/DonorSuccess/DonorSuccess'
 import TermsConditions from './pages/TermsConditions/TermsConditions'
 import RequesterLogin from './pages/Requester/RequesterLogin'
 import RequesterRegistration from './pages/Requester/RequesterRegister'
@@ -15,6 +16,7 @@ import RequesterProfile from './pages/Requester/RequesterProfile'
 
 function App() {
   return (
+<<<<<<< HEAD
     <RequesterProvider>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -31,6 +33,14 @@ function App() {
         <Route path="/requester/profile" element={<RequesterProfile />} />
       </Routes>
     </RequesterProvider>
+=======
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/donor/registration" element={<Donor />} />
+      <Route path="/donor/success" element={<DonorSuccess />} />
+      <Route path="/terms-and-conditions" element={<TermsConditions />} />
+    </Routes>
+>>>>>>> 94ec3133eedb0cbd3d77ab4686fb7b189d73ff3b
   )
 }
 
