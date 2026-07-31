@@ -1,0 +1,117 @@
+/* ============================================================
+   NEXT STEPS — Post-Registration Cards
+   ============================================================ */
+
+.next-steps {
+  width: calc(100% - 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 48px 0 0;
+}
+
+.next-steps__heading {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1F2937;
+  margin: 0 0 28px 0;
+}
+
+.next-steps__list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.next-steps__card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 28px;
+  background: #ffffff;
+  border: 1px solid #f3f4f6;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  cursor: default;
+}
+
+.next-steps__card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 24px rgba(239, 68, 68, 0.1);
+  border-color: #fecaca;
+}
+
+.next-steps__icon {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  background: #FFF1F1;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #EF4444;
+}
+
+.next-steps__content {
+  flex: 1;
+}
+
+.next-steps__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0 0 4px 0;
+}
+
+.next-steps__description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #6B7280;
+  margin: 0;
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (≤1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+  .next-steps {
+    width: calc(100% - 48px);
+    padding: 40px 0 0;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (≤640px)
+   ============================================================ */
+@media (max-width: 640px) {
+  .next-steps {
+    width: 100%;
+    padding: 32px 16px 0;
+  }
+
+  .next-steps__heading {
+    font-size: 24px;
+  }
+
+  .next-steps__card {
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .next-steps__icon {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    font-size: 18px;
+  }
+
+  .next-steps__title {
+    font-size: 15px;
+  }
+
+  .next-steps__description {
+    font-size: 13px;
+  }
+}

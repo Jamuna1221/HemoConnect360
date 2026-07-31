@@ -1,0 +1,299 @@
+/* ============================================================
+   SUCCESS HERO — Registration Successful Banner
+   ============================================================ */
+
+.success-hero {
+  width: calc(100% - 80px);
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 0 0;
+}
+
+.success-hero__card {
+  display: grid;
+  grid-template-columns: 28% 44% 28%;
+  align-items: center;
+  gap: 0;
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 12px 40px rgba(255, 80, 80, 0.08);
+  padding: 60px;
+  min-height: 380px;
+  position: relative;
+  background-image: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #fff9f9 30%,
+    #fff3f3 60%,
+    #ffefef 100%
+  );
+}
+
+/* ============================================================
+   LEFT — Illustration
+   ============================================================ */
+.success-hero__left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.success-hero__glow {
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(255, 120, 120, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.success-hero__image-wrapper {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.success-hero__blood-drop {
+  width: 220px;
+  max-width: 220px;
+  height: auto;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 16px 40px rgba(239, 68, 68, 0.15));
+}
+
+/* ─── Confetti decoration — single centered image behind blood drop ─── */
+.success-hero__confetti {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 320px;
+  height: auto;
+  z-index: 1;
+  opacity: 1;
+  pointer-events: none;
+}
+
+/* ============================================================
+   CENTER — Content
+   ============================================================ */
+.success-hero__center {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 24px;
+}
+
+/* ─── Badge ─── */
+.success-hero__badge {
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #EF4444;
+  background: #FFF2F2;
+  padding: 10px 20px;
+  border-radius: 999px;
+  margin-bottom: 24px;
+  letter-spacing: 0.2px;
+}
+
+/* ─── Heading ─── */
+.success-hero__heading {
+  font-size: 56px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -1px;
+  color: #111827;
+  margin: 0 0 24px 0;
+}
+
+.success-hero__heading--accent {
+  color: #EF4444;
+  display: inline;
+}
+
+.success-hero__heart {
+  font-size: 40px;
+  margin-left: 6px;
+  vertical-align: baseline;
+  position: relative;
+  top: -2px;
+}
+
+/* ─── Paragraph ─── */
+.success-hero__text {
+  font-size: 20px;
+  line-height: 1.7;
+  color: #6B7280;
+  margin: 0 0 36px 0;
+  max-width: 520px;
+}
+
+/* ─── Buttons ─── */
+.success-hero__actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.success-hero__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 54px;
+  padding: 18px 34px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  text-decoration: none;
+  border-radius: 14px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.success-hero__btn--primary {
+  background: linear-gradient(135deg, #FF4B4B 0%, #E53935 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 18px rgba(229, 57, 53, 0.3);
+}
+
+.success-hero__btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(229, 57, 53, 0.4);
+}
+
+.success-hero__btn--secondary {
+  background: #ffffff;
+  color: #E53935;
+  border: 1.5px solid #fecaca;
+}
+
+.success-hero__btn--secondary:hover {
+  background: #FFF1F1;
+  border-color: #E53935;
+}
+
+/* ============================================================
+   RIGHT — Outline Decoration (absolute on card)
+   ============================================================ */
+.success-hero__outline {
+  position: absolute;
+  right: 40px;
+  bottom: 20px;
+  width: 260px;
+  height: auto;
+  opacity: 0.16;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (≤1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+  .success-hero {
+    width: calc(100% - 48px);
+    padding: 36px 0 0;
+  }
+
+  .success-hero__card {
+    grid-template-columns: 1fr 1fr;
+    padding: 44px 40px;
+    gap: 32px;
+  }
+
+  .success-hero__left {
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+
+  .success-hero__center {
+    grid-column: 1 / -1;
+  }
+
+  .success-hero__outline {
+    width: 200px;
+    right: 20px;
+    bottom: 10px;
+  }
+
+  .success-hero__heading {
+    font-size: 44px;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (≤640px)
+   ============================================================ */
+@media (max-width: 640px) {
+  .success-hero {
+    width: 100%;
+    padding: 20px 16px 0;
+  }
+
+  .success-hero__card {
+    grid-template-columns: 1fr;
+    padding: 36px 24px;
+    gap: 28px;
+  }
+
+  .success-hero__left {
+    grid-column: auto;
+  }
+
+  .success-hero__center {
+    grid-column: auto;
+  }
+
+  .success-hero__image-wrapper {
+    width: 260px;
+    height: 260px;
+  }
+
+  .success-hero__blood-drop {
+    width: 180px;
+    max-width: 180px;
+  }
+
+  .success-hero__confetti {
+    width: 260px;
+  }
+
+  .success-hero__outline {
+    width: 160px;
+    right: 10px;
+    bottom: 10px;
+    opacity: 0.1;
+  }
+
+  .success-hero__heading {
+    font-size: 32px;
+  }
+
+  .success-hero__heart {
+    font-size: 28px;
+  }
+
+  .success-hero__text {
+    font-size: 16px;
+  }
+
+  .success-hero__actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .success-hero__btn {
+    width: 100%;
+    justify-content: center;
+    padding: 16px 28px;
+  }
+}

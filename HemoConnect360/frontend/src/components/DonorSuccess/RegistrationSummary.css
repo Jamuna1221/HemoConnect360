@@ -1,0 +1,171 @@
+/* ============================================================
+   REGISTRATION SUMMARY — Post-Success Details
+   ============================================================ */
+
+.reg-summary {
+  width: calc(100% - 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 48px 0 0;
+}
+
+.reg-summary__heading {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1F2937;
+  margin: 0 0 28px 0;
+}
+
+/* ─── Summary Card ─── */
+.reg-summary__card {
+  background: #ffffff;
+  border: 1px solid #f3f4f6;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  padding: 8px 0;
+}
+
+.reg-summary__row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 28px;
+  transition: background 0.2s ease;
+}
+
+.reg-summary__row:not(:last-child) {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.reg-summary__row:hover {
+  background: #FFFAFA;
+}
+
+.reg-summary__icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  background: #FFF1F1;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #EF4444;
+}
+
+.reg-summary__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reg-summary__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.reg-summary__value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+/* ─── Privacy Card ─── */
+.reg-summary__privacy {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 22px 28px;
+  background: linear-gradient(135deg, #FFF1F1 0%, #FFE8E8 100%);
+  border-radius: 14px;
+}
+
+.reg-summary__privacy-icon {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  background: #E53935;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #ffffff;
+}
+
+.reg-summary__privacy-content {
+  flex: 1;
+}
+
+.reg-summary__privacy-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0 0 2px 0;
+}
+
+.reg-summary__privacy-text {
+  font-size: 13px;
+  color: #6B7280;
+  margin: 0;
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (≤1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+  .reg-summary {
+    width: calc(100% - 48px);
+    padding: 40px 0 0;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (≤640px)
+   ============================================================ */
+@media (max-width: 640px) {
+  .reg-summary {
+    width: 100%;
+    padding: 32px 16px 0;
+  }
+
+  .reg-summary__heading {
+    font-size: 24px;
+  }
+
+  .reg-summary__row {
+    padding: 14px 20px;
+    gap: 14px;
+  }
+
+  .reg-summary__icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    font-size: 14px;
+  }
+
+  .reg-summary__label {
+    font-size: 11px;
+  }
+
+  .reg-summary__value {
+    font-size: 14px;
+  }
+
+  .reg-summary__privacy {
+    flex-direction: column;
+    text-align: center;
+    padding: 24px 20px;
+    gap: 12px;
+  }
+
+  .reg-summary__privacy-icon {
+    margin: 0 auto;
+  }
+}

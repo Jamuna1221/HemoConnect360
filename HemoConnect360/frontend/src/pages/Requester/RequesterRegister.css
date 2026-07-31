@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+.req-register-page { min-height: 100vh; font-family: 'Poppins', sans-serif; background: #FAFAFA; display: flex; flex-direction: column; }
+.req-register-back { position: fixed; top: 24px; left: 24px; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #fff; border: 1px solid #eee; border-radius: 10px; color: #6B7280; font-size: 13px; font-weight: 600; text-decoration: none; z-index: 10; transition: all 0.3s ease; }
+.req-register-back:hover { border-color: #E53935; color: #E53935; }
+.req-register-container { display: flex; min-height: 100vh; }
+.req-register-left { flex: 1; background: linear-gradient(135deg, #E53935 0%, #C62828 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px; color: #fff; }
+.req-register-brand { text-align: center; margin-bottom: 48px; }
+.req-register-logo { width: 72px; height: 72px; border-radius: 20px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; }
+.req-register-brand h1 { font-size: 28px; font-weight: 800; margin: 0 0 4px; }
+.req-register-brand p { font-size: 15px; opacity: 0.85; margin: 0; }
+.req-register-features { display: flex; flex-direction: column; gap: 16px; }
+.req-register-feature { display: flex; align-items: center; gap: 12px; font-size: 15px; opacity: 0.9; }
+.req-register-feature svg { font-size: 18px; }
+.req-register-right { flex: 1.2; display: flex; align-items: center; justify-content: center; padding: 40px 20px; overflow-y: auto; }
+.req-register-card { width: 100%; max-width: 560px; background: #fff; border-radius: 20px; padding: 36px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+.req-register-card h2 { font-size: 26px; font-weight: 800; color: #1F2937; margin: 0 0 4px; }
+.req-register-subtitle { font-size: 14px; color: #6B7280; margin: 0 0 24px; }
+.req-register-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+.req-register-field { display: flex; flex-direction: column; }
+.req-register-field--full { grid-column: 1 / -1; }
+.req-register-field label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+.req-register-field label svg { color: #E53935; }
+.req-register-field input, .req-register-field select { padding: 11px 14px; border: 1.5px solid #E5E5E5; border-radius: 12px; font-size: 14px; font-family: 'Poppins', sans-serif; outline: none; transition: border-color 0.3s ease; width: 100%; box-sizing: border-box; }
+.req-register-field input:focus, .req-register-field select:focus { border-color: #E53935; }
+.req-register-error { font-size: 12px; color: #E53935; margin-top: 4px; }
+.req-register-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #E53935 0%, #C62828 100%); color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.req-register-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(229,57,53,0.3); }
+.req-register-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+.req-register-login { text-align: center; font-size: 13px; color: #6B7280; margin-top: 20px; }
+.req-register-login a { color: #E53935; text-decoration: none; font-weight: 700; }
+.req-register-login a:hover { text-decoration: underline; }
+
+@media (max-width: 768px) {
+  .req-register-left { display: none; }
+  .req-register-grid { grid-template-columns: 1fr; }
+  .req-register-right { padding: 20px; }
+  .req-register-card { padding: 24px; }
+  .req-register-back { position: static; margin: 16px; }
+}
