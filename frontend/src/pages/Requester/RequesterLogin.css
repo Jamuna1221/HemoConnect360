@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+.req-login-page { min-height: 100vh; font-family: 'Poppins', sans-serif; background: #FAFAFA; display: flex; flex-direction: column; }
+.req-login-back { position: fixed; top: 24px; left: 24px; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #fff; border: 1px solid #eee; border-radius: 10px; color: #6B7280; font-size: 13px; font-weight: 600; text-decoration: none; z-index: 10; transition: all 0.3s ease; }
+.req-login-back:hover { border-color: #E53935; color: #E53935; }
+.req-login-container { display: flex; min-height: 100vh; }
+.req-login-left { flex: 1; background: linear-gradient(135deg, #E53935 0%, #C62828 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px; color: #fff; }
+.req-login-brand { text-align: center; margin-bottom: 48px; }
+.req-login-logo { width: 72px; height: 72px; border-radius: 20px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; }
+.req-login-brand h1 { font-size: 28px; font-weight: 800; margin: 0 0 4px; }
+.req-login-brand p { font-size: 15px; opacity: 0.85; margin: 0; }
+.req-login-features { display: flex; flex-direction: column; gap: 16px; }
+.req-login-feature { display: flex; align-items: center; gap: 12px; font-size: 15px; opacity: 0.9; }
+.req-login-feature svg { font-size: 18px; }
+.req-login-right { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; }
+.req-login-card { width: 100%; max-width: 400px; background: #fff; border-radius: 20px; padding: 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+.req-login-card h2 { font-size: 26px; font-weight: 800; color: #1F2937; margin: 0 0 4px; }
+.req-login-subtitle { font-size: 14px; color: #6B7280; margin: 0 0 28px; }
+.req-login-field { margin-bottom: 18px; }
+.req-login-field label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+.req-login-field label svg { color: #E53935; }
+.req-login-field input { width: 100%; padding: 12px 16px; border: 1.5px solid #E5E5E5; border-radius: 12px; font-size: 14px; font-family: 'Poppins', sans-serif; outline: none; transition: border-color 0.3s ease; }
+.req-login-field input:focus { border-color: #E53935; }
+.req-login-error { display: block; font-size: 12px; color: #E53935; margin-bottom: 12px; }
+.req-login-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #E53935 0%, #C62828 100%); color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.req-login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(229,57,53,0.3); }
+.req-login-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
+.req-login-otp-info { font-size: 13px; color: #6B7280; margin-bottom: 18px; text-align: center; }
+.req-login-resend { display: block; width: 100%; margin-top: 12px; padding: 8px; background: none; border: none; color: #E53935; font-size: 13px; font-weight: 600; font-family: 'Poppins', sans-serif; cursor: pointer; text-align: center; }
+.req-login-register { text-align: center; font-size: 13px; color: #6B7280; margin-top: 24px; }
+.req-login-register a { color: #E53935; text-decoration: none; font-weight: 700; }
+.req-login-register a:hover { text-decoration: underline; }
+
+@media (max-width: 768px) {
+  .req-login-left { display: none; }
+  .req-login-right { padding: 20px; }
+  .req-login-card { padding: 28px; }
+  .req-login-back { position: static; margin: 16px; }
+}

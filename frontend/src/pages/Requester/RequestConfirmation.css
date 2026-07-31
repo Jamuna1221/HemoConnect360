@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+.req-confirm-page { width: 100%; font-family: 'Poppins', sans-serif; color: #222; background: #FAFAFA; min-height: 100vh; }
+.req-confirm-main { width: 100%; padding: 40px 6%; min-height: calc(100vh - 85px); display: flex; align-items: center; justify-content: center; }
+
+.req-confirm-container {
+  max-width: 700px; width: 100%; margin: 0 auto;
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 24px;
+  opacity: 0; transform: scale(0.9); transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.req-confirm-container--visible { opacity: 1; transform: scale(1); }
+
+.req-confirm-success { margin-bottom: 8px; }
+
+.req-confirm-check-circle {
+  width: 100px; height: 100px; border-radius: 50%;
+  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 16px 40px rgba(34, 197, 94, 0.25);
+  animation: req-confirm-pulse 2s ease-in-out infinite;
+}
+
+@keyframes req-confirm-pulse {
+  0%, 100% { box-shadow: 0 16px 40px rgba(34, 197, 94, 0.25); }
+  50% { box-shadow: 0 16px 50px rgba(34, 197, 94, 0.4); }
+}
+
+.req-confirm-check-icon { font-size: 48px; color: #fff; }
+
+.req-confirm-container h1 { font-size: 28px; font-weight: 800; color: #1F2937; margin: 0; }
+
+.req-confirm-subtitle { font-size: 15px; color: #6B7280; margin: 0; max-width: 480px; line-height: 1.6; }
+
+.req-confirm-donor-counter {
+  display: flex; align-items: center; gap: 12px; padding: 16px 32px;
+  background: linear-gradient(135deg, #FFF5F5 0%, #FFE8E8 100%);
+  border: 1px solid rgba(229, 57, 53, 0.1); border-radius: 16px;
+}
+
+.req-confirm-donor-icon { font-size: 24px; color: #E53935; }
+.req-confirm-donor-number { font-size: 32px; font-weight: 800; color: #E53935; font-variant-numeric: tabular-nums; }
+.req-confirm-donor-counter p { font-size: 14px; color: #6B7280; margin: 0; }
+
+.req-confirm-dots { display: flex; gap: 6px; align-items: center; margin-left: 12px; }
+
+.req-confirm-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #E53935;
+  animation: req-confirm-dot-bounce 1.4s ease-in-out infinite;
+}
+
+.req-confirm-dot--delayed { animation-delay: 0.2s; }
+.req-confirm-dot--delayed2 { animation-delay: 0.4s; }
+
+@keyframes req-confirm-dot-bounce {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.2); }
+}
+
+.req-confirm-details {
+  background: #fff; border-radius: 20px; padding: 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); width: 100%; text-align: left;
+}
+
+.req-confirm-details h2 { font-size: 18px; font-weight: 700; color: #1F2937; margin: 0 0 20px; text-align: center; }
+
+.req-confirm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+.req-confirm-detail {
+  display: flex; align-items: center; gap: 12px; padding: 14px;
+  background: #FAFAFA; border-radius: 12px;
+}
+
+.req-confirm-detail-icon { font-size: 18px; color: #E53935; flex-shrink: 0; }
+.req-confirm-detail span { font-size: 12px; color: #6B7280; display: block; margin-bottom: 2px; }
+.req-confirm-detail strong { font-size: 14px; color: #1F2937; }
+
+.req-confirm-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+
+.req-confirm-btn {
+  display: flex; align-items: center; gap: 10px; padding: 14px 28px;
+  border: none; border-radius: 14px; font-size: 15px; font-weight: 700;
+  font-family: 'Poppins', sans-serif; cursor: pointer; text-decoration: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.req-confirm-btn--primary { background: linear-gradient(135deg, #E53935 0%, #C62828 100%); color: #fff; }
+.req-confirm-btn--secondary { background: #fff; color: #E53935; border: 2px solid #E53935; }
+.req-confirm-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(229, 57, 53, 0.2); }
+
+@media (max-width: 640px) {
+  .req-confirm-main { padding: 20px 4%; }
+  .req-confirm-container h1 { font-size: 22px; }
+  .req-confirm-grid { grid-template-columns: 1fr; }
+  .req-confirm-actions { flex-direction: column; }
+  .req-confirm-btn { justify-content: center; width: 100%; }
+}

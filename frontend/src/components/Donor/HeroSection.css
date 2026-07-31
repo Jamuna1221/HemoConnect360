@@ -1,0 +1,280 @@
+/* ============================================================
+   HERO SECTION — Premium Healthcare Hero
+   ============================================================ */
+
+.donor-hero {
+  position: relative;
+  width: calc(100% - 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 60px 70px;
+  background-color: #ffffff;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  opacity: 1;
+  border-radius: 24px;
+  overflow: hidden;
+  min-height: 650px;
+  display: flex;
+  align-items: center;
+}
+
+/* ─── Soft Pink Gradient Overlay ─── */
+.donor-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 245, 245, 0.8) 40%,
+    rgba(255, 235, 235, 0.6) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ─── Medical Pattern Opacity Layer ─── */
+.donor-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.92);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ─── Container Grid ─── */
+.donor-hero__container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 46% 54%;
+  gap: 70px;
+  align-items: center;
+}
+
+/* ============================================================
+   LEFT COLUMN
+   ============================================================ */
+.donor-hero__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ─── Badge ─── */
+.donor-hero__badge {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff3b3b;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ─── Red Underline ─── */
+.donor-hero__badge-line {
+  width: 45px;
+  height: 3px;
+  background: #ff3b3b;
+  border-radius: 2px;
+  margin-top: 10px;
+  margin-bottom: 18px;
+}
+
+/* ─── Heading ─── */
+.donor-hero__title {
+  font-size: 68px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -1px;
+  color: #1f2937;
+  margin: 0 0 20px 0;
+}
+
+.donor-hero__title--accent {
+  color: #ef4444;
+}
+
+/* ─── Paragraph ─── */
+.donor-hero__subtitle {
+  width: 520px;
+  max-width: 100%;
+  font-size: 21px;
+  line-height: 1.8;
+  color: #6b7280;
+  margin: 0 0 32px 0;
+}
+
+/* ============================================================
+   FEATURE CARDS
+   ============================================================ */
+.donor-hero__features {
+  display: flex;
+  gap: 24px;
+}
+
+.donor-hero__feature-card {
+  width: 220px;
+  height: 90px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(255, 70, 70, 0.08);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  flex-shrink: 0;
+}
+
+.donor-hero__feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 40px rgba(255, 70, 70, 0.14);
+}
+
+.donor-hero__feature-icon {
+  width: 50px;
+  height: 50px;
+  background: #FFF1F1;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #EF4444;
+  flex-shrink: 0;
+}
+
+.donor-hero__feature-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.donor-hero__feature-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0;
+}
+
+.donor-hero__feature-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #6B7280;
+  margin: 0;
+}
+
+/* ============================================================
+   RIGHT COLUMN
+   ============================================================ */
+.donor-hero__right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.donor-hero__image {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 20px 50px rgba(239, 68, 68, 0.12));
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (≤1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+  .donor-hero {
+    padding: 50px 40px;
+    min-height: auto;
+  }
+
+  .donor-hero__container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
+  }
+
+  .donor-hero__left {
+    align-items: center;
+  }
+
+  .donor-hero__badge-line {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .donor-hero__title {
+    font-size: 48px;
+  }
+
+  .donor-hero__subtitle {
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .donor-hero__features {
+    justify-content: center;
+  }
+
+  .donor-hero__image {
+    max-width: 380px;
+    margin: 0 auto;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (≤640px)
+   ============================================================ */
+@media (max-width: 640px) {
+  .donor-hero {
+    padding: 40px 24px;
+    border-radius: 20px;
+  }
+
+  .donor-hero__title {
+    font-size: 36px;
+    letter-spacing: -0.5px;
+  }
+
+  .donor-hero__badge {
+    font-size: 15px;
+  }
+
+  .donor-hero__subtitle {
+    font-size: 17px;
+  }
+
+  .donor-hero__features {
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .donor-hero__feature-card {
+    width: 100%;
+    max-width: 240px;
+    height: auto;
+    padding: 14px 16px;
+  }
+
+  .donor-hero__feature-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+
+  .donor-hero__image {
+    width: 90%;
+    max-width: 300px;
+  }
+}
