@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import {
-  FaPhone,
   FaArrowLeft,
   FaEnvelope,
   FaLock,
+  FaEye,
+  FaEyeSlash,
   FaShieldAlt,
   FaUserFriends,
   FaHeartbeat,
@@ -35,10 +36,10 @@ const FEATURES = [
 
 const DonorLogin = () => {
   const navigate = useNavigate()
-  const [loginMethod, setLoginMethod] = useState('phone')
-  const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -46,14 +47,9 @@ const DonorLogin = () => {
     e.preventDefault()
     setError('')
 
-    if (loginMethod === 'phone') {
-      if (!phone.trim()) { setError('Please enter your phone number'); return }
-      if (!/^\d{10}$/.test(phone.trim())) { setError('Please enter a valid 10-digit phone number'); return }
-    } else {
-      if (!email.trim()) { setError('Please enter your email address'); return }
-      if (!/^\S+@\S+\.\S+$/.test(email.trim())) { setError('Please enter a valid email address'); return }
-      if (!password) { setError('Please enter your password'); return }
-    }
+    if (!email.trim()) { setError('Please enter your email address'); return }
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) { setError('Please enter a valid email address'); return }
+    if (!password) { setError('Please enter your password'); return }
 
     setLoading(true)
     setTimeout(() => {
@@ -118,53 +114,58 @@ const DonorLogin = () => {
             <h2>Welcome Back!</h2>
             <p className="donor-login-subtitle">Sign in to continue saving lives.</p>
 
-            <div className="donor-login-tabs">
-              <button type="button" className={`donor-login-tab ${loginMethod === 'phone' ? 'donor-login-tab--active' : ''}`} onClick={() => { setLoginMethod('phone'); setError('') }}>
-                Phone
-              </button>
-              <button type="button" className={`donor-login-tab ${loginMethod === 'email' ? 'donor-login-tab--active' : ''}`} onClick={() => { setLoginMethod('email'); setError('') }}>
-                Email
-              </button>
-            </div>
-
             <form onSubmit={handleLogin}>
-              {loginMethod === 'phone' ? (
-                <div className="donor-login-field">
-                  <label><FaPhone /> Phone Number</label>
+              <div className="donor-login-field">
+                <label><FaEnvelope /> Email Address</label>
+                <div className="donor-login-input-wrap">
+                  <FaEnvelope className="donor-login-input-icon" />
                   <input
-                    type="tel"
-                    placeholder="Enter 10-digit phone number"
-                    value={phone}
-                    onChange={(e) => { setPhone(e.target.value.replace(/\D/g, '')); setError('') }}
-                    maxLength={10}
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value); setError('') }}
                   />
                 </div>
-              ) : (
-                <>
-                  <div className="donor-login-field">
-                    <label><FaEnvelope /> Email Address</label>
-                    <input
-                      type="email"
-                      placeholder="Enter your email address"
-                      value={email}
-                      onChange={(e) => { setEmail(e.target.value); setError('') }}
-                    />
-                  </div>
-                  <div className="donor-login-field">
-                    <label><FaLock /> Password</label>
-                    <input
-                      type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => { setPassword(e.target.value); setError('') }}
-                    />
-                  </div>
-                </>
-              )}
+              </div>
+
+              <div className="donor-login-field">
+                <label><FaLock /> Password</label>
+                <div className="donor-login-input-wrap">
+                  <FaLock className="donor-login-input-icon" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); setError('') }}
+                  />
+                  <button
+                    type="button"
+                    className="donor-login-input-eye"
+                    aria-label="Toggle password visibility"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="donor-login-options">
+                <label className="donor-login-remember">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                  <span>Remember Me</span>
+                </label>
+                <button type="button" className="donor-login-forgot" onClick={() => {}}>
+                  Forgot Password?
+                </button>
+              </div>
 
               {error && <span className="donor-login-error">{error}</span>}
               <button type="submit" className="donor-login-btn" disabled={loading}>
-                {loading ? 'Signing in...' : 'Sign In'}
+                {loading ? 'Logging in...' : 'Login'}
               </button>
             </form>
 

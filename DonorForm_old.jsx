@@ -1,7 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { registerDonor } from '../../services/donorService'
-
 import {
   FaUser,
   FaCalendarAlt,
@@ -17,6 +15,7 @@ import {
   FaFilePdf,
   FaEye,
   FaTimes,
+  FaImage,
 } from 'react-icons/fa'
 
 const INITIAL_FORM = {
@@ -42,14 +41,16 @@ const getToday = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+const formatDateDisplay = (iso) => {
+  if (!iso) return ''
+  const [y, m, d] = iso.split('-')
+  return `${d}-${m}-${y}`
+}
+
 const DonorForm = () => {
   const [formData, setFormData] = useState(INITIAL_FORM)
   const [dateErrors, setDateErrors] = useState({ dob: '', lastDonation: '' })
-  const [fieldErrors, setFieldErrors] = useState({})
   const [previewUrl, setPreviewUrl] = useState(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState('')
-
   const dobRef = useRef(null)
   const lastDonationRef = useRef(null)
   const navigate = useNavigate()
@@ -117,8 +118,6 @@ const DonorForm = () => {
       }
     }
 
-    setFieldErrors((prev) => ({ ...prev, [name]: '' }))
-
     setFormData((prev) => {
       const updated = { ...prev, [name]: newValue }
       if (name === 'dob') {
@@ -134,65 +133,29 @@ const DonorForm = () => {
     })
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    setSubmitError('')
 
-    const errors = {}
-    if (!formData.fullName.trim())   errors.fullName   = 'Full name is required'
-    if (!formData.dob)               errors.dob        = 'Date of birth is required'
-    if (!formData.gender)            errors.gender     = 'Please select a gender'
-    if (!formData.bloodGroup)        errors.bloodGroup = 'Please select a blood group'
-    if (!formData.phone.trim())      errors.phone      = 'Phone number is required'
-    if (!formData.email.trim())      errors.email      = 'Email is required'
-    if (!formData.address.trim())    errors.address    = 'Address is required'
-    if (!formData.city.trim())       errors.city       = 'City is required'
-    if (!formData.state.trim())      errors.state      = 'State is required'
-    if (!formData.pincode.trim())    errors.pincode    = 'Pincode is required'
-    if (!formData.weight)            errors.weight     = 'Weight is required'
-    else if (Number(formData.weight) < 45) errors.weight = 'Minimum weight is 45 kg'
-    if (!formData.hemoglobin)        errors.hemoglobin = 'Hemoglobin is required'
-    else if (Number(formData.hemoglobin) < 12.5) errors.hemoglobin = 'Hemoglobin must be ≥ 12.5 g/dL'
+    const requiredFields = [
+      'fullName', 'dob', 'gender', 'bloodGroup',
+      'phone', 'email', 'address', 'city', 'state',
+      'pincode', 'weight', 'hemoglobin',
+    ]
+
+    for (const field of requiredFields) {
+      if (!formData[field]) return
+    }
+
+    if (!formData.terms) return
 
     const dobErr = validateDob(formData.dob)
     const lastDonErr = validateLastDonation(formData.lastDonation, formData.dob)
-    if (dobErr) errors.dob = dobErr
-    if (lastDonErr) errors.lastDonation = lastDonErr
-
-    if (!formData.terms) errors.terms = 'You must accept the Terms & Conditions'
-
-    setFieldErrors(errors)
-    setDateErrors({ dob: errors.dob || '', lastDonation: errors.lastDonation || '' })
-
-    if (Object.keys(errors).length > 0) {
-      const firstErrEl = document.querySelector('.donor-form__field-error')
-      if (firstErrEl) firstErrEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (dobErr || lastDonErr) {
+      setDateErrors({ dob: dobErr, lastDonation: lastDonErr })
       return
     }
 
-    setIsSubmitting(true)
-    try {
-      await registerDonor({
-        fullName:     formData.fullName,
-        dob:          formData.dob,
-        gender:       formData.gender,
-        bloodGroup:   formData.bloodGroup,
-        phone:        formData.phone,
-        email:        formData.email,
-        address:      formData.address,
-        city:         formData.city,
-        state:        formData.state,
-        pincode:      formData.pincode,
-        weight:       formData.weight,
-        hemoglobin:   formData.hemoglobin,
-        lastDonation: formData.lastDonation || null,
-      })
-      navigate('/donor/success')
-    } catch (err) {
-      setSubmitError(err.message || 'Registration failed. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
+    navigate('/donor/dashboard')
   }
 
   return (
@@ -202,7 +165,7 @@ const DonorForm = () => {
         <div className="donor-form__grid">
           <div className="donor-form__field">
             <label htmlFor="fullName">Full Name</label>
-            <div className={`donor-form__input-wrapper${fieldErrors.fullName ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper">
               <FaUser className="donor-form__input-icon" />
               <input
                 type="text"
@@ -213,12 +176,11 @@ const DonorForm = () => {
                 onChange={handleChange}
               />
             </div>
-            {fieldErrors.fullName && <span className="donor-form__field-error">{fieldErrors.fullName}</span>}
           </div>
 
           <div className="donor-form__field">
             <label htmlFor="dob">Date of Birth</label>
-            <div className={`donor-form__input-wrapper donor-form__input-wrapper--date${fieldErrors.dob ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper donor-form__input-wrapper--date">
               <FaCalendarAlt className="donor-form__input-icon" />
               <input
                 ref={dobRef}
@@ -235,12 +197,11 @@ const DonorForm = () => {
               />
             </div>
             {dateErrors.dob && <span className="donor-form__date-error">{dateErrors.dob}</span>}
-            {!dateErrors.dob && fieldErrors.dob && <span className="donor-form__field-error">{fieldErrors.dob}</span>}
           </div>
 
           <div className="donor-form__field">
             <label htmlFor="gender">Gender</label>
-            <div className={`donor-form__input-wrapper${fieldErrors.gender ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper">
               <select
                 id="gender"
                 name="gender"
@@ -253,12 +214,11 @@ const DonorForm = () => {
                 <option value="other">Other</option>
               </select>
             </div>
-            {fieldErrors.gender && <span className="donor-form__field-error">{fieldErrors.gender}</span>}
           </div>
 
           <div className="donor-form__field">
             <label htmlFor="bloodGroup">Blood Group</label>
-            <div className={`donor-form__input-wrapper${fieldErrors.bloodGroup ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper">
               <FaTint className="donor-form__input-icon" />
               <select
                 id="bloodGroup"
@@ -277,12 +237,11 @@ const DonorForm = () => {
                 <option value="O-">O-</option>
               </select>
             </div>
-            {fieldErrors.bloodGroup && <span className="donor-form__field-error">{fieldErrors.bloodGroup}</span>}
           </div>
 
           <div className="donor-form__field">
             <label htmlFor="phone">Phone Number</label>
-            <div className={`donor-form__input-wrapper${fieldErrors.phone ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper">
               <FaPhone className="donor-form__input-icon" />
               <input
                 type="tel"
@@ -293,12 +252,11 @@ const DonorForm = () => {
                 onChange={handleChange}
               />
             </div>
-            {fieldErrors.phone && <span className="donor-form__field-error">{fieldErrors.phone}</span>}
           </div>
 
           <div className="donor-form__field">
             <label htmlFor="email">Email</label>
-            <div className={`donor-form__input-wrapper${fieldErrors.email ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper">
               <FaEnvelope className="donor-form__input-icon" />
               <input
                 type="email"
@@ -309,12 +267,11 @@ const DonorForm = () => {
                 onChange={handleChange}
               />
             </div>
-            {fieldErrors.email && <span className="donor-form__field-error">{fieldErrors.email}</span>}
           </div>
 
           <div className="donor-form__field donor-form__field--full">
             <label htmlFor="address">Address</label>
-            <div className={`donor-form__input-wrapper${fieldErrors.address ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper">
               <FaMapMarkerAlt className="donor-form__input-icon" />
               <input
                 type="text"
@@ -325,12 +282,11 @@ const DonorForm = () => {
                 onChange={handleChange}
               />
             </div>
-            {fieldErrors.address && <span className="donor-form__field-error">{fieldErrors.address}</span>}
           </div>
 
           <div className="donor-form__field">
             <label htmlFor="city">City</label>
-            <div className={`donor-form__input-wrapper${fieldErrors.city ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper">
               <FaCity className="donor-form__input-icon" />
               <input
                 type="text"
@@ -341,12 +297,11 @@ const DonorForm = () => {
                 onChange={handleChange}
               />
             </div>
-            {fieldErrors.city && <span className="donor-form__field-error">{fieldErrors.city}</span>}
           </div>
 
           <div className="donor-form__field">
             <label htmlFor="state">State</label>
-            <div className={`donor-form__input-wrapper${fieldErrors.state ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper">
               <input
                 type="text"
                 id="state"
@@ -356,12 +311,11 @@ const DonorForm = () => {
                 onChange={handleChange}
               />
             </div>
-            {fieldErrors.state && <span className="donor-form__field-error">{fieldErrors.state}</span>}
           </div>
 
           <div className="donor-form__field">
             <label htmlFor="pincode">Pincode</label>
-            <div className={`donor-form__input-wrapper${fieldErrors.pincode ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper">
               <input
                 type="text"
                 id="pincode"
@@ -371,45 +325,42 @@ const DonorForm = () => {
                 onChange={handleChange}
               />
             </div>
-            {fieldErrors.pincode && <span className="donor-form__field-error">{fieldErrors.pincode}</span>}
           </div>
 
           <div className="donor-form__field">
             <label htmlFor="weight">Weight (kg)</label>
-            <div className={`donor-form__input-wrapper${fieldErrors.weight ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper">
               <FaWeight className="donor-form__input-icon" />
               <input
                 type="number"
                 id="weight"
                 name="weight"
-                placeholder="Enter weight (min 45 kg)"
+                placeholder="Enter weight"
                 value={formData.weight}
                 onChange={handleChange}
               />
             </div>
-            {fieldErrors.weight && <span className="donor-form__field-error">{fieldErrors.weight}</span>}
           </div>
 
           <div className="donor-form__field">
             <label htmlFor="hemoglobin">Hemoglobin (g/dL)</label>
-            <div className={`donor-form__input-wrapper${fieldErrors.hemoglobin ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper">
               <FaHeartbeat className="donor-form__input-icon" />
               <input
                 type="number"
                 id="hemoglobin"
                 name="hemoglobin"
-                placeholder="Enter hemoglobin (min 12.5)"
+                placeholder="Enter hemoglobin level"
                 step="0.1"
                 value={formData.hemoglobin}
                 onChange={handleChange}
               />
             </div>
-            {fieldErrors.hemoglobin && <span className="donor-form__field-error">{fieldErrors.hemoglobin}</span>}
           </div>
 
           <div className="donor-form__field">
             <label htmlFor="lastDonation">Last Donation Date</label>
-            <div className={`donor-form__input-wrapper donor-form__input-wrapper--date${fieldErrors.lastDonation ? ' donor-form__input-wrapper--error' : ''}`}>
+            <div className="donor-form__input-wrapper donor-form__input-wrapper--date">
               <FaClock className="donor-form__input-icon" />
               <input
                 ref={lastDonationRef}
@@ -427,7 +378,6 @@ const DonorForm = () => {
               />
             </div>
             {dateErrors.lastDonation && <span className="donor-form__date-error">{dateErrors.lastDonation}</span>}
-            {!dateErrors.lastDonation && fieldErrors.lastDonation && <span className="donor-form__field-error">{fieldErrors.lastDonation}</span>}
           </div>
 
           <div className="donor-form__field donor-form__field--full">
@@ -493,23 +443,12 @@ const DonorForm = () => {
                 and Privacy Policy.
               </span>
             </label>
-            {fieldErrors.terms && <span className="donor-form__field-error">{fieldErrors.terms}</span>}
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="donor-form__submit"
-          disabled={isSubmitting}
-          style={{ opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
-        >
-          {isSubmitting ? 'Registering…' : 'Register as Donor'}
+        <button type="submit" className="donor-form__submit">
+          Register as Donor
         </button>
-        {submitError && (
-          <p style={{ color: '#e53e3e', marginTop: '0.75rem', textAlign: 'center', fontSize: '0.9rem' }}>
-            {submitError}
-          </p>
-        )}
       </form>
     </section>
   )
