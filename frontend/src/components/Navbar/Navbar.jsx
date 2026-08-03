@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaBell, FaUser, FaBars, FaTimes } from 'react-icons/fa';
 import logo from '../../assets/logo/Hemoconnectlogo.png';
 import './Navbar.css';
@@ -12,6 +13,7 @@ const NAV_LINKS = [
 ];
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -45,7 +47,7 @@ const Navbar = () => {
             <button type="button" className="navbar__bell" aria-label="Notifications">
               <FaBell />
             </button>
-            <button type="button" className="navbar__login-btn" onClick={closeMenu}>
+            <button type="button" className="navbar__login-btn" onClick={() => { closeMenu(); navigate('/donor/login'); }}>
               <FaUser /> Login / Sign Up
             </button>
           </div>
@@ -55,7 +57,7 @@ const Navbar = () => {
           <button type="button" className="navbar__bell" aria-label="Notifications">
             <FaBell />
           </button>
-          <button type="button" className="navbar__login-btn">
+          <button type="button" className="navbar__login-btn" onClick={() => navigate('/donor/login')}>
             <FaUser /> Login / Sign Up
           </button>
         </div>

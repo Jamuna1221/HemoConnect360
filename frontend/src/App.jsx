@@ -5,6 +5,7 @@ import Donor from './pages/Donor/Donor'
 import DonorSuccess from './pages/DonorSuccess/DonorSuccess'
 import TermsConditions from './pages/TermsConditions/TermsConditions'
 import DonorDashboard from './pages/DonorDashboard/DonorDashboard'
+import DonorLogin from './pages/DonorLogin/DonorLogin'
 import RequesterLogin from './pages/Requester/RequesterLogin'
 import RequesterRegistration from './pages/Requester/RequesterRegister'
 import RequesterDashboard from './pages/Requester/RequesterDashboard'
@@ -23,6 +24,7 @@ function App() {
         <Route path="/donor/registration" element={<Donor />} />
         <Route path="/donor/success" element={<DonorSuccess />} />
         <Route path="/donor/dashboard" element={<DonorDashboard />} />
+        <Route path="/donor/login" element={<DonorLogin />} />
         <Route path="/terms-and-conditions" element={<TermsConditions />} />
 
         <Route path="/requester/login" element={<RequesterLogin />} />
@@ -34,8 +36,6 @@ function App() {
         <Route path="/requester/history" element={<RequestHistory />} />
         <Route path="/requester/request-details/:id" element={<RequestDetails />} />
         <Route path="/requester/profile" element={<RequesterProfile />} />
-        <Route path="/donor/success" element={<DonorSuccess />} />
-        <Route path="/terms-and-conditions" element={<TermsConditions />} />
       </Routes>
     </RequesterProvider>
   )
