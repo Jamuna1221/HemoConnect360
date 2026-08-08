@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa'
 import logo from '../../assets/logo/Hemoconnectlogo.png'
 import bloodDrop from '../../assets/hero/blood-drop.png'
+import { loginDonor } from '../../services/donorService'
 import './DonorLogin.css'
 
 const PLUS_POSITIONS = [
@@ -43,19 +44,24 @@ const DonorLogin = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
 
-    if (!email.trim()) { setError('Please enter your email address'); return }
-    if (!/^\S+@\S+\.\S+$/.test(email.trim())) { setError('Please enter a valid email address'); return }
+    const trimmedEmail = email.trim()
+    if (!trimmedEmail) { setError('Please enter your email address'); return }
+    if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) { setError('Please enter a valid email address'); return }
     if (!password) { setError('Please enter your password'); return }
 
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const { donor } = await loginDonor({ email: trimmedEmail, password })
+      navigate('/donor/dashboard', { state: { donor } })
+    } catch (err) {
+      setError(err.message || 'Unable to sign in. Please try again.')
+    } finally {
       setLoading(false)
-      navigate('/donor/dashboard')
-    }, 800)
+    }
   }
 
   return (
@@ -170,7 +176,7 @@ const DonorLogin = () => {
             </form>
 
             <p className="donor-login-register">
-              New to HemoConnect360? <Link to="/donor/registration">Register as a Donor</Link>
+              New to HemoConnect360? <Link to="/donor/register">Register as a Donor</Link>
             </p>
           </div>
         </div>

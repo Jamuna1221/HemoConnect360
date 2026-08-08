@@ -16,6 +16,8 @@ import {
   FaUpload,
   FaFilePdf,
   FaEye,
+  FaEyeSlash,
+  FaLock,
   FaTimes,
 } from 'react-icons/fa'
 
@@ -26,6 +28,8 @@ const INITIAL_FORM = {
   bloodGroup: '',
   phone: '',
   email: '',
+  password: '',
+  confirmPassword: '',
   address: '',
   city: '',
   state: '',
@@ -49,6 +53,8 @@ const DonorForm = () => {
   const [previewUrl, setPreviewUrl] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const dobRef = useRef(null)
   const lastDonationRef = useRef(null)
@@ -74,7 +80,6 @@ const DonorForm = () => {
   }
 
   const isImage = (file) => file && file.type.startsWith('image/')
-  const isPdf = (file) => file && file.type === 'application/pdf'
 
   const formatFileSize = (bytes) => {
     if (bytes < 1024) return bytes + ' B'
@@ -144,7 +149,13 @@ const DonorForm = () => {
     if (!formData.gender)            errors.gender     = 'Please select a gender'
     if (!formData.bloodGroup)        errors.bloodGroup = 'Please select a blood group'
     if (!formData.phone.trim())      errors.phone      = 'Phone number is required'
+    else if (!/^\d{10}$/.test(formData.phone.trim())) errors.phone = 'Phone number must be 10 digits'
     if (!formData.email.trim())      errors.email      = 'Email is required'
+    else if (!/^\S+@\S+\.\S+$/.test(formData.email.trim())) errors.email = 'Enter a valid email address'
+    if (!formData.password)          errors.password   = 'Password is required'
+    else if (formData.password.length < 6) errors.password = 'Password must be at least 6 characters'
+    if (!formData.confirmPassword)   errors.confirmPassword = 'Please confirm your password'
+    else if (formData.confirmPassword !== formData.password) errors.confirmPassword = 'Passwords do not match'
     if (!formData.address.trim())    errors.address    = 'Address is required'
     if (!formData.city.trim())       errors.city       = 'City is required'
     if (!formData.state.trim())      errors.state      = 'State is required'
@@ -172,22 +183,48 @@ const DonorForm = () => {
 
     setIsSubmitting(true)
     try {
-      await registerDonor({
-        fullName:     formData.fullName,
-        dob:          formData.dob,
-        gender:       formData.gender,
-        bloodGroup:   formData.bloodGroup,
-        phone:        formData.phone,
-        email:        formData.email,
-        address:      formData.address,
-        city:         formData.city,
-        state:        formData.state,
-        pincode:      formData.pincode,
-        weight:       formData.weight,
-        hemoglobin:   formData.hemoglobin,
-        lastDonation: formData.lastDonation || null,
+      const donor = await registerDonor({
+        email: formData.email,
+        password: formData.password,
+        idProof: formData.idProof,
+        profile: {
+          fullName:     formData.fullName,
+          dob:          formData.dob,
+          gender:       formData.gender,
+          bloodGroup:   formData.bloodGroup,
+          phone:        formData.phone,
+          email:        formData.email,
+          address:      formData.address,
+          city:         formData.city,
+          state:        formData.state,
+          pincode:      formData.pincode,
+          weight:       formData.weight,
+          hemoglobin:   formData.hemoglobin,
+          lastDonation: formData.lastDonation || null,
+        },
       })
-      navigate('/donor/success')
+      // created_at is set only when the donor row was inserted immediately
+      // (email confirmation disabled) -> no verification email to wait for.
+      if (donor.created_at) {
+        navigate('/donor/thank-you', { replace: true })
+        return
+      }
+
+      navigate('/verify-email', {
+        replace: true,
+        state: {
+          email: donor.email || formData.email,
+          donor: {
+            id: donor.id,
+            full_name: donor.full_name,
+            blood_group: donor.blood_group,
+            phone: donor.phone,
+            city: donor.city,
+            state: donor.state,
+            created_at: donor.created_at,
+          },
+        },
+      })
     } catch (err) {
       setSubmitError(err.message || 'Registration failed. Please try again.')
     } finally {
@@ -310,6 +347,56 @@ const DonorForm = () => {
               />
             </div>
             {fieldErrors.email && <span className="donor-form__field-error">{fieldErrors.email}</span>}
+          </div>
+
+          <div className="donor-form__field">
+            <label htmlFor="password">Password</label>
+            <div className={`donor-form__input-wrapper${fieldErrors.password ? ' donor-form__input-wrapper--error' : ''}`}>
+              <FaLock className="donor-form__input-icon" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                name="password"
+                className="donor-form__input--password"
+                placeholder="Create a password (min 6 characters)"
+                value={formData.password}
+                onChange={handleChange}
+              />
+              <button
+                type="button"
+                className="donor-form__input-eye"
+                aria-label="Toggle password visibility"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+            {fieldErrors.password && <span className="donor-form__field-error">{fieldErrors.password}</span>}
+          </div>
+
+          <div className="donor-form__field">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <div className={`donor-form__input-wrapper${fieldErrors.confirmPassword ? ' donor-form__input-wrapper--error' : ''}`}>
+              <FaLock className="donor-form__input-icon" />
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                id="confirmPassword"
+                name="confirmPassword"
+                className="donor-form__input--password"
+                placeholder="Re-enter your password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
+              <button
+                type="button"
+                className="donor-form__input-eye"
+                aria-label="Toggle confirm password visibility"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+              >
+                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+            {fieldErrors.confirmPassword && <span className="donor-form__field-error">{fieldErrors.confirmPassword}</span>}
           </div>
 
           <div className="donor-form__field donor-form__field--full">

@@ -1,14 +1,368 @@
-import { apiRequest } from './api'
+import { getSupabase } from '../lib/supabase'
+import { savePendingDonor, getPendingDonor, clearPendingDonor } from './pendingDonor'
+
+const STORAGE_BUCKET = 'donor-docs'
+
+const buildDonorRecord = (userId, profile, idProofUrl) => ({
+  id: userId,
+  user_id: userId,
+  full_name: profile.fullName,
+  dob: profile.dob,
+  gender: profile.gender,
+  blood_group: profile.bloodGroup,
+  phone: profile.phone,
+  email: profile.email,
+  address: profile.address,
+  city: profile.city,
+  state: profile.state,
+  pincode: profile.pincode,
+  weight: profile.weight,
+  hemoglobin: profile.hemoglobin,
+  last_donation: profile.lastDonation || null,
+  id_proof: idProofUrl || null,
+  status: 'active',
+})
+
+const uploadIdProof = async (supabase, userId, idProof) => {
+  if (!idProof) return { url: null, path: null }
+
+  const ext = idProof.name ? idProof.name.split('.').pop() : 'file'
+  const uploadedPath = `${userId}/id-proof-${Date.now()}.${ext}`
+  const { error: uploadError } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(uploadedPath, idProof, { upsert: false })
+
+  if (uploadError) {
+    console.error('[donor:register] ID proof upload failed', { userId, error: uploadError })
+    throw new Error(`Failed to upload ID proof. Database error: ${uploadError.message}`)
+  }
+
+  const { data: urlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(uploadedPath)
+  return { url: urlData?.publicUrl || null, path: uploadedPath }
+}
+
+const fetchDonorProfile = async (supabase, userId) => {
+  const { data, error } = await supabase
+    .from('donors')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (error) {
+    return { donor: null, error }
+  }
+  return { donor: data || null, error: null }
+}
+
+const insertDonorRow = async (supabase, userId, profile, idProofUrl) => {
+  const { data, error } = await supabase
+    .from('donors')
+    .insert(buildDonorRecord(userId, profile, idProofUrl))
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[donor:register] database error on donor insert', { userId, error })
+    throw new Error(mapInsertError(error))
+  }
+
+  return data
+}
 
 /**
- * Register a new donor.
- * @param {Object} donorData - Form fields from DonorForm
- * @returns {Promise<Object>} - The created donor record
+ * Sign an existing donor in with Supabase Auth and load their profile.
+ *
+ * Login NEVER searches by email: the authenticated user's id (auth.users.id)
+ * is used to look the donor profile up by user_id.
+ *
+ * @param {Object} credentials
+ * @param {string} credentials.email
+ * @param {string} credentials.password
+ * @returns {Promise<{ user: Object, donor: Object }>}
  */
-export const registerDonor = async (donorData) => {
-  const payload = await apiRequest('/donors/register', {
-    method: 'POST',
-    body: JSON.stringify(donorData),
+export const loginDonor = async ({ email, password }) => {
+  const supabase = getSupabase()
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
+  if (error) {
+    console.error('[donor:login] signInWithPassword failed', { error })
+    throw new Error(mapLoginError(error))
+  }
+
+  const user = data?.user
+  if (!user?.id) {
+    console.error('[donor:login] Sign in succeeded but no user was returned', { data })
+    throw new Error('Sign in succeeded but no user was returned. Please try again.')
+  }
+
+  console.log('[donor:login] login result (auth ok)', {
+    userId: user.id,
+    email: user.email,
+    emailConfirmed: Boolean(user.email_confirmed_at),
   })
-  return payload.data
+
+  const { donor, error: queryError } = await fetchDonorProfile(supabase, user.id)
+
+  if (queryError) {
+    console.error('[donor:login] database error on donor lookup', { userId: user.id, error: queryError })
+    throw new Error(`Unable to load your donor profile. Database error: ${queryError.message}`)
+  }
+
+  let profile = donor
+  console.log('[donor:login] donor lookup by user_id', { userId: user.id, found: Boolean(profile) })
+
+  // Safety net: if the profile was deferred at registration (only created
+  // after email verification) and the callback failed, retry now. Throws so
+  // any database error is surfaced instead of silently continuing.
+  if (!profile) {
+    console.warn('[donor:login] No donor profile found; retrying pending registration', {
+      userId: user.id,
+      email: user.email,
+    })
+    const recovered = await completePendingDonorRegistration(user)
+    if (recovered) {
+      const retry = await fetchDonorProfile(supabase, user.id)
+      if (retry.error) {
+        console.error('[donor:login] database error on donor lookup after recovery', { userId: user.id, error: retry.error })
+        throw new Error(`Unable to load your donor profile. Database error: ${retry.error.message}`)
+      }
+      profile = retry.donor
+    }
+  }
+
+  if (!profile) {
+    console.warn('[donor:login] No donor profile found for authenticated user', {
+      userId: user.id,
+      email: user.email,
+      reason: 'No row in public.donors where user_id = auth user id',
+    })
+    throw new Error('No donor profile found for this account. Please register first.')
+  }
+
+  console.log('[donor:login] donor profile loaded', { userId: user.id, donorId: profile.id, status: 'success' })
+  return { user, donor: profile }
+}
+
+/**
+ * Register a new donor with Supabase:
+ *  1. Create an auth account (email + password), optionally with a
+ *     verification email.
+ *  2. Create the donor profile (user_id = auth user id).
+ *
+ * Works with BOTH Supabase settings:
+ *  - "Confirm email" DISABLED -> signUp returns a session -> the donor row is
+ *    inserted immediately; any database error is thrown (never silent).
+ *  - "Confirm email" ENABLED -> signUp returns NO session (RLS would block the
+ *    insert) -> the profile is persisted locally and created automatically by
+ *    `completePendingDonorRegistration` once the email is verified.
+ *
+ * @param {Object} input
+ * @param {string} input.email
+ * @param {string} input.password
+ * @param {File|null} input.idProof
+ * @param {Object} input.profile - Donor fields (fullName, dob, gender, ...)
+ * @returns {Promise<Object>} The inserted donor row (or a stub when deferred).
+ */
+export const registerDonor = async ({ email, password, idProof, profile }) => {
+  const supabase = getSupabase()
+
+  console.log('[donor:register] signUp start', { email })
+
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/auth/callback`,
+    },
+  })
+
+  if (authError) {
+    console.error('[donor:register] signUp failed', { email, error: authError })
+    throw new Error(mapAuthError(authError.message))
+  }
+
+  const userId = authData?.user?.id
+  if (!userId) {
+    console.error('[donor:register] No user ID returned by signUp', { authData })
+    throw new Error('Account created but no user ID was returned. Please try again.')
+  }
+
+  console.log('[donor:register] signUp result', {
+    userId,
+    email,
+    sessionPresent: Boolean(authData.session),
+    emailConfirmed: Boolean(authData.user?.email_confirmed_at),
+  })
+
+  // Confirm email DISABLED: a session exists, so create the profile now.
+  if (authData.session) {
+    // Idempotency: never insert twice for the same user_id.
+    const existing = await fetchDonorProfile(supabase, userId)
+    if (existing.error) {
+      console.error('[donor:register] database error on existing-donor check', { userId, error: existing.error })
+      throw new Error(`Unable to verify donor profile. Database error: ${existing.error.message}`)
+    }
+    if (existing.donor) {
+      console.log('[donor:register] donor insert result', { userId, donorId: existing.donor.id, status: 'skipped-existing' })
+      await supabase.auth.signOut().catch((err) => {
+        console.warn('[donor:register] signOut after signup failed', err)
+      })
+      return existing.donor
+    }
+
+    const { url } = await uploadIdProof(supabase, userId, idProof)
+    const donor = await insertDonorRow(supabase, userId, profile, url)
+
+    await supabase.auth.signOut().catch((err) => {
+      console.warn('[donor:register] signOut after signup failed', err)
+    })
+
+    console.log('[donor:register] donor insert result', { userId, donorId: donor.id, status: 'success' })
+    return donor
+  }
+
+  // Confirm email ENABLED: no session yet. Persist the pending profile and
+  // create it automatically after verification (AuthCallback / login).
+  try {
+    await savePendingDonor({ email, userId, profile, idProof })
+    console.log('[donor:register] pending donor profile saved for post-verification creation', { userId, email })
+  } catch (err) {
+    console.error('[donor:register] Failed to persist pending profile', err)
+    throw new Error('Your account was created, but we could not save your details for verification. Please try again.', { cause: err })
+  }
+
+  return {
+    id: userId,
+    user_id: userId,
+    full_name: profile.fullName,
+    blood_group: profile.bloodGroup,
+    phone: profile.phone,
+    email,
+    city: profile.city,
+    state: profile.state,
+    created_at: null,
+  }
+}
+
+/**
+ * Create the donor profile for a verified user from data saved at
+ * registration. Called automatically by the auth callback (and as a safety
+ * net at login). Idempotent — never creates a second row for the same user.
+ *
+ * Throws on database errors so the caller can surface them instead of
+ * silently continuing.
+ *
+ * @param {Object} user - The authenticated Supabase user.
+ * @returns {Promise<Object|null>} The created donor row, or null if there was
+ *   nothing to create.
+ */
+export const completePendingDonorRegistration = async (user) => {
+  const supabase = getSupabase()
+  if (!user?.id) return null
+
+  let pending
+  try {
+    pending = await getPendingDonor()
+  } catch (err) {
+    console.warn('[donor:verify] Could not read pending donor data', err)
+    return null
+  }
+  if (!pending) return null
+
+  // Only complete the registration belonging to this verified user.
+  if (pending.userId && pending.userId !== user.id) return null
+  if (!pending.userId && pending.email && pending.email !== user.email) return null
+
+  // Idempotency: never insert twice for the same user_id.
+  const { donor: existing, error: existingError } = await fetchDonorProfile(supabase, user.id)
+  if (existingError) {
+    console.error('[donor:verify] database error on existing-donor check', { userId: user.id, error: existingError })
+    throw new Error(`Unable to verify donor profile. Database error: ${existingError.message}`)
+  }
+  if (existing) {
+    console.log('[donor:verify] donor insert result', { userId: user.id, donorId: existing.id, status: 'skipped-existing' })
+    await clearPendingDonor().catch(() => {})
+    return null
+  }
+
+  let idProofUrl = null
+  if (pending.idProof) {
+    const { url } = await uploadIdProof(supabase, user.id, pending.idProof)
+    idProofUrl = url
+  }
+
+  const profile = pending.profile || {}
+  const created = await insertDonorRow(supabase, user.id, { ...profile, email: profile.email || user.email }, idProofUrl)
+
+  console.log('[donor:verify] donor insert result', { userId: user.id, donorId: created.id, status: 'success' })
+  await clearPendingDonor().catch(() => {})
+  return created
+}
+
+/**
+ * Resend the sign-up verification email for an unconfirmed donor.
+ *
+ * @param {string} email - The email address that needs to be verified.
+ * @returns {Promise<void>}
+ */
+export const resendDonorVerification = async (email) => {
+  const supabase = getSupabase()
+
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: {
+      emailRedirectTo: `${window.location.origin}/auth/callback`,
+    },
+  })
+
+  if (error) {
+    console.error('[donor:verify] Resend verification email failed', { email, error })
+    throw new Error(mapAuthError(error.message))
+  }
+
+  console.log('[donor:verify] Verification email resent', { email })
+}
+
+const mapLoginError = (error) => {
+  const message = (error?.message || '').toLowerCase()
+  const status = error?.status
+
+  if (message.includes('invalid login credentials')) {
+    return 'Incorrect email or password. Please try again.'
+  }
+  if (message.includes('email not confirmed')) {
+    return 'Please verify your email before signing in.'
+  }
+  if (status === 429 || message.includes('rate limit') || message.includes('too many')) {
+    return 'Too many attempts. Please wait a moment and try again.'
+  }
+  if (message.includes('network') || message.includes('fetch')) {
+    return 'Network error. Please check your connection and try again.'
+  }
+  return error?.message || 'Unable to sign in. Please try again.'
+}
+
+const mapAuthError = (message) => {
+  const msg = (message || '').toLowerCase()
+  if (msg.includes('already registered') || msg.includes('already been registered')) {
+    return 'An account with this email already exists. Please sign in instead.'
+  }
+  if (msg.includes('password')) {
+    return 'Password must be at least 6 characters long.'
+  }
+  return message || 'Unable to create your account. Please try again.'
+}
+
+const mapInsertError = (error) => {
+  const message = (error?.message || '').toLowerCase()
+  const details = error?.details?.toLowerCase() || ''
+
+  if (message.includes('duplicate') || message.includes('already exists') || details.includes('already exists')) {
+    return 'You already have a donor profile. Please sign in instead.'
+  }
+  // Surface the actual database error so failures are never silent.
+  const reason = error?.message || 'Unknown database error'
+  return `Failed to save your donor details. Database error: ${reason}`
 }

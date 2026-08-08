@@ -111,7 +111,7 @@ const TermsConditions = () => {
           </div>
 
           <div className="terms-action">
-            <Link to="/donor/registration" className="terms-action__btn">
+            <Link to="/donor/register" className="terms-action__btn">
               <FaArrowLeft />
               Back to Donor Registration
             </Link>

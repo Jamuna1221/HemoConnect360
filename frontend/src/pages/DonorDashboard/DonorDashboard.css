@@ -1641,3 +1641,130 @@
     font-size: 20px;
   }
 }
+
+/* Auth / Loading / Error */
+.donor-dash-loading {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #6B7280;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.donor-dash-loading p {
+  margin: 0;
+  font-size: 15px;
+}
+
+.donor-dash-spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 4px solid #FDE8E8;
+  border-top-color: #E53935;
+  animation: donorDashSpin 0.8s linear infinite;
+}
+
+@keyframes donorDashSpin {
+  to { transform: rotate(360deg); }
+}
+
+.donor-dash-error h2 {
+  color: #111827;
+  font-size: 24px;
+  margin: 0;
+}
+
+.donor-dash-error p {
+  color: #6B7280;
+  font-size: 15px;
+  max-width: 420px;
+}
+
+.donor-dash-error .donor-dash-btn-outline {
+  margin-top: 8px;
+}
+
+.donor-dash-error-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #FFF2F2;
+  color: #E53935;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+/* Donor Profile section */
+.donor-dash-profile-section .donor-dash-info-grid {
+  margin-bottom: 0;
+}
+
+.donor-dash-profile-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  margin-bottom: 20px;
+}
+
+.donor-dash-profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E53935, #C62828);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.donor-dash-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.donor-dash-profile-head h3 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  color: #111827;
+}
+
+.donor-dash-profile-head p {
+  margin: 0;
+  color: #6B7280;
+  font-size: 14px;
+}
+
+.donor-dash-info-value--small {
+  font-size: 15px;
+  word-break: break-word;
+}
+
+@media (max-width: 1024px) {
+  .donor-dash-profile-card {
+    padding: 20px 22px;
+  }
+}
+
+@media (max-width: 768px) {
+  .donor-dash-profile-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

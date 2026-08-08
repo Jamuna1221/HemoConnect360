@@ -10,23 +10,48 @@ import {
 } from 'react-icons/fa'
 import './RegistrationSummary.css'
 
-const SUMMARY = [
-  { icon: <FaUser />, label: 'Full Name', value: 'Arun Kumar' },
-  { icon: <FaTint />, label: 'Blood Group', value: 'B+' },
-  { icon: <FaPhone />, label: 'Phone Number', value: '+91 98765 43210' },
-  { icon: <FaEnvelope />, label: 'Email Address', value: 'arun.kumar@email.com' },
-  { icon: <FaMapMarkerAlt />, label: 'Location', value: 'Chennai, Tamil Nadu' },
-  { icon: <FaIdCard />, label: 'Registration ID', value: 'HC-2026-0741' },
-  { icon: <FaCalendarAlt />, label: 'Registered On', value: '27 July 2026' },
-]
+const formatId = (id) => {
+  if (!id) return '—'
+  return 'HC-' + id.replace(/-/g, '').slice(0, 8).toUpperCase()
+}
 
-const RegistrationSummary = () => {
+const formatDate = (iso) => {
+  if (!iso) return '—'
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return '—'
+  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+const RegistrationSummary = ({ donor, loading, error }) => {
+  if (!donor) {
+    const message = error || (loading ? 'Loading your registration details...' : 'No registration details available.')
+    return (
+      <section className="reg-summary">
+        <h2 className="reg-summary__heading">Your Registration Summary</h2>
+        <div className="reg-summary__card">
+          <p className="reg-summary__empty">{message}</p>
+        </div>
+      </section>
+    )
+  }
+
+  const locationText = [donor.city, donor.state].filter(Boolean).join(', ')
+  const summary = [
+    { icon: <FaUser />, label: 'Full Name', value: donor.full_name || '—' },
+    { icon: <FaTint />, label: 'Blood Group', value: donor.blood_group || '—' },
+    { icon: <FaPhone />, label: 'Phone Number', value: donor.phone || '—' },
+    { icon: <FaEnvelope />, label: 'Email Address', value: donor.email || '—' },
+    { icon: <FaMapMarkerAlt />, label: 'Location', value: locationText || '—' },
+    { icon: <FaIdCard />, label: 'Registration ID', value: formatId(donor.id) },
+    { icon: <FaCalendarAlt />, label: 'Registered On', value: formatDate(donor.created_at) },
+  ]
+
   return (
     <section className="reg-summary">
       <h2 className="reg-summary__heading">Your Registration Summary</h2>
 
       <div className="reg-summary__card">
-        {SUMMARY.map((item, index) => (
+        {summary.map((item, index) => (
           <div className="reg-summary__row" key={index}>
             <div className="reg-summary__icon">{item.icon}</div>
             <div className="reg-summary__info">

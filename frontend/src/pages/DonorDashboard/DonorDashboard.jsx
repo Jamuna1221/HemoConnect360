@@ -1,9 +1,11 @@
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
 import heroPattern from '../../assets/donor-dashboard/hero-pattern.png'
 import donorHero from '../../assets/donor-dashboard/donor-hero.png'
 import bloodBag from '../../assets/donor-dashboard/blood-bag.png'
+import { getSupabase } from '../../lib/supabase'
 import {
   FaHeart,
   FaTint,
@@ -20,19 +22,21 @@ import {
   FaHospital,
   FaClipboardList,
   FaAward,
-  FaFire,
   FaUsers,
   FaHeartbeat,
   FaIdCard,
   FaExclamationTriangle,
   FaStar,
   FaMapPin,
-  FaChevronRight
+  FaChevronRight,
+  FaUser,
+  FaUserCircle,
+  FaWeight,
 } from 'react-icons/fa'
 import './DonorDashboard.css'
 
 const QUICK_ACTIONS = [
-  { icon: <FaClipboardList />, title: 'Update Profile', desc: 'Keep your information current', path: '/donor/registration', color: '#E53935' },
+  { icon: <FaClipboardList />, title: 'Update Profile', desc: 'Keep your information current', path: '/donor/register', color: '#E53935' },
   { icon: <FaMapMarkerAlt />, title: 'Find Blood Bank', desc: 'Locate nearest donation center', path: '/', color: '#22C55E' },
   { icon: <FaCalendarAlt />, title: 'Schedule Donation', desc: 'Book your next appointment', path: '/', color: '#3B82F6' },
   { icon: <FaBell />, title: 'Alert Preferences', desc: 'Manage notification settings', path: '/', color: '#F59E0B' }
@@ -81,7 +85,139 @@ const EMERGENCY_ALERTS = [
   { id: 2, title: 'Blood Camp This Weekend', message: 'Community blood drive at Central Hospital on Aug 10. Your support needed!', time: '1 day ago', severity: 'info' }
 ]
 
+const formatDate = (value) => {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+}
+
+const getFirstName = (fullName) => (fullName || '').trim().split(/\s+/)[0] || 'Donor'
+
+const getInitials = (fullName) => {
+  const parts = (fullName || '').trim().split(/\s+/).filter(Boolean)
+  const first = parts[0] ? parts[0][0] : ''
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
+  return (first + last).toUpperCase() || 'HC'
+}
+
+const getDonorCode = (id) => {
+  if (!id) return 'HC-PENDING'
+  return `HC-${id.replace(/-/g, '').slice(0, 8).toUpperCase()}`
+}
+
+const getNextEligible = (lastDonation) => {
+  if (!lastDonation) return null
+  const date = new Date(lastDonation)
+  if (Number.isNaN(date.getTime())) return null
+  date.setDate(date.getDate() + 90)
+  return date
+}
+
+const capitalize = (value) => {
+  if (!value) return '—'
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
 const DonorDashboard = () => {
+  const navigate = useNavigate()
+  const [donor, setDonor] = useState(null)
+  const [daysLeft, setDaysLeft] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let active = true
+
+    const loadDashboard = async () => {
+      try {
+        const supabase = getSupabase()
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+        if (sessionError) throw sessionError
+
+        if (!session?.user) {
+          navigate('/donor/login', { replace: true })
+          return
+        }
+
+        const { data, error: donorError } = await supabase
+          .from('donors')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .maybeSingle()
+
+        if (donorError) {
+          console.error('[donor-dashboard] Donor profile query failed', { userId: session.user.id, error: donorError })
+          throw donorError
+        }
+
+        if (!active) return
+
+        if (!data) {
+          console.warn('[donor-dashboard] No donor profile found', { userId: session.user.id })
+          setError('No donor profile found for this account.')
+          setLoading(false)
+          return
+        }
+
+        console.info('[donor-dashboard] Donor profile loaded', { userId: session.user.id, donorId: data.id })
+
+        const next = getNextEligible(data.last_donation)
+        const left = next
+          ? Math.max(0, Math.ceil((next.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+          : null
+
+        setDonor(data)
+        setDaysLeft(left)
+        setLoading(false)
+      } catch {
+        if (active) {
+          setError('Unable to load your dashboard. Please try again.')
+          setLoading(false)
+        }
+      }
+    }
+
+    loadDashboard()
+    return () => { active = false }
+  }, [navigate])
+
+  if (loading) {
+    return (
+      <div className="donor-dash-page">
+        <Navbar />
+        <main className="donor-dash-main">
+          <div className="donor-dash-loading">
+            <div className="donor-dash-spinner" />
+            <p>Loading your dashboard...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="donor-dash-page">
+        <Navbar />
+        <main className="donor-dash-main">
+          <div className="donor-dash-loading donor-dash-error">
+            <div className="donor-dash-error-icon"><FaExclamationTriangle /></div>
+            <h2>Something went wrong</h2>
+            <p>{error}</p>
+            <Link to="/donor/login" className="donor-dash-btn-outline">Back to Login</Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  const firstName = getFirstName(donor.full_name)
+  const nextEligible = getNextEligible(donor.last_donation)
+
   return (
     <div className="donor-dash-page">
       <Navbar />
@@ -92,7 +228,7 @@ const DonorDashboard = () => {
             <div className="donor-dash-hero-left">
               <span className="donor-dash-badge"><FaHeart /> Registered Donor</span>
               <h1 className="donor-dash-hero-heading">
-                Welcome back, <span className="donor-dash-hero-name">Donor!</span>
+                Welcome back, <span className="donor-dash-hero-name">{firstName}!</span>
               </h1>
               <p className="donor-dash-hero-appreciation">
                 Thank you for being a life saver. Your generous donations are making a real difference in people's lives.
@@ -124,8 +260,14 @@ const DonorDashboard = () => {
               </div>
               <div className="donor-dash-info-content">
                 <span className="donor-dash-info-label">Next Eligible Donation</span>
-                <span className="donor-dash-info-value">Sep 15, 2026</span>
-                <span className="donor-dash-info-sub">45 days remaining</span>
+                <span className="donor-dash-info-value">
+                  {nextEligible ? formatDate(nextEligible) : 'Eligible Now'}
+                </span>
+                <span className="donor-dash-info-sub">
+                  {nextEligible
+                    ? (daysLeft > 0 ? `${daysLeft} days remaining` : 'You are eligible to donate')
+                    : 'New donor — you are ready'}
+                </span>
               </div>
             </div>
             <div className="donor-dash-info-card">
@@ -134,8 +276,10 @@ const DonorDashboard = () => {
               </div>
               <div className="donor-dash-info-content">
                 <span className="donor-dash-info-label">Blood Group</span>
-                <span className="donor-dash-info-value">O+</span>
-                <span className="donor-dash-info-sub">Universal donor</span>
+                <span className="donor-dash-info-value">{donor.blood_group}</span>
+                <span className="donor-dash-info-sub">
+                  {['O+', 'O-'].includes(donor.blood_group) ? 'Universal donor' : 'Registered donor'}
+                </span>
               </div>
             </div>
             <div className="donor-dash-info-card">
@@ -144,7 +288,7 @@ const DonorDashboard = () => {
               </div>
               <div className="donor-dash-info-content">
                 <span className="donor-dash-info-label">Donor ID</span>
-                <span className="donor-dash-info-value">DNR-2026-0458</span>
+                <span className="donor-dash-info-value">{getDonorCode(donor.id)}</span>
                 <span className="donor-dash-info-sub">Registered donor</span>
               </div>
             </div>
@@ -156,6 +300,99 @@ const DonorDashboard = () => {
                 <span className="donor-dash-info-label">Health Status</span>
                 <span className="donor-dash-info-value">Excellent</span>
                 <span className="donor-dash-info-sub">Cleared to donate</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="donor-dash-section donor-dash-profile-section">
+            <div className="donor-dash-section-header">
+              <h2><FaUserCircle /> Donor Profile</h2>
+            </div>
+            <div className="donor-dash-profile-card">
+              <div className="donor-dash-profile-avatar">
+                {donor.profile_pic
+                  ? <img src={donor.profile_pic} alt={donor.full_name} />
+                  : <span>{getInitials(donor.full_name)}</span>}
+              </div>
+              <div className="donor-dash-profile-head">
+                <h3>{donor.full_name}</h3>
+                <p>{donor.blood_group} &bull; {donor.status === 'active' ? 'Active Donor' : capitalize(donor.status)}</p>
+              </div>
+            </div>
+            <div className="donor-dash-info-grid donor-dash-profile-grid">
+              <div className="donor-dash-info-card">
+                <div className="donor-dash-info-icon donor-dash-info-icon--blue">
+                  <FaEnvelope />
+                </div>
+                <div className="donor-dash-info-content">
+                  <span className="donor-dash-info-label">Email</span>
+                  <span className="donor-dash-info-value donor-dash-info-value--small">{donor.email || '—'}</span>
+                </div>
+              </div>
+              <div className="donor-dash-info-card">
+                <div className="donor-dash-info-icon donor-dash-info-icon--green">
+                  <FaPhoneAlt />
+                </div>
+                <div className="donor-dash-info-content">
+                  <span className="donor-dash-info-label">Phone</span>
+                  <span className="donor-dash-info-value">{donor.phone || '—'}</span>
+                </div>
+              </div>
+              <div className="donor-dash-info-card">
+                <div className="donor-dash-info-icon donor-dash-info-icon--red">
+                  <FaMapMarkerAlt />
+                </div>
+                <div className="donor-dash-info-content">
+                  <span className="donor-dash-info-label">City</span>
+                  <span className="donor-dash-info-value">
+                    {donor.city ? `${donor.city}${donor.state ? `, ${donor.state}` : ''}` : '—'}
+                  </span>
+                </div>
+              </div>
+              <div className="donor-dash-info-card">
+                <div className="donor-dash-info-icon donor-dash-info-icon--purple">
+                  <FaUser />
+                </div>
+                <div className="donor-dash-info-content">
+                  <span className="donor-dash-info-label">Gender</span>
+                  <span className="donor-dash-info-value">{capitalize(donor.gender)}</span>
+                </div>
+              </div>
+              <div className="donor-dash-info-card">
+                <div className="donor-dash-info-icon donor-dash-info-icon--purple">
+                  <FaWeight />
+                </div>
+                <div className="donor-dash-info-content">
+                  <span className="donor-dash-info-label">Weight</span>
+                  <span className="donor-dash-info-value">{donor.weight ? `${donor.weight} kg` : '—'}</span>
+                </div>
+              </div>
+              <div className="donor-dash-info-card">
+                <div className="donor-dash-info-icon donor-dash-info-icon--red">
+                  <FaHeartbeat />
+                </div>
+                <div className="donor-dash-info-content">
+                  <span className="donor-dash-info-label">Hemoglobin</span>
+                  <span className="donor-dash-info-value">{donor.hemoglobin ? `${donor.hemoglobin} g/dL` : '—'}</span>
+                </div>
+              </div>
+              <div className="donor-dash-info-card">
+                <div className="donor-dash-info-icon donor-dash-info-icon--blue">
+                  <FaCalendarAlt />
+                </div>
+                <div className="donor-dash-info-content">
+                  <span className="donor-dash-info-label">Last Donation</span>
+                  <span className="donor-dash-info-value">{formatDate(donor.last_donation) || 'Not yet donated'}</span>
+                </div>
+              </div>
+              <div className="donor-dash-info-card">
+                <div className="donor-dash-info-icon donor-dash-info-icon--green">
+                  <FaIdCard />
+                </div>
+                <div className="donor-dash-info-content">
+                  <span className="donor-dash-info-label">Registration Date</span>
+                  <span className="donor-dash-info-value">{formatDate(donor.created_at) || '—'}</span>
+                </div>
               </div>
             </div>
           </div>

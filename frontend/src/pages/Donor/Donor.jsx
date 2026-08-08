@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FaArrowLeft } from 'react-icons/fa'
 import Navbar from '../../components/Navbar/Navbar'
@@ -8,10 +9,33 @@ import DonorForm from '../../components/Donor/DonorForm'
 import Statistics from '../../components/Donor/Statistics'
 import CTASection from '../../components/Donor/CTASection'
 import Footer from '../../components/Footer/Footer'
+import { useAuthContext } from '../../context/useAuthContext'
 import './Donor.css'
 
 const Donor = () => {
   const navigate = useNavigate()
+  const { user, donor, loading } = useAuthContext()
+
+  useEffect(() => {
+    if (!loading && user && donor) {
+      navigate('/donor/dashboard', { replace: true })
+    }
+  }, [user, donor, loading, navigate])
+
+  if (loading) {
+    return (
+      <div className="donor-page">
+        <Navbar />
+        <main className="donor-main">
+          <div className="protected-route">
+            <div className="protected-route__spinner" />
+            <p>Checking your account...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   return (
     <div className="donor-page">

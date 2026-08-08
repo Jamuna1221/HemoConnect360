@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaBell, FaUser, FaBars, FaTimes } from 'react-icons/fa';
+import { FaBell, FaUser, FaBars, FaTimes, FaSignOutAlt } from 'react-icons/fa';
 import logo from '../../assets/logo/Hemoconnectlogo.png';
+import { useAuthContext } from '../../context/useAuthContext';
 import './Navbar.css';
 
 const NAV_LINKS = [
@@ -12,10 +13,19 @@ const NAV_LINKS = [
   { label: 'Contact', href: '#contact' },
 ];
 
+const getInitials = (fullName) => {
+  if (!fullName) return 'HC';
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0] ? parts[0][0] : '';
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+  return (first + last).toUpperCase() || 'HC';
+};
+
 const Navbar = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user, donor, loading, signOut } = useAuthContext();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -24,6 +34,49 @@ const Navbar = () => {
   }, []);
 
   const closeMenu = () => setMenuOpen(false);
+
+  const handleLogout = async () => {
+    closeMenu();
+    try {
+      await signOut();
+    } finally {
+      navigate('/');
+    }
+  };
+
+  const authControl = (inMobile) => {
+    if (loading) return null;
+
+    if (user) {
+      return (
+        <div className="navbar__donor">
+          <div className="navbar__donor-info">
+            <div className="navbar__donor-avatar">
+              {donor?.profile_pic ? (
+                <img src={donor.profile_pic} alt={donor.full_name || 'Donor'} />
+              ) : (
+                <span>{getInitials(donor?.full_name)}</span>
+              )}
+            </div>
+            {donor?.full_name && <span className="navbar__donor-name">{donor.full_name}</span>}
+          </div>
+          <button type="button" className="navbar__logout-btn" aria-label="Logout" title="Logout" onClick={handleLogout}>
+            <FaSignOutAlt />
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        className="navbar__login-btn"
+        onClick={() => { if (inMobile) closeMenu(); navigate('/donor/login'); }}
+      >
+        <FaUser /> Login / Sign Up
+      </button>
+    );
+  };
 
   return (
     <header className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}>
@@ -47,9 +100,7 @@ const Navbar = () => {
             <button type="button" className="navbar__bell" aria-label="Notifications">
               <FaBell />
             </button>
-            <button type="button" className="navbar__login-btn" onClick={() => { closeMenu(); navigate('/donor/login'); }}>
-              <FaUser /> Login / Sign Up
-            </button>
+            {authControl(true)}
           </div>
         </nav>
 
@@ -57,9 +108,7 @@ const Navbar = () => {
           <button type="button" className="navbar__bell" aria-label="Notifications">
             <FaBell />
           </button>
-          <button type="button" className="navbar__login-btn" onClick={() => navigate('/donor/login')}>
-            <FaUser /> Login / Sign Up
-          </button>
+          {authControl(false)}
         </div>
 
         <button

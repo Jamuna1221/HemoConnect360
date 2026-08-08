@@ -5,7 +5,9 @@ import celebrationConfetti from '../../assets/donor-success/celebration-confetti
 import heroOutline from '../../assets/donor-success/hero-outline.svg'
 import './SuccessHero.css'
 
-const SuccessHero = () => {
+const SuccessHero = ({ donor, loading }) => {
+  const firstName = donor?.full_name?.trim().split(/\s+/)[0] || ''
+
   return (
     <section className="success-hero">
       <div className="success-hero__card">
@@ -37,7 +39,7 @@ const SuccessHero = () => {
         <div className="success-hero__center">
           <span className="success-hero__badge">Registration Successful!</span>
           <h1 className="success-hero__heading">
-            Thank You,
+            Thank You{!loading && firstName ? `, ${firstName}` : ','}
             <br />
             You&apos;re Now a{' '}
             <span className="success-hero__heading--accent">

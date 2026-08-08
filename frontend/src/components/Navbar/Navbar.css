@@ -142,6 +142,76 @@
   transform: translateY(0);
 }
 
+/* ─── Donor Chip (Avatar + Name + Logout) ─── */
+.navbar__donor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 6px;
+  border-radius: 50px;
+  background: #FFF5F5;
+  border: 1px solid rgba(229, 57, 53, 0.15);
+}
+
+.navbar__donor-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.navbar__donor-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E53935, #C62828);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.navbar__donor-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.navbar__donor-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar__logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #FFE4E4;
+  color: #E53935;
+  font-size: 0.95rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.navbar__logout-btn:hover {
+  background: #E53935;
+  color: #fff;
+}
+
 /* ─── Mobile Toggle ─── */
 .navbar__toggle {
   display: none;
@@ -196,6 +266,11 @@
 
   .navbar__toggle {
     display: block;
+  }
+
+  .navbar__cta-group--mobile .navbar__donor {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 

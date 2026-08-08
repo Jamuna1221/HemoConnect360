@@ -1,0 +1,33 @@
+.protected-route {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: #FFF8F8;
+  color: #6B7280;
+  font-family: 'Poppins', sans-serif;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.protected-route p {
+  margin: 0;
+  font-size: 15px;
+}
+
+.protected-route__spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 4px solid #FDE8E8;
+  border-top-color: #E53935;
+  animation: protectedRouteSpin 0.8s linear infinite;
+}
+
+@keyframes protectedRouteSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -74,6 +74,14 @@
   color: #1F2937;
 }
 
+.reg-summary__empty {
+  margin: 0;
+  padding: 28px;
+  text-align: center;
+  color: #6B7280;
+  font-size: 15px;
+}
+
 /* ─── Privacy Card ─── */
 .reg-summary__privacy {
   display: flex;

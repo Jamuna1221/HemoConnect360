@@ -85,7 +85,7 @@ const Home = () => {
 
   const closeMenu = () => setMenuOpen(false);
   const goToRequesterLogin = () => navigate('/requester/login');
-  const goToDonorRegistration = () => navigate('/donor/registration');
+  const goToDonorRegistration = () => navigate('/donor/register');
 
   return (
     <div className="home">

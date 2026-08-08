@@ -1,0 +1,157 @@
+/* ============================================================
+   HOW IT WORKS PAGE — Standalone Donor Guide
+   ============================================================ */
+
+.how-it-works-page {
+  width: 100%;
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  color: #1F2937;
+  background: #FFFFFF;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.how-it-works-page__main {
+  flex: 1;
+  width: 100%;
+  padding-bottom: 80px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFF9F9 45%, #FFFFFF 100%);
+}
+
+.how-it-works-page__hero {
+  width: 100%;
+  padding: 72px 0 48px;
+  background: linear-gradient(135deg, #FFF5F5 0%, #FFF0F0 45%, #FFEAEA 100%);
+}
+
+.how-it-works-page__hero-inner {
+  width: calc(100% - 80px);
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.how-it-works-page__eyebrow {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #EF4444;
+  background: #FFFFFF;
+  border: 1px solid #FECACA;
+  padding: 8px 18px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+
+.how-it-works-page__title {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.15;
+  color: #111827;
+  margin: 0 0 16px 0;
+}
+
+.how-it-works-page__accent {
+  color: #E53935;
+}
+
+.how-it-works-page__subtitle {
+  font-size: 17px;
+  line-height: 1.7;
+  color: #6B7280;
+  margin: 0 auto 30px;
+  max-width: 560px;
+}
+
+.how-it-works-page__actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.how-it-works-page__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 54px;
+  padding: 0 32px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 14px;
+  transition: all 0.25s ease;
+}
+
+.how-it-works-page__btn--primary {
+  background: linear-gradient(135deg, #FF4B4B 0%, #E53935 100%);
+  color: #FFFFFF;
+  box-shadow: 0 6px 22px rgba(229, 57, 53, 0.3);
+}
+
+.how-it-works-page__btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(229, 57, 53, 0.4);
+}
+
+.how-it-works-page__btn--secondary {
+  background: #FFFFFF;
+  color: #E53935;
+  border: 1.5px solid #FECACA;
+}
+
+.how-it-works-page__btn--secondary:hover {
+  background: #FFF1F1;
+  border-color: #E53935;
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (≤1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+  .how-it-works-page__hero {
+    padding: 56px 0 40px;
+  }
+
+  .how-it-works-page__hero-inner {
+    width: calc(100% - 48px);
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (≤640px)
+   ============================================================ */
+@media (max-width: 640px) {
+  .how-it-works-page__main {
+    padding-bottom: 48px;
+  }
+
+  .how-it-works-page__hero {
+    padding: 44px 0 32px;
+  }
+
+  .how-it-works-page__hero-inner {
+    width: 100%;
+    padding: 0 16px;
+  }
+
+  .how-it-works-page__title {
+    font-size: 32px;
+  }
+
+  .how-it-works-page__subtitle {
+    font-size: 15px;
+  }
+
+  .how-it-works-page__actions {
+    flex-direction: column;
+  }
+
+  .how-it-works-page__btn {
+    width: 100%;
+  }
+}
