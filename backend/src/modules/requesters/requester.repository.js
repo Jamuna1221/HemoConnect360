@@ -2,8 +2,8 @@ import supabase from "../../config/supabase.js";
 import { tables } from "../../config/tables.js";
 import { ApiError } from "../../shared/http/ApiError.js";
 
-const userColumns = "id, phone, full_name, age, gender, city, address, blood_needed_for, email, role, created_at, updated_at";
-const requestColumns = "id, requester_id, patient_name, patient_age, patient_gender, blood_group, units_required, hospital_name, city, hospital_address, required_by, priority, contact_name, contact_phone, contact_email, notes, status, created_at, updated_at";
+const userColumns = "id, phone, full_name, age, gender, city, address, blood_needed_for, email, role, latitude, longitude, created_at, updated_at";
+const requestColumns = "id, requester_id, patient_name, patient_age, patient_gender, blood_group, units_required, hospital_name, city, hospital_address, required_by, priority, contact_name, contact_phone, contact_email, notes, status, latitude, longitude, created_at, updated_at";
 
 const handleSupabaseError = (error, fallbackMessage) => {
   if (!error) return;

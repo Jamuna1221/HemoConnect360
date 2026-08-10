@@ -37,4 +37,12 @@
 .req-blood-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: req-blood-spin 0.6s linear infinite; }
 @keyframes req-blood-spin { to { transform: rotate(360deg); } }
 
+.req-blood-locate-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 20px; border: 1.5px dashed #E53935; border-radius: 12px; background: #fff; color: #C62828; font-size: 14px; font-weight: 600; font-family: 'Poppins', sans-serif; cursor: pointer; transition: background 0.3s ease; }
+.req-blood-locate-btn:hover:not(:disabled) { background: #FFF5F5; }
+.req-blood-locate-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.req-blood-locate-icon--spin { animation: req-blood-locate-spin 1s linear infinite; }
+@keyframes req-blood-locate-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.req-blood-locate-status { font-size: 12px; color: #15803D; margin-top: 6px; }
+.req-blood-locate-coords { font-size: 12px; color: #6B7280; margin-top: 6px; font-family: 'Courier New', monospace; }
+
 @media (max-width: 640px) { .req-blood-main { padding: 20px 4%; } .req-blood-grid { grid-template-columns: 1fr; } .req-blood-priority-group { flex-direction: column; } .req-blood-top { flex-direction: column; align-items: flex-start; } }

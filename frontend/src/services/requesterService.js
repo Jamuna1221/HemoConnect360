@@ -74,3 +74,12 @@ export const getBloodRequest = async (id) => {
 
   return payload.data
 }
+
+export const getBloodRequestMatches = async (id) => {
+  const payload = await apiRequest(`/blood-requests/${id}/matches`, {
+    method: 'GET',
+    headers: authHeaders(),
+  })
+
+  return payload.data
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { getSupabase } from '../lib/supabase'
+import { fetchDonorProfile } from '../services/donorService'
 
 /**
  * Loads the current donor profile.
@@ -39,11 +40,7 @@ export const useDonor = () => {
           return
         }
 
-        const { data, error } = await supabase
-          .from('donors')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle()
+        const { donor: data, error } = await fetchDonorProfile(supabase, user.id)
 
         if (error) throw error
 

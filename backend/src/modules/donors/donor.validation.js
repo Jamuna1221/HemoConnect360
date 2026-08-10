@@ -47,6 +47,9 @@ export const validateDonorRegistration = (body) => {
     throw new ApiError(400, "Donor must be between 18 and 65 years old");
   }
 
+  const latitude = parseCoord(body?.latitude, "Latitude", -90, 90);
+  const longitude = parseCoord(body?.longitude, "Longitude", -180, 180);
+
   return {
     fullName,
     dob,
@@ -61,5 +64,16 @@ export const validateDonorRegistration = (body) => {
     weight,
     hemoglobin,
     lastDonation: String(body?.lastDonation || "").trim() || null,
+    latitude,
+    longitude,
   };
+};
+
+const parseCoord = (value, label, min, max) => {
+  if (value === undefined || value === null || value === "") return undefined;
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < min || num > max) {
+    throw new ApiError(400, `${label} must be a number between ${min} and ${max}`);
+  }
+  return num;
 };

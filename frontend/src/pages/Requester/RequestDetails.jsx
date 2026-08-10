@@ -1,25 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaArrowLeft, FaTint, FaUser, FaHospital, FaCalendarAlt, FaPhone, FaMapMarkerAlt, FaCheckCircle, FaClock, FaExclamationCircle, FaTimes } from 'react-icons/fa'
+import { FaArrowLeft, FaUser, FaHospital, FaCalendarAlt, FaPhone, FaMapMarkerAlt, FaCheckCircle, FaClock, FaTimes, FaUserFriends } from 'react-icons/fa'
 import { useRequester } from '../../context/RequesterContext'
+import { getBloodRequestMatches } from '../../services/requesterService'
 import RequesterNavbar from '../../components/Requester/RequesterNavbar'
 import './RequestDetails.css'
-
-const TIMELINE_STEPS = [
-  { key: 'submitted', label: 'Request Submitted', icon: <FaCheckCircle /> },
-  { key: 'searching', label: 'Searching Donors', icon: <FaClock /> },
-  { key: 'notified', label: 'Nearby Donors Notified', icon: <FaClock /> },
-  { key: 'accepted', label: 'Donor Accepted', icon: <FaClock /> },
-  { key: 'donated', label: 'Blood Donated', icon: <FaClock /> },
-  { key: 'completed', label: 'Completed', icon: <FaCheckCircle /> },
-]
 
 const RequestDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, requests, cancelRequest } = useRequester()
   const [req, setReq] = useState(null)
+  const [matches, setMatches] = useState(null)
+  const [matchesError, setMatchesError] = useState('')
 
   useEffect(() => { if (!user) navigate('/requester/login') }, [user, navigate])
 
@@ -27,6 +21,26 @@ const RequestDetails = () => {
     const found = requests.find((r) => r.id === id)
     setReq(found || null)
   }, [id, requests])
+
+  useEffect(() => {
+    let active = true
+    let timer
+    const fetchMatches = async () => {
+      try {
+        const data = await getBloodRequestMatches(id)
+        if (active) {
+          setMatches(data)
+          setMatchesError('')
+        }
+      } catch {
+        if (active) setMatchesError('Unable to load matched donors right now.')
+      }
+    }
+
+    fetchMatches()
+    timer = setInterval(fetchMatches, 8000)
+    return () => { active = false; clearInterval(timer) }
+  }, [id])
 
   if (!user) return null
   if (!req) return (
@@ -102,6 +116,36 @@ const RequestDetails = () => {
                   {req.contactEmail && <div><span>Email</span><strong>{req.contactEmail}</strong></div>}
                   {req.notes && <div><span>Notes</span><strong>{req.notes}</strong></div>}
                 </div>
+              </div>
+
+              <div className="req-detail-card">
+                <h3><FaUserFriends /> Matched Donors</h3>
+                {matchesError && <p className="req-detail-matches-error">{matchesError}</p>}
+                {!matchesError && !matches && <p className="req-detail-matches-empty">Loading matched donors…</p>}
+                {!matchesError && matches && matches.length === 0 && (
+                  <p className="req-detail-matches-empty">
+                    No nearby eligible donors found yet. Matching runs when the request includes a location.
+                  </p>
+                )}
+                {!matchesError && matches && matches.length > 0 && (
+                  <div className="req-detail-matches-list">
+                    {matches.map((m) => (
+                      <div key={m.donorId} className="req-detail-match">
+                        <div className="req-detail-match-avatar">{m.fullName?.charAt(0) || 'D'}</div>
+                        <div className="req-detail-match-info">
+                          <strong>{m.fullName}</strong>
+                          <span>{m.bloodGroup} &bull; {m.city || 'City N/A'}</span>
+                          <span className="req-detail-match-distance">
+                            <FaMapMarkerAlt /> {(m.distanceKm ?? 0).toFixed(1)} km away
+                          </span>
+                        </div>
+                        <a className="req-detail-match-call" href={`tel:${m.phone}`}>
+                          <FaPhone /> Call
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {(req.status === 'submitted' || req.status === 'searching_donors') && (

@@ -18,7 +18,6 @@ create extension if not exists "pgcrypto";
 
 create table if not exists public.donors (
   id            uuid        primary key references auth.users(id) on delete cascade,
-  user_id       uuid        not null references auth.users(id) on delete cascade,
   full_name     text        not null,
   dob           date        not null,
   gender        text        not null,
@@ -39,9 +38,6 @@ create table if not exists public.donors (
   updated_at    timestamptz not null default now()
 );
 
-create unique index if not exists donors_user_id_unique
-  on public.donors (user_id);
-
 create index if not exists donors_blood_group_city_idx
   on public.donors (blood_group, city);
 
@@ -53,15 +49,15 @@ alter table public.donors enable row level security;
 
 drop policy if exists "donors_insert_own" on public.donors;
 create policy "donors_insert_own" on public.donors
-  for insert with check (auth.uid() = user_id);
+  for insert with check (auth.uid() = id);
 
 drop policy if exists "donors_select_own" on public.donors;
 create policy "donors_select_own" on public.donors
-  for select using (auth.uid() = user_id);
+  for select using (auth.uid() = id);
 
 drop policy if exists "donors_update_own" on public.donors;
 create policy "donors_update_own" on public.donors
-  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  for update using (auth.uid() = id) with check (auth.uid() = id);
 
 -- Storage bucket for ID proofs ----------------------------------------------
 insert into storage.buckets (id, name, public)

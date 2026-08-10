@@ -16,7 +16,7 @@ export const apiRoutes = {
     list: "/",
     detail: "/:id",
     cancel: "/:id/cancel",
-
+    matches: "/:id/matches",
   },
 };
 

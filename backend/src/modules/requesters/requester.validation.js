@@ -29,6 +29,9 @@ export const validateProfileUpdate = (body) => {
     throw new ApiError(400, "Invalid email format");
   }
 
+  const latitude = parseNonEmptyNumber(body?.latitude, "Latitude");
+  const longitude = parseNonEmptyNumber(body?.longitude, "Longitude");
+
   return {
     fullName: trimOrUndefined(body?.fullName),
     age,
@@ -37,5 +40,22 @@ export const validateProfileUpdate = (body) => {
     address: trimOrUndefined(body?.address),
     bloodNeededFor: trimOrUndefined(body?.bloodNeededFor),
     email,
+    latitude,
+    longitude,
   };
+};
+
+const parseNonEmptyNumber = (value, label) => {
+  if (value === undefined || value === null || value === "") return undefined;
+  const num = Number(value);
+  if (!Number.isFinite(num)) {
+    throw new ApiError(400, `${label} must be a valid number`);
+  }
+  if (label === "Latitude" && (num < -90 || num > 90)) {
+    throw new ApiError(400, "Latitude must be between -90 and 90");
+  }
+  if (label === "Longitude" && (num < -180 || num > 180)) {
+    throw new ApiError(400, "Longitude must be between -180 and 180");
+  }
+  return num;
 };

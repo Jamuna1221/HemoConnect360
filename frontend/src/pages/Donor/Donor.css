@@ -580,6 +580,58 @@
   transform: translateY(0);
 }
 
+/* ─── Location Detection ─── */
+.donor-form__locate-btn {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #c62828;
+  background: #fff;
+  border: 1.5px dashed #e53935;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.donor-form__locate-btn:hover:not(:disabled) {
+  background: #fff0f0;
+}
+
+.donor-form__locate-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.donor-form__locate-icon--spin {
+  animation: donor-locate-spin 1s linear infinite;
+}
+
+@keyframes donor-locate-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.donor-form__locate-status {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #2e7d32;
+}
+
+.donor-form__locate-coords {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #555;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+}
+
 /* ============================================================
    SECTION 3 — STATISTICS
    ============================================================ */

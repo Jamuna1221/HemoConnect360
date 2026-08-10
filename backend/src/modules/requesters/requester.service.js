@@ -18,6 +18,8 @@ const toRequesterDto = (user) => ({
   address: user.address || "",
   bloodNeededFor: user.blood_needed_for || "",
   email: user.email || "",
+  latitude: user.latitude,
+  longitude: user.longitude,
   createdAt: user.created_at,
   updatedAt: user.updated_at,
 });
@@ -39,6 +41,8 @@ const toRequestDto = (request) => ({
   contactEmail: request.contact_email,
   notes: request.notes,
   status: request.status,
+  latitude: request.latitude,
+  longitude: request.longitude,
   createdAt: request.created_at,
   updatedAt: request.updated_at,
 });
@@ -88,6 +92,8 @@ export const saveRequesterProfile = async (requesterId, profile) => {
     address: profile.address,
     blood_needed_for: profile.bloodNeededFor,
     email: profile.email,
+    latitude: profile.latitude,
+    longitude: profile.longitude,
     updated_at: new Date().toISOString(),
   });
 

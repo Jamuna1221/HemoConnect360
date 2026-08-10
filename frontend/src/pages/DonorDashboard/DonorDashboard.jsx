@@ -6,6 +6,7 @@ import heroPattern from '../../assets/donor-dashboard/hero-pattern.png'
 import donorHero from '../../assets/donor-dashboard/donor-hero.png'
 import bloodBag from '../../assets/donor-dashboard/blood-bag.png'
 import { getSupabase } from '../../lib/supabase'
+import { fetchDonorProfile, fetchDonationHistory, recordDonation } from '../../services/donorService'
 import {
   FaHeart,
   FaTint,
@@ -42,16 +43,10 @@ const QUICK_ACTIONS = [
   { icon: <FaBell />, title: 'Alert Preferences', desc: 'Manage notification settings', path: '/', color: '#F59E0B' }
 ]
 
-const DONATION_HISTORY = [
-  { id: 1, date: '2026-06-15', bloodBank: 'Central Blood Bank', units: 1, status: 'completed', location: 'Colombo' },
-  { id: 2, date: '2026-03-20', bloodBank: 'Red Cross Society', units: 1, status: 'completed', location: 'Kandy' },
-  { id: 3, date: '2025-12-10', bloodBank: 'National Blood Centre', units: 1, status: 'completed', location: 'Galle' }
-]
-
 const HERO_STATS = [
-  { icon: <FaHeart />, value: '3', label: 'Lives Impacted', color: '#E53935' },
-  { icon: <FaTint />, value: '3', label: 'Total Donations', color: '#22C55E' },
-  { icon: <FaAward />, value: '750', label: 'Reward Points', color: '#F59E0B' }
+  { icon: <FaHeart />, value: null, label: 'Lives Impacted', color: '#E53935' },
+  { icon: <FaTint />, value: null, label: 'Total Donations', color: '#22C55E' },
+  { icon: <FaAward />, value: null, label: 'Reward Points', color: '#F59E0B' }
 ]
 
 const HEALTH_TIPS = [
@@ -125,6 +120,42 @@ const DonorDashboard = () => {
   const [daysLeft, setDaysLeft] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [donations, setDonations] = useState([])
+  const [showRecordForm, setShowRecordForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [donationError, setDonationError] = useState('')
+  const [donationSuccess, setDonationSuccess] = useState('')
+  const [recordForm, setRecordForm] = useState({ donationDate: '', bloodBank: '', city: '', units: '1', notes: '' })
+
+  const handleRecordFormChange = (e) => {
+    setRecordForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  const handleSubmitDonation = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setDonationError('')
+    setDonationSuccess('')
+    try {
+      const saved = await recordDonation({
+        donationDate: recordForm.donationDate,
+        bloodBank: recordForm.bloodBank,
+        city: recordForm.city,
+        units: recordForm.units,
+        notes: recordForm.notes,
+      })
+      const refreshed = await fetchDonationHistory()
+      setDonations(refreshed)
+      setDonor((prev) => ({ ...prev, last_donation: saved.donation_date }))
+      setRecordForm({ donationDate: '', bloodBank: '', city: '', units: '1', notes: '' })
+      setShowRecordForm(false)
+      setDonationSuccess('Donation recorded. Your history and eligibility are now updated.')
+    } catch (err) {
+      setDonationError(err.message || 'Unable to record the donation.')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   useEffect(() => {
     let active = true
@@ -141,11 +172,7 @@ const DonorDashboard = () => {
           return
         }
 
-        const { data, error: donorError } = await supabase
-          .from('donors')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .maybeSingle()
+        const { donor: data, error: donorError } = await fetchDonorProfile(supabase, session.user.id)
 
         if (donorError) {
           console.error('[donor-dashboard] Donor profile query failed', { userId: session.user.id, error: donorError })
@@ -168,6 +195,10 @@ const DonorDashboard = () => {
           ? Math.max(0, Math.ceil((next.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
           : null
 
+        const history = await fetchDonationHistory()
+        if (!active) return
+
+        setDonations(history)
         setDonor(data)
         setDaysLeft(left)
         setLoading(false)
@@ -218,6 +249,21 @@ const DonorDashboard = () => {
   const firstName = getFirstName(donor.full_name)
   const nextEligible = getNextEligible(donor.last_donation)
 
+  const totalUnits = donations.reduce((sum, d) => sum + (Number(d.units) || 0), 0)
+  const rewardPoints = donations.reduce((sum, d) => sum + (Number(d.units) || 0) * 250, 0)
+  const heroStats = HERO_STATS.map((stat) => {
+    if (stat.label === 'Total Donations') return { ...stat, value: String(totalUnits) }
+    if (stat.label === 'Lives Impacted') return { ...stat, value: String(totalUnits) }
+    if (stat.label === 'Reward Points') return { ...stat, value: String(rewardPoints) }
+    return stat
+  })
+  const impactStats = [
+    { iconClass: 'donor-dash-impact-stat-icon--red', icon: <FaHeart />, num: String(totalUnits), text: 'Lives Saved' },
+    { iconClass: 'donor-dash-impact-stat-icon--green', icon: <FaTint />, num: `${totalUnits}L`, text: 'Blood Donated' },
+    { iconClass: 'donor-dash-impact-stat-icon--blue', icon: <FaUsers />, num: String(totalUnits), text: 'Families Helped' },
+    { iconClass: 'donor-dash-impact-stat-icon--purple', icon: <FaAward />, num: String(rewardPoints), text: 'Reward Points' }
+  ]
+
   return (
     <div className="donor-dash-page">
       <Navbar />
@@ -234,7 +280,7 @@ const DonorDashboard = () => {
                 Thank you for being a life saver. Your generous donations are making a real difference in people's lives.
               </p>
               <div className="donor-dash-hero-stats">
-                {HERO_STATS.map((stat) => (
+                {heroStats.map((stat) => (
                   <div key={stat.label} className="donor-dash-hero-stat-card">
                     <div className="donor-dash-hero-stat-icon" style={{ background: `${stat.color}15`, color: stat.color }}>
                       {stat.icon}
@@ -419,26 +465,122 @@ const DonorDashboard = () => {
             <div className="donor-dash-section">
               <div className="donor-dash-section-header">
                 <h2><FaClock /> Donation History</h2>
-                <Link to="/" className="donor-dash-view-all">View All <FaChevronRight /></Link>
+                <div className="donor-dash-history-actions">
+                  <button
+                    type="button"
+                    className="donor-dash-btn-outline"
+                    onClick={() => { setShowRecordForm((v) => !v); setDonationError(''); setDonationSuccess('') }}
+                  >
+                    {showRecordForm ? 'Cancel' : 'Record Donation'}
+                  </button>
+                </div>
               </div>
-              <div className="donor-dash-timeline">
-                {DONATION_HISTORY.map((donation, idx) => (
-                  <div key={donation.id} className="donor-dash-timeline-item">
-                    <div className="donor-dash-timeline-line">
-                      <div className="donor-dash-timeline-dot"></div>
-                      {idx < DONATION_HISTORY.length - 1 && <div className="donor-dash-timeline-connector"></div>}
-                    </div>
-                    <div className="donor-dash-timeline-card">
-                      <div className="donor-dash-timeline-top">
-                        <span className="donor-dash-timeline-date">{new Date(donation.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                        <span className="donor-dash-timeline-badge donor-dash-timeline-badge--completed"><FaCheckCircle /> Completed</span>
-                      </div>
-                      <h4 className="donor-dash-timeline-title">{donation.bloodBank}</h4>
-                      <p className="donor-dash-timeline-meta"><FaMapMarkerAlt /> {donation.location} &bull; {donation.units} unit donated</p>
-                    </div>
+
+              {donationSuccess && (
+                <div className="donor-dash-alert donor-dash-alert--success">
+                  <FaCheckCircle /> {donationSuccess}
+                </div>
+              )}
+              {donationError && (
+                <div className="donor-dash-alert donor-dash-alert--error">
+                  <FaExclamationTriangle /> {donationError}
+                </div>
+              )}
+
+              {showRecordForm && (
+                <form className="donor-dash-record-form" onSubmit={handleSubmitDonation}>
+                  <div className="donor-dash-record-form-grid">
+                    <label className="donor-dash-record-field">
+                      <span>Donation Date</span>
+                      <input
+                        type="date"
+                        name="donationDate"
+                        value={recordForm.donationDate}
+                        onChange={handleRecordFormChange}
+                        required
+                        max={new Date().toISOString().slice(0, 10)}
+                      />
+                    </label>
+                    <label className="donor-dash-record-field">
+                      <span>Blood Bank / Center</span>
+                      <input
+                        type="text"
+                        name="bloodBank"
+                        value={recordForm.bloodBank}
+                        onChange={handleRecordFormChange}
+                        placeholder="e.g. Central Blood Bank"
+                        required
+                      />
+                    </label>
+                    <label className="donor-dash-record-field">
+                      <span>City</span>
+                      <input
+                        type="text"
+                        name="city"
+                        value={recordForm.city}
+                        onChange={handleRecordFormChange}
+                        placeholder="e.g. Colombo"
+                      />
+                    </label>
+                    <label className="donor-dash-record-field">
+                      <span>Units</span>
+                      <input
+                        type="number"
+                        name="units"
+                        value={recordForm.units}
+                        onChange={handleRecordFormChange}
+                        min="1"
+                        max="5"
+                        required
+                      />
+                    </label>
+                    <label className="donor-dash-record-field donor-dash-record-field--full">
+                      <span>Notes (optional)</span>
+                      <input
+                        type="text"
+                        name="notes"
+                        value={recordForm.notes}
+                        onChange={handleRecordFormChange}
+                        placeholder="e.g. Platelet donation"
+                      />
+                    </label>
                   </div>
-                ))}
-              </div>
+                  <div className="donor-dash-record-form-actions">
+                    <button type="button" className="donor-dash-camp-register" onClick={() => setShowRecordForm(false)}>Cancel</button>
+                    <button type="submit" className="donor-dash-thankyou-btn" disabled={saving}>
+                      {saving ? 'Saving...' : 'Save Donation'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {donations.length === 0 ? (
+                <div className="donor-dash-empty">
+                  <FaTint />
+                  <p>No donations recorded yet. Use &quot;Record Donation&quot; to add your donation history.</p>
+                </div>
+              ) : (
+                <div className="donor-dash-timeline">
+                  {donations.map((donation, idx) => (
+                    <div key={donation.id} className="donor-dash-timeline-item">
+                      <div className="donor-dash-timeline-line">
+                        <div className="donor-dash-timeline-dot"></div>
+                        {idx < donations.length - 1 && <div className="donor-dash-timeline-connector"></div>}
+                      </div>
+                      <div className="donor-dash-timeline-card">
+                        <div className="donor-dash-timeline-top">
+                          <span className="donor-dash-timeline-date">{new Date(donation.donation_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          <span className="donor-dash-timeline-badge donor-dash-timeline-badge--completed"><FaCheckCircle /> Completed</span>
+                        </div>
+                        <h4 className="donor-dash-timeline-title">{donation.blood_bank}</h4>
+                        <p className="donor-dash-timeline-meta">
+                          <FaMapMarkerAlt /> {donation.city || 'Blood Bank'} &bull; {donation.units} unit{Number(donation.units) > 1 ? 's' : ''} donated{donation.notes ? ` &bull; ${donation.notes}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="donor-dash-section">
@@ -479,26 +621,13 @@ const DonorDashboard = () => {
                 Every donation you make helps save lives and strengthen communities. Track your contribution and see the positive impact you've created.
               </p>
               <div className="donor-dash-impact-stats-grid">
-                <div className="donor-dash-impact-stat-card">
-                  <div className="donor-dash-impact-stat-icon donor-dash-impact-stat-icon--red"><FaHeart /></div>
-                  <div className="donor-dash-impact-stat-num">3</div>
-                  <div className="donor-dash-impact-stat-text">Lives Saved</div>
-                </div>
-                <div className="donor-dash-impact-stat-card">
-                  <div className="donor-dash-impact-stat-icon donor-dash-impact-stat-icon--green"><FaTint /></div>
-                  <div className="donor-dash-impact-stat-num">3L</div>
-                  <div className="donor-dash-impact-stat-text">Blood Donated</div>
-                </div>
-                <div className="donor-dash-impact-stat-card">
-                  <div className="donor-dash-impact-stat-icon donor-dash-impact-stat-icon--blue"><FaUsers /></div>
-                  <div className="donor-dash-impact-stat-num">3</div>
-                  <div className="donor-dash-impact-stat-text">Families Helped</div>
-                </div>
-                <div className="donor-dash-impact-stat-card">
-                  <div className="donor-dash-impact-stat-icon donor-dash-impact-stat-icon--purple"><FaAward /></div>
-                  <div className="donor-dash-impact-stat-num">750</div>
-                  <div className="donor-dash-impact-stat-text">Reward Points</div>
-                </div>
+                {impactStats.map((stat) => (
+                  <div key={stat.text} className="donor-dash-impact-stat-card">
+                    <div className={`donor-dash-impact-stat-icon ${stat.iconClass}`}>{stat.icon}</div>
+                    <div className="donor-dash-impact-stat-num">{stat.num}</div>
+                    <div className="donor-dash-impact-stat-text">{stat.text}</div>
+                  </div>
+                ))}
               </div>
             </div>
             <div className="donor-dash-impact-right">

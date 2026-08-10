@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getSupabase } from '../lib/supabase'
+import { fetchDonorProfile } from '../services/donorService'
 
 export const useAuth = () => {
   const [user, setUser] = useState(null)
@@ -12,11 +13,7 @@ export const useAuth = () => {
     const fetchDonor = async (userId) => {
       try {
         const supabase = getSupabase()
-        const { data, error } = await supabase
-          .from('donors')
-          .select('*')
-          .eq('user_id', userId)
-          .maybeSingle()
+        const { donor: data, error } = await fetchDonorProfile(supabase, userId)
         if (error) {
           console.error('[auth] Donor profile query failed', { userId, error })
           if (active) setDonor(null)

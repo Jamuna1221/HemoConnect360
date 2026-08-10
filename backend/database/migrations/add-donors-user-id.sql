@@ -13,13 +13,16 @@
 alter table public.donors
   add column if not exists user_id uuid;
 
-update public.donors
-  set user_id = id
-  where user_id is null;
+-- Backfill ONLY rows whose id is a real auth user. Legacy databases may
+-- contain seed/sample donor rows whose id is NOT in auth.users; setting
+-- user_id = id for those would violate the FK below.
+update public.donors d
+  set user_id = d.id
+  where d.user_id is null
+    and exists (select 1 from auth.users u where u.id = d.id);
 
-alter table public.donors
-  alter column user_id set not null;
-
+-- user_id intentionally remains nullable: legacy seed rows have no matching
+-- auth user, and the FK allows NULL values. New app inserts always set it.
 alter table public.donors
   drop constraint if exists donors_user_id_fkey;
 

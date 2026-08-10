@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaUser, FaPhone, FaCalendarAlt, FaVenusMars, FaCity, FaMapMarkerAlt, FaHeartbeat, FaSignOutAlt, FaHospital, FaEdit, FaShieldAlt } from 'react-icons/fa'
+import { FaUser, FaPhone, FaCalendarAlt, FaVenusMars, FaCity, FaMapMarkerAlt, FaHeartbeat, FaSignOutAlt, FaHospital, FaEdit, FaShieldAlt, FaCrosshairs } from 'react-icons/fa'
 import { useRequester } from '../../context/RequesterContext'
+import { getCurrentPosition } from '../../lib/geolocation'
 import RequesterNavbar from '../../components/Requester/RequesterNavbar'
 import Footer from '../../components/Footer/Footer'
 import './RequesterProfile.css'
@@ -16,9 +17,10 @@ const RequesterProfile = () => {
   const navigate = useNavigate()
   const { user, logoutUser, saveProfile } = useRequester()
   const [isEditing, setIsEditing] = useState(false)
-  const [form, setForm] = useState({ fullName: '', age: '', gender: '', city: '', address: '', bloodNeededFor: '', email: '' })
+  const [form, setForm] = useState({ fullName: '', age: '', gender: '', city: '', address: '', bloodNeededFor: '', email: '', latitude: '', longitude: '' })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [isLocating, setIsLocating] = useState(false)
 
   useEffect(() => { if (!user) navigate('/requester/login') }, [user, navigate])
 
@@ -30,16 +32,36 @@ const RequesterProfile = () => {
       gender: user.gender || '',
       city: user.city || '',
       address: user.address || '',
-      bloodNeededFor: user.bloodNeededFor || '',
+bloodNeededFor: user.bloodNeededFor || '',
       email: user.email || '',
+      latitude: user.latitude || '',
+      longitude: user.longitude || '',
     })
   }, [user])
 
   if (!user) return null
 
   const handleLogout = () => { logoutUser(); navigate('/') }
-  const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   const handleCancel = () => { setIsEditing(false); setMessage('') }
+
+  const detectLocation = async () => {
+    if (isLocating) return
+    setIsLocating(true)
+    try {
+      const coords = await getCurrentPosition()
+      setForm((prev) => ({
+        ...prev,
+        latitude: coords.latitude.toFixed(6),
+        longitude: coords.longitude.toFixed(6),
+      }))
+      setMessage('Location captured for nearby matching.')
+    } catch (err) {
+      setMessage(err.message)
+    } finally {
+      setIsLocating(false)
+    }
+  }
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
@@ -72,8 +94,15 @@ const RequesterProfile = () => {
                   <label>Full Name<input name="fullName" value={form.fullName} onChange={handleChange} placeholder="Full name" /></label>
                   <label>Age<input name="age" type="number" min="1" max="120" value={form.age} onChange={handleChange} placeholder="Age" /></label>
                   <label>Gender<select name="gender" value={form.gender} onChange={handleChange}><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></label>
-                  <label>City<input name="city" value={form.city} onChange={handleChange} placeholder="City" /></label>
+<label>City<input name="city" value={form.city} onChange={handleChange} placeholder="City" /></label>
                   <label>Address<input name="address" value={form.address} onChange={handleChange} placeholder="Address" /></label>
+                  <label className="req-profile-edit-full">
+                    Location&nbsp;
+                    <button type="button" className="req-profile-locate-btn" onClick={detectLocation} disabled={isLocating}>
+                      <FaCrosshairs /> {isLocating ? 'Detecting…' : 'Detect Location'}
+                    </button>
+                    {(form.latitude || form.longitude) && <span className="req-profile-locate-coords">{form.latitude}, {form.longitude}</span>}
+                  </label>
                   <label>Blood Needed For<input name="bloodNeededFor" value={form.bloodNeededFor} onChange={handleChange} placeholder="Reason" /></label>
                   <label className="req-profile-edit-full">Email<input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email" /></label>
                 </div>

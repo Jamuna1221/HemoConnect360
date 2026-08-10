@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FaTint, FaUser, FaHospital, FaExclamationCircle, FaPhoneAlt, FaStickyNote, FaCalendarAlt, FaEnvelope, FaArrowLeft, FaPaperPlane } from 'react-icons/fa'
+import { FaTint, FaUser, FaHospital, FaExclamationCircle, FaPhoneAlt, FaStickyNote, FaCalendarAlt, FaEnvelope, FaArrowLeft, FaPaperPlane, FaCrosshairs } from 'react-icons/fa'
 import RequesterNavbar from '../../components/Requester/RequesterNavbar'
 import { useRequester } from '../../context/RequesterContext'
+import { getCurrentPosition } from '../../lib/geolocation'
 import './RequestBlood.css'
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
@@ -18,15 +19,18 @@ const INITIAL_FORM = {
   hospitalName: '', city: '', address: '', requiredBy: '',
   priority: 'standard',
   contactName: '', contactPhone: '', contactEmail: '',
+  latitude: '', longitude: '',
   notes: '',
 }
 
 const RequestBlood = () => {
-  const navigate = useNavigate()
+const navigate = useNavigate()
   const { addRequest, user } = useRequester()
   const [form, setForm] = useState(() => ({ ...INITIAL_FORM, contactName: user?.fullName || '', contactPhone: user?.phone || '' }))
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+  const [isLocating, setIsLocating] = useState(false)
+  const [locationStatus, setLocationStatus] = useState('')
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -76,12 +80,34 @@ const handleSubmit = async (e) => {
         contactPhone: form.contactPhone,
         requesterPhone: user.phone,
         contactEmail: form.contactEmail,
+        latitude: form.latitude || null,
+        longitude: form.longitude || null,
         notes: form.notes,
       })
       setLoading(false)
       navigate('/requester/confirmation', { state: { request: newRequest } })
     } catch {
       setLoading(false)
+    }
+  }
+
+  const detectLocation = async () => {
+    if (isLocating) return
+    setIsLocating(true)
+    setLocationStatus('')
+    setErrors((prev) => ({ ...prev, latitude: '', longitude: '' }))
+    try {
+      const coords = await getCurrentPosition()
+      setForm((prev) => ({
+        ...prev,
+        latitude: coords.latitude.toFixed(6),
+        longitude: coords.longitude.toFixed(6),
+      }))
+      setLocationStatus('Hospital location captured — nearby eligible donors will be matched immediately.')
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, latitude: err.message, longitude: err.message }))
+    } finally {
+      setIsLocating(false)
     }
   }
 
@@ -159,6 +185,25 @@ const handleSubmit = async (e) => {
                   <label><FaCalendarAlt /> Required By *</label>
                   <input name="requiredBy" type="date" value={form.requiredBy} onChange={handleChange} />
                   {errors.requiredBy && <span className="req-blood-error">{errors.requiredBy}</span>}
+                </div>
+                <div className="req-blood-field req-blood-field--full">
+                  <label><FaCrosshairs /> Hospital Location</label>
+                  <button
+                    type="button"
+                    className="req-blood-locate-btn"
+                    onClick={detectLocation}
+                    disabled={isLocating}
+                  >
+                    <FaCrosshairs className={isLocating ? 'req-blood-locate-icon--spin' : ''} />
+                    {isLocating ? 'Detecting…' : 'Detect Hospital Location'}
+                  </button>
+                  {locationStatus && <span className="req-blood-locate-status">{locationStatus}</span>}
+                  {(errors.latitude || errors.longitude) && (
+                    <span className="req-blood-error">{errors.latitude || errors.longitude}</span>
+                  )}
+                  {form.latitude && form.longitude && (
+                    <span className="req-blood-locate-coords">{form.latitude}, {form.longitude}</span>
+                  )}
                 </div>
               </div>
             </section>

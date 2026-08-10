@@ -3,6 +3,7 @@ import {
   getRequesterRequests,
   getRequestById,
   cancelBloodRequest,
+  getMatchesForRequest,
 } from "./bloodRequest.service.js";
 import { validateCreateRequest } from "./bloodRequest.validation.js";
 
@@ -29,4 +30,10 @@ export const cancelRequest = async (req, res) => {
   const request = await cancelBloodRequest(req.params.id, req.requester.sub);
 
   res.json({ success: true, data: request });
+};
+
+export const getMatches = async (req, res) => {
+  const matches = await getMatchesForRequest(req.params.id, req.requester.sub);
+
+  res.json({ success: true, data: matches });
 };

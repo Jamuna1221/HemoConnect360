@@ -5,7 +5,6 @@ const STORAGE_BUCKET = 'donor-docs'
 
 const buildDonorRecord = (userId, profile, idProofUrl) => ({
   id: userId,
-  user_id: userId,
   full_name: profile.fullName,
   dob: profile.dob,
   gender: profile.gender,
@@ -20,6 +19,8 @@ const buildDonorRecord = (userId, profile, idProofUrl) => ({
   hemoglobin: profile.hemoglobin,
   last_donation: profile.lastDonation || null,
   id_proof: idProofUrl || null,
+  latitude: profile.latitude || null,
+  longitude: profile.longitude || null,
   status: 'active',
 })
 
@@ -41,11 +42,11 @@ const uploadIdProof = async (supabase, userId, idProof) => {
   return { url: urlData?.publicUrl || null, path: uploadedPath }
 }
 
-const fetchDonorProfile = async (supabase, userId) => {
+export const fetchDonorProfile = async (supabase, userId) => {
   const { data, error } = await supabase
     .from('donors')
     .select('*')
-    .eq('user_id', userId)
+    .eq('id', userId)
     .maybeSingle()
 
   if (error) {
@@ -55,15 +56,25 @@ const fetchDonorProfile = async (supabase, userId) => {
 }
 
 const insertDonorRow = async (supabase, userId, profile, idProofUrl) => {
+  const record = buildDonorRecord(userId, profile, idProofUrl)
+
+  console.log('[donor:register] INSERTING DONOR:', record)
+
   const { data, error } = await supabase
     .from('donors')
-    .insert(buildDonorRecord(userId, profile, idProofUrl))
+    .upsert(record, { onConflict: 'id' })
     .select()
     .single()
 
+  console.log('[donor:register] INSERT RESULT:', { data, error })
+
   if (error) {
-    console.error('[donor:register] database error on donor insert', { userId, error })
-    throw new Error(mapInsertError(error))
+    console.error('[donor:register] INSERT FAILED')
+    console.error('code:', error.code)
+    console.error('message:', error.message)
+    console.error('details:', error.details)
+    console.error('hint:', error.hint)
+    throw error
   }
 
   return data
@@ -73,7 +84,7 @@ const insertDonorRow = async (supabase, userId, profile, idProofUrl) => {
  * Sign an existing donor in with Supabase Auth and load their profile.
  *
  * Login NEVER searches by email: the authenticated user's id (auth.users.id)
- * is used to look the donor profile up by user_id.
+ * is used to look the donor profile up by donors.id.
  *
  * @param {Object} credentials
  * @param {string} credentials.email
@@ -110,7 +121,7 @@ export const loginDonor = async ({ email, password }) => {
   }
 
   let profile = donor
-  console.log('[donor:login] donor lookup by user_id', { userId: user.id, found: Boolean(profile) })
+  console.log('[donor:login] donor lookup by id', { userId: user.id, found: Boolean(profile) })
 
   // Safety net: if the profile was deferred at registration (only created
   // after email verification) and the callback failed, retry now. Throws so
@@ -135,7 +146,7 @@ export const loginDonor = async ({ email, password }) => {
     console.warn('[donor:login] No donor profile found for authenticated user', {
       userId: user.id,
       email: user.email,
-      reason: 'No row in public.donors where user_id = auth user id',
+      reason: 'No row in public.donors where id = auth user id',
     })
     throw new Error('No donor profile found for this account. Please register first.')
   }
@@ -148,7 +159,7 @@ export const loginDonor = async ({ email, password }) => {
  * Register a new donor with Supabase:
  *  1. Create an auth account (email + password), optionally with a
  *     verification email.
- *  2. Create the donor profile (user_id = auth user id).
+ *  2. Create the donor profile (id = auth user id).
  *
  * Works with BOTH Supabase settings:
  *  - "Confirm email" DISABLED -> signUp returns a session -> the donor row is
@@ -174,10 +185,58 @@ export const registerDonor = async ({ email, password, idProof, profile }) => {
     password,
     options: {
       emailRedirectTo: `${window.location.origin}/auth/callback`,
+      // Keep a recovery copy with the verified auth user. IndexedDB is local
+      // to the browser and may be unavailable when the link opens elsewhere.
+      data: {
+        fullName: profile.fullName,
+        dob: profile.dob,
+        gender: profile.gender,
+        bloodGroup: profile.bloodGroup,
+        phone: profile.phone,
+        email: profile.email || email,
+        address: profile.address,
+        city: profile.city,
+        state: profile.state,
+        pincode: profile.pincode,
+        weight: profile.weight,
+        hemoglobin: profile.hemoglobin,
+        lastDonation: profile.lastDonation || null,
+        latitude: profile.latitude || null,
+        longitude: profile.longitude || null,
+      },
     },
   })
 
   if (authError) {
+    // Auth may already exist even when the profile insert failed earlier
+    // because of the database schema. Let a verified user submit the form
+    // again to finish creating the missing donor row.
+    if (isAlreadyRegisteredError(authError.message)) {
+      const retry = await supabase.auth.signInWithPassword({ email, password })
+      if (retry.error || !retry.data?.user?.id) {
+        throw new Error(mapLoginError(retry.error || authError))
+      }
+
+      const existing = await fetchDonorProfile(supabase, retry.data.user.id)
+      if (existing.error) {
+        await supabase.auth.signOut().catch(() => {})
+        throw new Error(`Unable to verify donor profile. Database error: ${existing.error.message}`)
+      }
+      if (existing.donor) {
+        await supabase.auth.signOut().catch(() => {})
+        return existing.donor
+      }
+
+      try {
+        const { url } = await uploadIdProof(supabase, retry.data.user.id, idProof)
+        const donor = await insertDonorRow(supabase, retry.data.user.id, profile, url)
+        await supabase.auth.signOut().catch(() => {})
+        return donor
+      } catch (err) {
+        await supabase.auth.signOut().catch(() => {})
+        throw err
+      }
+    }
     console.error('[donor:register] signUp failed', { email, error: authError })
     throw new Error(mapAuthError(authError.message))
   }
@@ -188,6 +247,9 @@ export const registerDonor = async ({ email, password, idProof, profile }) => {
     throw new Error('Account created but no user ID was returned. Please try again.')
   }
 
+  console.log('[donor:register] auth user:', userId)
+  console.log('[donor:register] profile:', profile)
+
   console.log('[donor:register] signUp result', {
     userId,
     email,
@@ -197,7 +259,7 @@ export const registerDonor = async ({ email, password, idProof, profile }) => {
 
   // Confirm email DISABLED: a session exists, so create the profile now.
   if (authData.session) {
-    // Idempotency: never insert twice for the same user_id.
+    // Idempotency: never insert twice for the same donor id.
     const existing = await fetchDonorProfile(supabase, userId)
     if (existing.error) {
       console.error('[donor:register] database error on existing-donor check', { userId, error: existing.error })
@@ -234,7 +296,6 @@ export const registerDonor = async ({ email, password, idProof, profile }) => {
 
   return {
     id: userId,
-    user_id: userId,
     full_name: profile.fullName,
     blood_group: profile.bloodGroup,
     phone: profile.phone,
@@ -268,13 +329,22 @@ export const completePendingDonorRegistration = async (user) => {
     console.warn('[donor:verify] Could not read pending donor data', err)
     return null
   }
-  if (!pending) return null
+  if (!pending) {
+    const metadata = user.user_metadata || {}
+    if (!metadata.fullName || !metadata.bloodGroup || !metadata.phone) return null
+    pending = {
+      userId: user.id,
+      email: user.email,
+      profile: metadata,
+      idProof: null,
+    }
+  }
 
   // Only complete the registration belonging to this verified user.
   if (pending.userId && pending.userId !== user.id) return null
   if (!pending.userId && pending.email && pending.email !== user.email) return null
 
-  // Idempotency: never insert twice for the same user_id.
+  // Idempotency: never insert twice for the same donor id.
   const { donor: existing, error: existingError } = await fetchDonorProfile(supabase, user.id)
   if (existingError) {
     console.error('[donor:verify] database error on existing-donor check', { userId: user.id, error: existingError })
@@ -298,6 +368,108 @@ export const completePendingDonorRegistration = async (user) => {
   console.log('[donor:verify] donor insert result', { userId: user.id, donorId: created.id, status: 'success' })
   await clearPendingDonor().catch(() => {})
   return created
+}
+
+/**
+ * Record a new donation for the signed-in donor. The database trigger
+ * `donations_last_donation_sync` automatically updates donors.last_donation
+ * to this newest date, which keeps eligibility + matching in sync.
+ *
+ * @param {Object} input
+ * @param {string} input.donationDate - YYYY-MM-DD
+ * @param {string} input.bloodBank
+ * @param {string} [input.city]
+ * @param {number} [input.units=1]
+ * @param {string} [input.notes]
+ * @returns {Promise<Object>} The inserted donation row.
+ */
+export const recordDonation = async ({ donationDate, bloodBank, city, units = 1, notes = '' }) => {
+  const supabase = getSupabase()
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user?.id) {
+    throw new Error('You must be signed in to record a donation.')
+  }
+
+  if (!donationDate) throw new Error('Donation date is required')
+  if (!bloodBank?.trim()) throw new Error('Blood bank / donation center is required')
+  if (!Number(units) || Number(units) < 1) throw new Error('At least 1 unit is required')
+
+  const { donor, error: donorError } = await fetchDonorProfile(supabase, user.id)
+  if (donorError) throw new Error(`Unable to load your donor profile. Database error: ${donorError.message}`)
+  if (!donor?.id) throw new Error('No donor profile found for this account.')
+
+  const { data, error } = await supabase
+    .from('donations')
+    .insert({
+      donor_id: donor.id,
+      donation_date: donationDate,
+      blood_bank: bloodBank.trim(),
+      city: city?.trim() || null,
+      units: Number(units),
+      notes: notes?.trim() || null,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[donor:donations] insert failed', { userId: user.id, error })
+    throw new Error(mapDonationInsertError(error))
+  }
+
+  return data
+}
+
+/**
+ * Load the donor's donation history (most recent first). The dashboard uses
+ * this for the real timeline, stats and the 90-day eligibility recalc.
+ *
+ * @returns {Promise<Array<Object>>}
+ */
+export const fetchDonationHistory = async () => {
+  const supabase = getSupabase()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user?.id) return []
+
+  const { donor, error: donorError } = await fetchDonorProfile(supabase, user.id)
+  if (donorError) throw new Error(`Unable to load your donor profile. Database error: ${donorError.message}`)
+  if (!donor?.id) return []
+
+  const { data, error } = await supabase
+    .from('donations')
+    .select('*')
+    .eq('donor_id', donor.id)
+    .order('donation_date', { ascending: false })
+
+  if (error) {
+    console.error('[donor:donations] fetch failed', { userId: user.id, error })
+    throw new Error('Unable to load your donation history.')
+  }
+
+  return data || []
+}
+
+/**
+ * Delete a donation record (e.g. added by mistake). The trigger keeps
+ * donors.last_donation in sync automatically.
+ *
+ * @param {string} id
+ * @returns {Promise<void>}
+ */
+export const deleteDonation = async (id) => {
+  const supabase = getSupabase()
+  const { error } = await supabase.from('donations').delete().eq('id', id)
+
+  if (error) {
+    console.error('[donor:donations] delete failed', { id, error })
+    throw new Error('Unable to delete the donation record.')
+  }
 }
 
 /**
@@ -353,6 +525,25 @@ const mapAuthError = (message) => {
     return 'Password must be at least 6 characters long.'
   }
   return message || 'Unable to create your account. Please try again.'
+}
+
+const isAlreadyRegisteredError = (message) => {
+  const value = (message || '').toLowerCase()
+  return value.includes('already registered') || value.includes('already been registered')
+}
+
+const mapDonationInsertError = (error) => {
+  const message = (error?.message || '').toLowerCase()
+  const details = error?.details?.toLowerCase() || ''
+
+  if (message.includes('row-level security') || message.includes('new row violates')) {
+    return 'The donation could not be saved. Please make sure you are signed in.'
+  }
+  if (details.includes('donation_date') || details.includes('not null') || message.includes('null value')) {
+    return 'Please fill in the donation date and blood bank.'
+  }
+  const reason = error?.message || 'Unknown database error'
+  return `Failed to record the donation. Database error: ${reason}`
 }
 
 const mapInsertError = (error) => {

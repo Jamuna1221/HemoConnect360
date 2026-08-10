@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { registerDonor } from '../../services/donorService'
+import { getCurrentPosition } from '../../lib/geolocation'
 
 import {
   FaUser,
@@ -19,6 +20,7 @@ import {
   FaEyeSlash,
   FaLock,
   FaTimes,
+  FaCrosshairs,
 } from 'react-icons/fa'
 
 const INITIAL_FORM = {
@@ -37,6 +39,8 @@ const INITIAL_FORM = {
   weight: '',
   hemoglobin: '',
   lastDonation: '',
+  latitude: '',
+  longitude: '',
   idProof: null,
   terms: false,
 }
@@ -55,6 +59,8 @@ const DonorForm = () => {
   const [submitError, setSubmitError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [locationStatus, setLocationStatus] = useState('')
+  const [isLocating, setIsLocating] = useState(false)
 
   const dobRef = useRef(null)
   const lastDonationRef = useRef(null)
@@ -139,6 +145,30 @@ const DonorForm = () => {
     })
   }
 
+  const detectLocation = async () => {
+    if (isLocating) return
+    setIsLocating(true)
+    setLocationStatus('')
+    setFieldErrors((prev) => ({ ...prev, latitude: '', longitude: '' }))
+    try {
+      const coords = await getCurrentPosition()
+      setFormData((prev) => ({
+        ...prev,
+        latitude: coords.latitude.toFixed(6),
+        longitude: coords.longitude.toFixed(6),
+      }))
+      setLocationStatus('Location saved — you can now be matched to blood requests near you.')
+    } catch (err) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        latitude: err.message,
+        longitude: err.message,
+      }))
+    } finally {
+      setIsLocating(false)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitError('')
@@ -201,6 +231,8 @@ const DonorForm = () => {
           weight:       formData.weight,
           hemoglobin:   formData.hemoglobin,
           lastDonation: formData.lastDonation || null,
+          latitude:     formData.latitude || null,
+          longitude:    formData.longitude || null,
         },
       })
       // created_at is set only when the donor row was inserted immediately
@@ -459,6 +491,30 @@ const DonorForm = () => {
               />
             </div>
             {fieldErrors.pincode && <span className="donor-form__field-error">{fieldErrors.pincode}</span>}
+          </div>
+
+          <div className="donor-form__field donor-form__field--full">
+            <label>Your Location</label>
+            <div className={`donor-form__input-wrapper${fieldErrors.latitude || fieldErrors.longitude ? ' donor-form__input-wrapper--error' : ''}`}>
+              <button
+                type="button"
+                className="donor-form__locate-btn"
+                onClick={detectLocation}
+                disabled={isLocating}
+              >
+                <FaCrosshairs className={isLocating ? 'donor-form__locate-icon--spin' : ''} />
+                {isLocating ? 'Detecting…' : 'Detect My Location'}
+              </button>
+            </div>
+            {locationStatus && <span className="donor-form__locate-status">{locationStatus}</span>}
+            {(fieldErrors.latitude || fieldErrors.longitude) && (
+              <span className="donor-form__field-error">{fieldErrors.latitude || fieldErrors.longitude}</span>
+            )}
+            {formData.latitude && formData.longitude && (
+              <span className="donor-form__locate-coords">
+                {formData.latitude}, {formData.longitude}
+              </span>
+            )}
           </div>
 
           <div className="donor-form__field">

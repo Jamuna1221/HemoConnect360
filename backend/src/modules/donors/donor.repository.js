@@ -3,7 +3,7 @@ import { tables } from "../../config/tables.js";
 import { ApiError } from "../../shared/http/ApiError.js";
 
 const donorColumns =
-  "id, full_name, dob, gender, blood_group, phone, email, address, city, state, pincode, weight, hemoglobin, last_donation, status, created_at, updated_at";
+  "id, full_name, dob, gender, blood_group, phone, email, address, city, state, pincode, weight, hemoglobin, last_donation, latitude, longitude, status, created_at, updated_at";
 
 const handleSupabaseError = (error, fallbackMessage) => {
   if (!error) return;

@@ -22,6 +22,11 @@
 .req-profile-edit-grid input, .req-profile-edit-grid select { width: 100%; padding: 12px 14px; border: 1px solid #E5E7EB; border-radius: 12px; font: inherit; color: #1F2937; background: #FAFAFA; outline: none; }
 .req-profile-edit-grid input:focus, .req-profile-edit-grid select:focus { border-color: #E53935; background: #fff; box-shadow: 0 0 0 3px rgba(229,57,53,0.1); }
 .req-profile-edit-full { grid-column: 1 / -1; }
+
+.req-profile-locate-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1.5px dashed #E53935; border-radius: 10px; background: #fff; color: #C62828; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background 0.3s ease; margin-top: 4px; }
+.req-profile-locate-btn:hover:not(:disabled) { background: #FFF5F5; }
+.req-profile-locate-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.req-profile-locate-coords { font-size: 12px; color: #6B7280; font-family: 'Courier New', monospace; }
 .req-profile-edit-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
 .req-profile-cancel-btn, .req-profile-save-btn { padding: 11px 22px; border-radius: 12px; font: inherit; font-weight: 700; cursor: pointer; }
 .req-profile-cancel-btn { background: #fff; color: #6B7280; border: 1px solid #E5E7EB; }

@@ -16,6 +16,8 @@ const toDonorDto = (donor) => ({
   weight: donor.weight,
   hemoglobin: donor.hemoglobin,
   lastDonation: donor.last_donation || null,
+  latitude: donor.latitude,
+  longitude: donor.longitude,
   status: donor.status,
   createdAt: donor.created_at,
   updatedAt: donor.updated_at,
@@ -45,6 +47,8 @@ export const registerDonor = async (donorData) => {
     weight: Number(donorData.weight),
     hemoglobin: Number(donorData.hemoglobin),
     last_donation: donorData.lastDonation || null,
+    latitude: donorData.latitude,
+    longitude: donorData.longitude,
     status: "active",
   };
 

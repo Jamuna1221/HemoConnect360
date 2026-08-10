@@ -17,4 +17,6 @@ export const env = {
   supabaseKey: process.env.SUPABASE_KEY,
   requesterTokenSecret:
     process.env.REQUESTER_TOKEN_SECRET || process.env.SUPABASE_KEY,
+  donorMatchRadiusKm: Number(process.env.DONOR_MATCH_RADIUS_KM || 10),
+  donorMatchMaxDonors: Number(process.env.DONOR_MATCH_MAX_DONORS || 25),
 };

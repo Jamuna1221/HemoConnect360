@@ -47,6 +47,9 @@ export const validateCreateRequest = (body) => {
     errors.contactEmail = "Invalid contact email format";
   }
 
+  const latitude = parseCoord(body.latitude, "Latitude", -90, 90);
+  const longitude = parseCoord(body.longitude, "Longitude", -180, 180);
+
   if (Object.keys(errors).length > 0) {
     throw new ApiError(400, "Validation failed", errors);
   }
@@ -66,5 +69,16 @@ export const validateCreateRequest = (body) => {
     contactPhone,
     contactEmail,
     notes,
+    latitude,
+    longitude,
   };
+};
+
+const parseCoord = (value, label, min, max) => {
+  if (value === undefined || value === null || value === "") return undefined;
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < min || num > max) {
+    throw new ApiError(400, `${label} must be a number between ${min} and ${max}`);
+  }
+  return num;
 };

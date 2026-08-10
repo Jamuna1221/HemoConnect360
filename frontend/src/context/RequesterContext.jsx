@@ -150,6 +150,8 @@ const loginUser = async (userData) => {
         contactName: requestData.contactName,
         contactPhone: requestData.contactPhone,
         contactEmail: requestData.contactEmail || '',
+        latitude: requestData.latitude || null,
+        longitude: requestData.longitude || null,
         notes: requestData.notes || '',
       })
       setRequests((prev) =>

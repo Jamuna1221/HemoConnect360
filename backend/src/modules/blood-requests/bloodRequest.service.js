@@ -5,6 +5,8 @@ import {
   updateBloodRequest,
 } from "./bloodRequest.repository.js";
 import { findRequestsByRequesterId } from "../requesters/requester.repository.js";
+import { env } from "../../config/env.js";
+import supabase from "../../config/supabase.js";
 
 const toRequestDto = (request) => ({
   id: request.id,
@@ -23,6 +25,8 @@ const toRequestDto = (request) => ({
   contactEmail: request.contact_email,
   notes: request.notes,
   status: request.status,
+  latitude: request.latitude,
+  longitude: request.longitude,
   createdAt: request.created_at,
   updatedAt: request.updated_at,
 });
@@ -44,10 +48,78 @@ export const createBloodRequest = async (requesterId, data) => {
     contact_phone: data.contactPhone,
     contact_email: data.contactEmail,
     notes: data.notes,
+    latitude: data.latitude,
+    longitude: data.longitude,
     status: "submitted",
   });
 
-  return toRequestDto(request);
+  let matches = [];
+  if (data.latitude !== undefined && data.longitude !== undefined) {
+    try {
+      matches = await matchDonorsForRequest(request);
+    } catch (error) {
+      console.error("[blood-request] donor matching failed", {
+        requestId: request.id,
+        error: error.message,
+      });
+    }
+  }
+
+  return { ...toRequestDto(request), matches };
+};
+
+/**
+ * Calls the Supabase RPC `match_nearby_donors` (SECURITY DEFINER) to find
+ * eligible donors near the hospital location and persist donor_matches.
+ *
+ * @param {Object} request - the raw inserted blood request row
+ * @returns {Promise<Array<{donorId, fullName, phone, bloodGroup, city, distanceKm}>>}
+ */
+export const matchDonorsForRequest = async (request) => {
+  const { data, error } = await supabase.rpc("match_nearby_donors", {
+    p_request_id: request.id,
+    p_latitude: Number(request.latitude),
+    p_longitude: Number(request.longitude),
+    p_required_group: request.blood_group,
+    p_required_by: request.required_by,
+    p_radius_km: env.donorMatchRadiusKm,
+    p_max_donors: env.donorMatchMaxDonors,
+  });
+
+  if (error) {
+    throw new Error(`match_nearby_donors failed: ${error.message}`);
+  }
+
+  return (data || []).map((row) => ({
+    donorId: row.donor_id,
+    fullName: row.full_name,
+    phone: row.phone,
+    bloodGroup: row.blood_group,
+    city: row.city,
+    distanceKm: row.distance_km,
+  }));
+};
+
+export const getMatchesForRequest = async (requestId, requesterId) => {
+  const { data, error } = await supabase.rpc("get_request_matches", {
+    p_request_id: requestId,
+    p_requester_id: requesterId,
+  });
+
+  if (error) {
+    throw new Error(`get_request_matches failed: ${error.message}`);
+  }
+
+  return (data || []).map((row) => ({
+    donorId: row.donor_id,
+    fullName: row.full_name,
+    phone: row.phone,
+    bloodGroup: row.blood_group,
+    city: row.city,
+    distanceKm: row.distance_km,
+    matchScore: row.match_score,
+    status: row.status,
+  }));
 };
 
 export const getRequesterRequests = async (requesterId) => {
