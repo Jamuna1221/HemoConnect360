@@ -65,7 +65,38 @@ export const createBloodRequest = async (requesterId, data) => {
     }
   }
 
-  return { ...toRequestDto(request), matches };
+  return {
+    ...toRequestDto(request),
+    status: matches.length > 0 ? "notified" : "searching_donors",
+    matches,
+  };
+};
+
+const withMatchStatus = async (request) => {
+  if (request.status === "cancelled" || request.status === "fulfilled") {
+    return request;
+  }
+
+  const { data: matches, error } = await supabase
+    .from("donor_matches")
+    .select("status")
+    .eq("blood_request_id", request.id);
+
+  if (error) {
+    console.warn("[blood-request] Could not derive match status", {
+      requestId: request.id,
+      error: error.message,
+    });
+    return request;
+  }
+
+  const status = matches?.some((match) => match.status === "accepted")
+    ? "accepted"
+    : matches?.length > 0
+      ? "notified"
+      : "searching_donors";
+
+  return { ...request, status };
 };
 
 /**
@@ -126,7 +157,8 @@ export const getMatchesForRequest = async (requestId, requesterId) => {
 
 export const getRequesterRequests = async (requesterId) => {
   const requests = await findRequestsByRequesterId(requesterId);
-  return requests.map(toRequestDto);
+  const withStatuses = await Promise.all(requests.map(withMatchStatus));
+  return withStatuses.map(toRequestDto);
 };
 
 export const getRequestById = async (requestId, requesterId) => {
@@ -138,7 +170,7 @@ export const getRequestById = async (requestId, requesterId) => {
     throw new ApiError(403, "You can only access your own blood requests");
   }
 
-  return toRequestDto(request);
+  return toRequestDto(await withMatchStatus(request));
 };
 
 export const cancelBloodRequest = async (requestId, requesterId) => {
