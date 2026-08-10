@@ -573,6 +573,10 @@
 }
 
 /* Blood Requests */
+.donor-dash-requests-section {
+  scroll-margin-top: 90px;
+}
+
 .donor-dash-requests-list {
   display: flex;
   flex-direction: column;
@@ -655,6 +659,19 @@
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+.donor-dash-request-location {
+  margin: 10px 0 0;
+  color: #4B5563;
+  font-size: 13px;
+}
+
+.donor-dash-request-disclaimer {
+  margin: 8px 0 0;
+  color: #9A3412;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .donor-dash-btn-outline {

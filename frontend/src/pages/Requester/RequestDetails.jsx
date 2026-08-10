@@ -49,8 +49,23 @@ const RequestDetails = () => {
     </div>
   )
 
-  const currentStep = req.timeline ? req.timeline.findIndex((t) => !t.completed) : 0
-  const progress = req.timeline ? ((req.timeline.filter((t) => t.completed).length / req.timeline.length) * 100) : 0
+  const displayTimeline = req.timeline?.map((step) => ({
+    ...step,
+    completed: step.step === 'notified' && matches?.length > 0
+      ? true
+      : step.step === 'accepted' && matches?.some((match) => match.status === 'accepted')
+        ? true
+        : step.completed,
+    time: step.step === 'notified' && matches?.length > 0 && !step.time
+      ? 'Donors matched and notified'
+      : step.step === 'accepted' && matches?.some((match) => match.status === 'accepted') && !step.time
+        ? 'A donor accepted this request'
+        : step.time,
+  })) || []
+  const currentStep = displayTimeline.findIndex((t) => !t.completed)
+  const progress = displayTimeline.length
+    ? ((displayTimeline.filter((t) => t.completed).length / displayTimeline.length) * 100)
+    : 0
 
   return (
     <div className="req-detail-page">
@@ -68,13 +83,13 @@ const RequestDetails = () => {
           <div className="req-detail-grid">
             <div className="req-detail-timeline-card">
               <h2>Timeline</h2>
-              {req.timeline && (
+              {displayTimeline.length > 0 && (
                 <div className="req-detail-timeline">
-                  {req.timeline.map((step, i) => (
+                  {displayTimeline.map((step, i) => (
                     <div key={i} className={`req-detail-step ${step.completed ? 'req-detail-step--completed' : ''} ${i === currentStep ? 'req-detail-step--current' : ''}`}>
                       <div className="req-detail-step-marker">
                         <div className="req-detail-step-icon">{step.completed ? <FaCheckCircle /> : <FaClock />}</div>
-                        {i < req.timeline.length - 1 && <div className="req-detail-step-line"></div>}
+                        {i < displayTimeline.length - 1 && <div className="req-detail-step-line"></div>}
                       </div>
                       <div className="req-detail-step-content">
                         <h4>{step.label}</h4>
@@ -121,6 +136,11 @@ const RequestDetails = () => {
               <div className="req-detail-card">
                 <h3><FaUserFriends /> Matched Donors</h3>
                 {matchesError && <p className="req-detail-matches-error">{matchesError}</p>}
+                {!matchesError && matches && (
+                  <p className="req-detail-matches-count">
+                    Accepted donors: <strong>{matches[0]?.acceptedCount || 0}</strong> / {matches[0]?.maxAccepted || 5}
+                  </p>
+                )}
                 {!matchesError && !matches && <p className="req-detail-matches-empty">Loading matched donors…</p>}
                 {!matchesError && matches && matches.length === 0 && (
                   <p className="req-detail-matches-empty">

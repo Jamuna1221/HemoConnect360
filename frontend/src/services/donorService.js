@@ -455,6 +455,73 @@ export const fetchDonationHistory = async () => {
   return data || []
 }
 
+export const fetchDonorRequests = async () => {
+  const supabase = getSupabase()
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user?.id) return []
+
+  const { data, error } = await supabase.rpc('get_donor_requests', {
+    p_donor_id: user.id,
+  })
+
+  if (error) {
+    console.error('[donor:requests] fetch failed', { userId: user.id, error })
+    throw new Error('Unable to load matched blood requests.')
+  }
+
+  return (data || []).map((request) => ({
+    id: request.request_id,
+    bloodGroup: request.blood_group,
+    units: request.units_required,
+    hospitalName: request.hospital_name,
+    city: request.city,
+    address: request.hospital_address,
+    contactName: request.contact_name,
+    contactPhone: request.contact_phone,
+    notes: request.notes,
+    requiredBy: request.required_by,
+    priority: request.priority,
+    requestStatus: request.request_status,
+    donorResponse: request.donor_response,
+    distanceKm: request.distance_km,
+    distanceBand: request.distance_band,
+    matchScore: request.match_score,
+    acceptedCount: request.accepted_count,
+    maxAccepted: request.max_accepted,
+    matchedAt: request.matched_at,
+  }))
+}
+
+export const acceptDonorRequest = async (requestId) => {
+  const supabase = getSupabase()
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  if (userError || !user?.id) throw new Error('You must be signed in to respond to a request.')
+
+  const { data, error } = await supabase.rpc('accept_donor_request', {
+    p_request_id: requestId,
+    p_donor_id: user.id,
+  })
+  if (error) throw new Error(error.message)
+  return data?.[0] || data
+}
+
+export const rejectDonorRequest = async (requestId) => {
+  const supabase = getSupabase()
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  if (userError || !user?.id) throw new Error('You must be signed in to respond to a request.')
+
+  const { data, error } = await supabase.rpc('reject_donor_request', {
+    p_request_id: requestId,
+    p_donor_id: user.id,
+  })
+  if (error) throw new Error(error.message)
+  return data?.[0] || data
+}
+
 /**
  * Delete a donation record (e.g. added by mistake). The trigger keeps
  * donors.last_donation in sync automatically.

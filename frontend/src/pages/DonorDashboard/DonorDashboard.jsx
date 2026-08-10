@@ -6,7 +6,7 @@ import heroPattern from '../../assets/donor-dashboard/hero-pattern.png'
 import donorHero from '../../assets/donor-dashboard/donor-hero.png'
 import bloodBag from '../../assets/donor-dashboard/blood-bag.png'
 import { getSupabase } from '../../lib/supabase'
-import { fetchDonorProfile, fetchDonationHistory, recordDonation } from '../../services/donorService'
+import { fetchDonorProfile, fetchDonationHistory, fetchDonorRequests, recordDonation } from '../../services/donorService'
 import {
   FaHeart,
   FaTint,
@@ -37,7 +37,7 @@ import {
 import './DonorDashboard.css'
 
 const QUICK_ACTIONS = [
-  { icon: <FaClipboardList />, title: 'Update Profile', desc: 'Keep your information current', path: '/donor/register', color: '#E53935' },
+  { icon: <FaClipboardList />, title: 'View Profile', desc: 'Review your donor information', path: '/donor/profile', color: '#E53935' },
   { icon: <FaMapMarkerAlt />, title: 'Find Blood Bank', desc: 'Locate nearest donation center', path: '/', color: '#22C55E' },
   { icon: <FaCalendarAlt />, title: 'Schedule Donation', desc: 'Book your next appointment', path: '/', color: '#3B82F6' },
   { icon: <FaBell />, title: 'Alert Preferences', desc: 'Manage notification settings', path: '/', color: '#F59E0B' }
@@ -53,13 +53,6 @@ const HEALTH_TIPS = [
   { icon: <FaTint />, title: 'Stay Hydrated', desc: 'Drink plenty of water before and after donation to help your body recover quickly.' },
   { icon: <FaHeart />, title: 'Eat Iron-Rich Foods', desc: 'Include spinach, beans, and red meat in your diet to maintain healthy iron levels.' },
   { icon: <FaShieldAlt />, title: 'Rest Well', desc: 'Get adequate sleep the night before donation and avoid strenuous activity afterward.' }
-]
-
-const BLOOD_REQUESTS = [
-  { id: 1, bloodGroup: 'O+', hospital: 'Central Hospital', distance: '2.3 km', priority: 'urgent', date: '2026-07-25' },
-  { id: 2, bloodGroup: 'A+', hospital: 'City Medical Center', distance: '5.1 km', priority: 'high', date: '2026-07-26' },
-  { id: 3, bloodGroup: 'B+', hospital: 'St. Mary\'s Hospital', distance: '8.7 km', priority: 'normal', date: '2026-07-28' },
-  { id: 4, bloodGroup: 'AB-', hospital: 'National Blood Bank', distance: '3.4 km', priority: 'urgent', date: '2026-07-29' }
 ]
 
 const DONATION_CAMPS = [
@@ -101,11 +94,11 @@ const getDonorCode = (id) => {
   return `HC-${id.replace(/-/g, '').slice(0, 8).toUpperCase()}`
 }
 
-const getNextEligible = (lastDonation) => {
+const getNextEligible = (lastDonation, gender) => {
   if (!lastDonation) return null
   const date = new Date(lastDonation)
   if (Number.isNaN(date.getTime())) return null
-  date.setDate(date.getDate() + 90)
+  date.setDate(date.getDate() + (String(gender).toLowerCase() === 'male' ? 90 : 120))
   return date
 }
 
@@ -121,6 +114,8 @@ const DonorDashboard = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [donations, setDonations] = useState([])
+  const [matchedRequests, setMatchedRequests] = useState([])
+  const [requestError, setRequestError] = useState('')
   const [showRecordForm, setShowRecordForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [donationError, setDonationError] = useState('')
@@ -190,15 +185,23 @@ const DonorDashboard = () => {
 
         console.info('[donor-dashboard] Donor profile loaded', { userId: session.user.id, donorId: data.id })
 
-        const next = getNextEligible(data.last_donation)
+        const next = getNextEligible(data.last_donation, data.gender)
         const left = next
           ? Math.max(0, Math.ceil((next.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
           : null
 
-        const history = await fetchDonationHistory()
+        const [history, requests] = await Promise.all([
+          fetchDonationHistory(),
+          fetchDonorRequests().catch((requestLoadError) => {
+            console.error('[donor-dashboard] Matched requests query failed', requestLoadError)
+            if (active) setRequestError(requestLoadError.message || 'Unable to load matched requests.')
+            return []
+          }),
+        ])
         if (!active) return
 
         setDonations(history)
+        setMatchedRequests(requests)
         setDonor(data)
         setDaysLeft(left)
         setLoading(false)
@@ -247,7 +250,7 @@ const DonorDashboard = () => {
   }
 
   const firstName = getFirstName(donor.full_name)
-  const nextEligible = getNextEligible(donor.last_donation)
+  const nextEligible = getNextEligible(donor.last_donation, donor.gender)
 
   const totalUnits = donations.reduce((sum, d) => sum + (Number(d.units) || 0), 0)
   const rewardPoints = donations.reduce((sum, d) => sum + (Number(d.units) || 0) * 250, 0)
@@ -583,32 +586,13 @@ const DonorDashboard = () => {
               )}
             </div>
 
-            <div className="donor-dash-section">
+            <div className="donor-dash-section donor-dash-request-cta">
               <div className="donor-dash-section-header">
-                <h2><FaHospital /> Recent Blood Requests</h2>
-                <Link to="/" className="donor-dash-view-all">View All <FaChevronRight /></Link>
+                <h2><FaHospital /> Blood Requests</h2>
               </div>
-              <div className="donor-dash-requests-list">
-                {BLOOD_REQUESTS.map((req) => (
-                  <div key={req.id} className="donor-dash-request-card">
-                    <div className="donor-dash-request-top">
-                      <span className="donor-dash-request-blood-group">
-                        <FaTint /> {req.bloodGroup}
-                      </span>
-                      <span className={`donor-dash-request-priority donor-dash-request-priority--${req.priority}`}>
-                        {req.priority}
-                      </span>
-                    </div>
-                    <h4 className="donor-dash-request-hospital">{req.hospital}</h4>
-                    <div className="donor-dash-request-bottom">
-                      <span className="donor-dash-request-distance"><FaMapMarkerAlt /> {req.distance}</span>
-                      <span className="donor-dash-request-date"><FaCalendarAlt /> {new Date(req.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <Link to="/" className="donor-dash-btn-outline">
-                <FaChevronRight /> View All Blood Requests
+              <p>{requestError || `${matchedRequests.length} eligible request${matchedRequests.length === 1 ? '' : 's'} are waiting for your response.`}</p>
+              <Link to="/donor/requests" className="donor-dash-btn-outline">
+                <FaHospital /> Open Blood Requests
               </Link>
             </div>
           </div>

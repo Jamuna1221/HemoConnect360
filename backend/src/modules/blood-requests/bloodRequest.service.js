@@ -119,6 +119,8 @@ export const getMatchesForRequest = async (requestId, requesterId) => {
     distanceKm: row.distance_km,
     matchScore: row.match_score,
     status: row.status,
+    acceptedCount: row.accepted_count,
+    maxAccepted: row.max_accepted,
   }));
 };
 

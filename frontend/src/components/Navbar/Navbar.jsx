@@ -8,7 +8,8 @@ import './Navbar.css';
 const NAV_LINKS = [
   { label: 'Home', href: '#home' },
   { label: 'Find Donors', href: '#find-donors' },
-  { label: 'Requests', href: '#requests' },
+  { label: 'Requests', href: '/donor/requests' },
+  { label: 'Profile', href: '/donor/profile' },
   { label: 'About Us', href: '#about' },
   { label: 'Contact', href: '#contact' },
 ];

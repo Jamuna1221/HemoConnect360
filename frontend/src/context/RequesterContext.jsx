@@ -154,10 +154,23 @@ const loginUser = async (userData) => {
         longitude: requestData.longitude || null,
         notes: requestData.notes || '',
       })
+      const donorMatches = Array.isArray(synced.matches) ? synced.matches : []
+      const syncedTimeline = newRequest.timeline.map((step) => ({
+        ...step,
+        completed: step.step === 'submitted'
+          || (step.step === 'searching' && donorMatches.length > 0)
+          || (step.step === 'notified' && donorMatches.length > 0),
+        time: step.step === 'notified' && donorMatches.length > 0
+          ? new Date().toLocaleString()
+          : step.time,
+      }))
       setRequests((prev) =>
-        prev.map((r) => (r.id === newRequest.id ? { ...synced, timeline: newRequest.timeline } : r))
+        prev.map((r) => (r.id === newRequest.id ? { ...synced, timeline: syncedTimeline } : r))
       )
-    } catch {
+      newRequest.timeline = syncedTimeline
+    } catch (error) {
+      console.error('[requester] Blood request sync failed', error)
+      throw error
     }
 
     return newRequest

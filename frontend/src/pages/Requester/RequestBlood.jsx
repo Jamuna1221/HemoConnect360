@@ -55,6 +55,7 @@ const navigate = useNavigate()
     if (!form.requiredBy) errs.requiredBy = 'Required date is required'
     if (!form.contactName.trim()) errs.contactName = 'Contact name is required'
     if (!form.contactPhone.trim()) errs.contactPhone = 'Phone number is required'
+    if (!form.latitude || !form.longitude) errs.latitude = 'Detect the hospital location to match nearby donors'
     if (form.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contactEmail)) errs.contactEmail = 'Invalid email format'
     setErrors(errs)
     return Object.keys(errs).length === 0
@@ -86,8 +87,9 @@ const handleSubmit = async (e) => {
       })
       setLoading(false)
       navigate('/requester/confirmation', { state: { request: newRequest } })
-    } catch {
+    } catch (error) {
       setLoading(false)
+      setErrors((prev) => ({ ...prev, form: error.message || 'Unable to submit the blood request' }))
     }
   }
 
@@ -126,6 +128,7 @@ const handleSubmit = async (e) => {
           </div>
 
           <form className="req-blood-form" onSubmit={handleSubmit} noValidate>
+            {errors.form && <div className="req-blood-error req-blood-error--form">{errors.form}</div>}
             <section className="req-blood-section">
               <h2><FaUser /> Patient Details</h2>
               <div className="req-blood-grid">
