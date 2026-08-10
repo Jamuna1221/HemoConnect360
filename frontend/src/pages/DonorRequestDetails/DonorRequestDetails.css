@@ -1,30 +1,36 @@
-.donor-request-detail-page { min-height: 100vh; background: #FAFAFA; }
-.donor-request-detail-main { padding: 110px 24px 70px; }
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+.donor-request-detail-page { min-height: 100vh; background: #f7f8fa; color: #18202b; font-family: 'Poppins', sans-serif; }
+.donor-request-detail-main { padding: 112px 24px 80px; }
 .donor-request-detail-container { max-width: 1000px; margin: 0 auto; }
-.donor-request-detail-back { border: 0; background: transparent; color: #6B7280; font-weight: 700; display: inline-flex; gap: 8px; align-items: center; cursor: pointer; margin-bottom: 24px; }
-.donor-request-detail-hero { background: #FFF5F5; border: 1px solid #FECACA; border-radius: 24px; padding: 30px; display: flex; justify-content: space-between; align-items: center; }
-.donor-request-detail-hero--high { background: #FFFBEB; border-color: #FDE68A; }
-.donor-request-detail-hero--standard { background: #F0FDF4; border-color: #BBF7D0; }
-.donor-request-detail-hero h1 { margin: 12px 0 5px; font-size: clamp(27px, 4vw, 42px); color: #111827; }
-.donor-request-detail-hero p { margin: 0; color: #6B7280; text-transform: capitalize; }
-.donor-request-detail-hero > svg { font-size: 70px; color: #E53935; }
-.donor-request-detail-badge { color: #B91C1C; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
-.donor-request-detail-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; margin-top: 18px; }
-.donor-request-detail-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 18px; padding: 24px; margin-top: 18px; }
-.donor-request-detail-card h2 { margin: 0 0 18px; font-size: 18px; display: flex; gap: 8px; align-items: center; color: #111827; }
-.donor-request-detail-card p { color: #4B5563; line-height: 1.6; }
-.donor-request-detail-card p svg { vertical-align: middle; }
-.donor-request-detail-count { color: #E53935; font-size: 44px; font-weight: 800; }
-.donor-request-detail-note, .donor-request-detail-disclaimer { font-size: 13px; color: #9A3412 !important; }
+.donor-request-detail-back { display: inline-flex; align-items: center; gap: 9px; margin-bottom: 30px; padding: 0; color: #737b87; font-size: 13px; font-weight: 600; background: transparent; border: 0; cursor: pointer; }
+.donor-request-detail-back:hover { color: #d83232; }
+.donor-request-detail-hero { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 32px 34px; background: linear-gradient(135deg, #fff 0%, #fff4f4 100%); border: 1px solid #f0c5c5; border-radius: 26px; box-shadow: 0 12px 35px rgba(24, 32, 43, .05); }
+.donor-request-detail-hero--high { background: linear-gradient(135deg, #fff 0%, #fffbeb 100%); border-color: #f4d58d; }
+.donor-request-detail-hero--standard { background: linear-gradient(135deg, #fff 0%, #f1fbf5 100%); border-color: #b7e5c8; }
+.donor-request-detail-hero h1 { margin: 11px 0 7px; color: #18202b; font-size: clamp(28px, 4vw, 43px); font-weight: 800; letter-spacing: -.045em; line-height: 1.1; }
+.donor-request-detail-hero p { margin: 0; color: #737b87; font-size: 14px; text-transform: capitalize; }
+.donor-request-detail-hero > svg { width: 84px; height: 84px; padding: 21px; color: #d83232; background: #fff; border-radius: 26px; box-shadow: 0 8px 22px rgba(216, 50, 50, .12); }
+.donor-request-detail-badge { color: #c53030; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.donor-request-detail-grid { display: grid; grid-template-columns: 1.3fr .7fr; gap: 18px; margin-top: 18px; }
+.donor-request-detail-card { margin-top: 18px; padding: 26px; background: #fff; border: 1px solid #e7e9ed; border-radius: 21px; box-shadow: 0 8px 30px rgba(24, 32, 43, .04); }
+.donor-request-detail-card h2 { display: flex; align-items: center; gap: 9px; margin: 0 0 20px; color: #18202b; font-size: 17px; font-weight: 700; }
+.donor-request-detail-card h2 svg { color: #d83232; }
+.donor-request-detail-card p { margin: 10px 0; color: #626c78; font-size: 13px; line-height: 1.65; }
+.donor-request-detail-card p strong { color: #333d49; font-weight: 700; }
+.donor-request-detail-card p svg { margin: 0 4px; vertical-align: -1px; }
+.donor-request-detail-count { color: #d83232; font-size: 48px; font-weight: 800; letter-spacing: -.06em; line-height: 1; }
+.donor-request-detail-note, .donor-request-detail-disclaimer { color: #9a5b18 !important; font-size: 12px !important; }
 .donor-request-detail-response { text-align: center; }
-.donor-request-detail-actions { display: flex; justify-content: center; gap: 12px; margin-top: 20px; }
-.donor-request-detail-actions button { border: 0; border-radius: 12px; padding: 13px 20px; font-weight: 800; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
-.donor-request-detail-actions button:disabled { opacity: .55; cursor: not-allowed; }
-.donor-request-detail-accept { background: #16A34A; color: #fff; }
-.donor-request-detail-reject { background: #FEE2E2; color: #B91C1C; }
-.donor-request-detail-status { font-weight: 800; display: inline-flex; gap: 8px; align-items: center; }
-.donor-request-detail-status--accepted { color: #15803D; }
-.donor-request-detail-status--rejected { color: #B91C1C; }
-.donor-request-detail-error, .donor-request-detail-state { margin-top: 18px; padding: 18px; background: #FEF2F2; color: #B91C1C; border-radius: 14px; }
-.donor-request-detail-dashboard { display: inline-block; margin-top: 24px; color: #E53935; font-weight: 700; text-decoration: none; }
-@media (max-width: 700px) { .donor-request-detail-main { padding: 96px 16px 48px; } .donor-request-detail-grid { grid-template-columns: 1fr; } .donor-request-detail-hero > svg { display: none; } .donor-request-detail-actions { flex-direction: column; } .donor-request-detail-actions button { justify-content: center; } }
+.donor-request-detail-response .donor-request-detail-disclaimer { max-width: 670px; margin: 0 auto; }
+.donor-request-detail-actions { display: flex; justify-content: center; gap: 12px; margin-top: 23px; }
+.donor-request-detail-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 172px; padding: 13px 20px; border: 0; border-radius: 12px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: transform .2s ease, opacity .2s ease; }
+.donor-request-detail-actions button:hover:not(:disabled) { transform: translateY(-2px); }
+.donor-request-detail-actions button:disabled { cursor: not-allowed; opacity: .55; }
+.donor-request-detail-accept { color: #fff; background: #1c9b55; box-shadow: 0 7px 18px rgba(28, 155, 85, .18); }
+.donor-request-detail-reject { color: #b42318; background: #fff0f0; }
+.donor-request-detail-status { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; font-size: 14px; font-weight: 700; }
+.donor-request-detail-status--accepted { color: #17834a; }.donor-request-detail-status--rejected { color: #b42318; }
+.donor-request-detail-error, .donor-request-detail-state { margin-top: 18px; padding: 16px 18px; color: #b42318; font-size: 13px; background: #fff3f2; border: 1px solid #f0c5c5; border-radius: 14px; }
+.donor-request-detail-dashboard { display: inline-block; margin-top: 25px; color: #d83232; font-size: 13px; font-weight: 700; text-decoration: none; }
+@media (max-width: 700px) { .donor-request-detail-main { padding: 96px 16px 55px; }.donor-request-detail-hero { padding: 25px 22px; }.donor-request-detail-hero > svg { display: none; }.donor-request-detail-grid { grid-template-columns: 1fr; }.donor-request-detail-actions { flex-direction: column; }.donor-request-detail-actions button { width: 100%; } }

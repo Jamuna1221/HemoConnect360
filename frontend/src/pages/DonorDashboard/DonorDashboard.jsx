@@ -469,6 +469,7 @@ const DonorDashboard = () => {
               <div className="donor-dash-section-header">
                 <h2><FaClock /> Donation History</h2>
                 <div className="donor-dash-history-actions">
+                  <Link to="/donor/donations" className="donor-dash-view-all">Full History <FaChevronRight /></Link>
                   <button
                     type="button"
                     className="donor-dash-btn-outline"

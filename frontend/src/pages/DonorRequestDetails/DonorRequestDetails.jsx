@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FaArrowLeft, FaCalendarAlt, FaCheckCircle, FaHospital, FaMapMarkerAlt, FaPhone, FaTimes, FaTint, FaUsers } from 'react-icons/fa'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
-import { acceptDonorRequest, fetchDonorRequests, rejectDonorRequest } from '../../services/donorService'
+import { acceptDonorRequest, fetchDonorRequests, recordDonorOutcome, rejectDonorRequest } from '../../services/donorService'
 import './DonorRequestDetails.css'
 
 const DonorRequestDetails = () => {
@@ -39,6 +39,24 @@ const DonorRequestDetails = () => {
       }))
     } catch (err) {
       setError(err.message || 'Unable to update your response.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  const recordOutcome = async (donated) => {
+    setWorking(true)
+    setError('')
+    try {
+      const result = await recordDonorOutcome(id, donated)
+      setRequest((current) => ({
+        ...current,
+        donorResponse: donated ? 'donated' : 'declined',
+        requestStatus: donated ? 'completed' : current.requestStatus,
+        acceptedCount: result?.accepted_count ?? current.acceptedCount,
+      }))
+    } catch (err) {
+      setError(err.message || 'Unable to record the donation outcome.')
     } finally {
       setWorking(false)
     }
@@ -85,9 +103,19 @@ const DonorRequestDetails = () => {
               <section className="donor-request-detail-card donor-request-detail-response">
                 <p className="donor-request-detail-disclaimer">This is a potential match based on blood group, donation interval, and distance. Final compatibility must be confirmed by the blood bank.</p>
                 {request.donorResponse === 'accepted' ? (
-                  <div className="donor-request-detail-status donor-request-detail-status--accepted"><FaCheckCircle /> You accepted this request.</div>
+                  <>
+                    <div className="donor-request-detail-status donor-request-detail-status--accepted"><FaCheckCircle /> You accepted this request. Did the blood bank complete the donation?</div>
+                    <div className="donor-request-detail-actions">
+                      <button type="button" className="donor-request-detail-accept" onClick={() => recordOutcome(true)} disabled={working}><FaCheckCircle /> Blood Donated: Yes</button>
+                      <button type="button" className="donor-request-detail-reject" onClick={() => recordOutcome(false)} disabled={working}><FaTimes /> Blood Donated: No</button>
+                    </div>
+                  </>
+                ) : request.donorResponse === 'donated' ? (
+                  <div className="donor-request-detail-status donor-request-detail-status--accepted"><FaCheckCircle /> Blood donated. Request completed.</div>
                 ) : request.donorResponse === 'rejected' ? (
                   <div className="donor-request-detail-status donor-request-detail-status--rejected"><FaTimes /> You rejected this request.</div>
+                ) : request.donorResponse === 'declined' ? (
+                  <div className="donor-request-detail-status donor-request-detail-status--rejected"><FaTimes /> You reported that the blood was not donated. The slot is available again.</div>
                 ) : (
                   <div className="donor-request-detail-actions">
                     <button type="button" className="donor-request-detail-accept" onClick={() => respond('accept')} disabled={working || request.acceptedCount >= request.maxAccepted}>

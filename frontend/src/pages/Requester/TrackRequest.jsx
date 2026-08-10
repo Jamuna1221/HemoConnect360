@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import RequesterNavbar from '../../components/Requester/RequesterNavbar';
 import Footer from '../../components/Footer/Footer';
 import { useRequester } from '../../context/RequesterContext';
-import { getBloodRequest } from '../../services/requesterService';
+import { getBloodRequest, listBloodRequests } from '../../services/requesterService';
 import './TrackRequest.css';
 
 const STATUS_STEPS = [
@@ -17,18 +17,31 @@ const STATUS_STEPS = [
 ]
 
 const currentStepIndex = (status) => {
-  const idx = STATUS_STEPS.findIndex((s) => s.status === status)
+  const normalizedStatus = status === 'searching_donors'
+    ? 'searching'
+    : status === 'donor_accepted'
+      ? 'accepted'
+      : status
+  const idx = STATUS_STEPS.findIndex((s) => s.status === normalizedStatus)
   return idx === -1 ? 0 : idx
 }
 
 const TrackRequest = () => {
   const location = useLocation();
 const navigate = useNavigate();
-  const { user } = useRequester();
+  const { user, requests } = useRequester();
   const latestRequest = location.state?.request || location.state?.requestData;
 
   const [requestData, setRequestData] = useState(latestRequest || null);
+  const [loadError, setLoadError] = useState('');
   const currentStep = currentStepIndex(requestData?.status);
+  const timeline = requestData?.timeline?.length
+    ? requestData.timeline
+    : STATUS_STEPS.map((step, index) => ({
+        ...step,
+        completed: index < currentStep,
+        time: index < currentStep ? 'Completed' : null,
+      }));
 
   useEffect(() => {
     if (!user) {
@@ -37,13 +50,34 @@ const navigate = useNavigate();
   }, [user, navigate]);
 
   useEffect(() => {
+    if (!user || requestData?.id) return;
+
+    const loadLatestRequest = async () => {
+      try {
+        const serverRequests = await listBloodRequests();
+        const latest = serverRequests?.[0] || requests?.[0] || null;
+        if (latest) setRequestData(latest);
+      } catch (error) {
+        console.error('[track-request] Failed to load latest request', error);
+        if (requests?.[0]) setRequestData(requests[0]);
+        else setLoadError(error.message || 'Unable to load your request timeline.');
+      }
+    };
+
+    loadLatestRequest();
+  }, [user, requestData?.id, requests]);
+
+  useEffect(() => {
     if (!requestData?.id) return;
 
     const fetch = async () => {
       try {
         const synced = await getBloodRequest(requestData.id)
         setRequestData(synced)
-      } catch {}
+      } catch (error) {
+        console.error('[track-request] Failed to refresh request', error);
+        setLoadError(error.message || 'Unable to refresh your request timeline.');
+      }
     }
 
     fetch()
@@ -58,7 +92,7 @@ const navigate = useNavigate();
       <RequesterNavbar />
       <main className="trk-container">
         <div className="trk-card" style={{ textAlign: 'center', padding: '60px 40px' }}>
-          <h2 style={{ color: '#6B7280' }}>No active request to track.</h2>
+          <h2 style={{ color: '#6B7280' }}>{loadError || 'No active request to track.'}</h2>
           <button className="req-confirm-btn req-confirm-btn--primary" style={{ marginTop: 20 }} onClick={() => navigate('/requester/request-blood')}>Request Blood</button>
         </div>
       </main>
@@ -90,8 +124,8 @@ const navigate = useNavigate();
           </div>
 
           <div className="trk-timeline">
-            {STATUS_STEPS.map((step, index) => {
-              const isDone = index < currentStep;
+            {timeline.map((step, index) => {
+              const isDone = step.completed || index < currentStep;
               const isCurrent = index === currentStep;
               return (
                 <div
@@ -102,7 +136,7 @@ const navigate = useNavigate();
                     <div className="trk-step-dot">
                       {isDone ? '✓' : isCurrent ? <span className="trk-step-pulse" /> : ''}
                     </div>
-                    {index < STATUS_STEPS.length - 1 && (
+                    {index < timeline.length - 1 && (
                       <div className={`trk-connector ${isDone ? 'trk-connector-done' : ''}`} />
                     )}
                   </div>

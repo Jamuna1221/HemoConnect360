@@ -12,6 +12,7 @@ import DonorLogin from '../pages/DonorLogin/DonorLogin'
 import DonorRequests from '../pages/DonorRequests/DonorRequests'
 import DonorRequestDetails from '../pages/DonorRequestDetails/DonorRequestDetails'
 import DonorProfile from '../pages/DonorProfile/DonorProfile'
+import DonorDonations from '../pages/DonorDonations/DonorDonations'
 import HowItWorks from '../pages/HowItWorks/HowItWorks'
 import RequesterLogin from '../pages/Requester/RequesterLogin'
 import RequesterRegistration from '../pages/Requester/RequesterRegister'
@@ -35,6 +36,7 @@ const AppRoutes = () => {
       <Route path="/donor/requests" element={<ProtectedRoute><DonorRequests /></ProtectedRoute>} />
       <Route path="/donor/requests/:id" element={<ProtectedRoute><DonorRequestDetails /></ProtectedRoute>} />
       <Route path="/donor/profile" element={<ProtectedRoute><DonorProfile /></ProtectedRoute>} />
+      <Route path="/donor/donations" element={<ProtectedRoute><DonorDonations /></ProtectedRoute>} />
       <Route path="/donor/login" element={<DonorLogin />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/auth/callback" element={<AuthCallback />} />

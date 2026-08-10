@@ -164,10 +164,15 @@ const loginUser = async (userData) => {
           ? new Date().toLocaleString()
           : step.time,
       }))
-      setRequests((prev) =>
-        prev.map((r) => (r.id === newRequest.id ? { ...synced, timeline: syncedTimeline } : r))
-      )
+      setRequests((prev) => {
+        const updated = prev.map((r) => (r.id === newRequest.id ? { ...synced, timeline: syncedTimeline } : r))
+        if (user?.phone) {
+          localStorage.setItem(`requester_requests_${user.phone}`, JSON.stringify(updated))
+        }
+        return updated
+      })
       newRequest.timeline = syncedTimeline
+      return { ...synced, timeline: syncedTimeline }
     } catch (error) {
       console.error('[requester] Blood request sync failed', error)
       throw error

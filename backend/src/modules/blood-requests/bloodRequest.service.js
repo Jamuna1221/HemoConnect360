@@ -90,8 +90,10 @@ const withMatchStatus = async (request) => {
     return request;
   }
 
-  const status = matches?.some((match) => match.status === "accepted")
-    ? "accepted"
+  const status = matches?.some((match) => match.status === "donated")
+    ? "completed"
+    : matches?.some((match) => match.status === "accepted")
+      ? "accepted"
     : matches?.length > 0
       ? "notified"
       : "searching_donors";

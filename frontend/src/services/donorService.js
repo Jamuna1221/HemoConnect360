@@ -522,6 +522,20 @@ export const rejectDonorRequest = async (requestId) => {
   return data?.[0] || data
 }
 
+export const recordDonorOutcome = async (requestId, donated) => {
+  const supabase = getSupabase()
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  if (userError || !user?.id) throw new Error('You must be signed in to record an outcome.')
+
+  const { data, error } = await supabase.rpc('record_donor_outcome', {
+    p_request_id: requestId,
+    p_donor_id: user.id,
+    p_donated: donated,
+  })
+  if (error) throw new Error(error.message)
+  return data?.[0] || data
+}
+
 /**
  * Delete a donation record (e.g. added by mistake). The trigger keeps
  * donors.last_donation in sync automatically.
