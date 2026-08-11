@@ -7,6 +7,7 @@ import donorHero from '../../assets/donor-dashboard/donor-hero.png'
 import bloodBag from '../../assets/donor-dashboard/blood-bag.png'
 import { getSupabase } from '../../lib/supabase'
 import { fetchDonorProfile, fetchDonationHistory, fetchDonorRequests, recordDonation } from '../../services/donorService'
+import { enableDonorNotifications } from '../../services/pushNotificationService'
 import {
   FaHeart,
   FaTint,
@@ -30,9 +31,6 @@ import {
   FaStar,
   FaMapPin,
   FaChevronRight,
-  FaUser,
-  FaUserCircle,
-  FaWeight,
 } from 'react-icons/fa'
 import './DonorDashboard.css'
 
@@ -120,10 +118,26 @@ const DonorDashboard = () => {
   const [saving, setSaving] = useState(false)
   const [donationError, setDonationError] = useState('')
   const [donationSuccess, setDonationSuccess] = useState('')
+  const [notificationStatus, setNotificationStatus] = useState(() => (
+    typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'enabled' : 'idle'
+  ))
+  const [notificationError, setNotificationError] = useState('')
   const [recordForm, setRecordForm] = useState({ donationDate: '', bloodBank: '', city: '', units: '1', notes: '' })
 
   const handleRecordFormChange = (e) => {
     setRecordForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  const handleEnableNotifications = async () => {
+    setNotificationStatus('enabling')
+    setNotificationError('')
+    try {
+      await enableDonorNotifications()
+      setNotificationStatus('enabled')
+    } catch (err) {
+      setNotificationStatus('error')
+      setNotificationError(err.message || 'Unable to enable notifications.')
+    }
   }
 
   const handleSubmitDonation = async (e) => {
@@ -282,6 +296,12 @@ const DonorDashboard = () => {
               <p className="donor-dash-hero-appreciation">
                 Thank you for being a life saver. Your generous donations are making a real difference in people's lives.
               </p>
+              <div className="donor-dash-notification-control">
+                <button type="button" onClick={handleEnableNotifications} disabled={notificationStatus === 'enabling'}>
+                  <FaBell /> {notificationStatus === 'enabled' ? 'Notifications Enabled' : notificationStatus === 'enabling' ? 'Enabling...' : 'Enable Notifications'}
+                </button>
+                {notificationError && <span>{notificationError}</span>}
+              </div>
               <div className="donor-dash-hero-stats">
                 {heroStats.map((stat) => (
                   <div key={stat.label} className="donor-dash-hero-stat-card">
@@ -349,99 +369,6 @@ const DonorDashboard = () => {
                 <span className="donor-dash-info-label">Health Status</span>
                 <span className="donor-dash-info-value">Excellent</span>
                 <span className="donor-dash-info-sub">Cleared to donate</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="donor-dash-section donor-dash-profile-section">
-            <div className="donor-dash-section-header">
-              <h2><FaUserCircle /> Donor Profile</h2>
-            </div>
-            <div className="donor-dash-profile-card">
-              <div className="donor-dash-profile-avatar">
-                {donor.profile_pic
-                  ? <img src={donor.profile_pic} alt={donor.full_name} />
-                  : <span>{getInitials(donor.full_name)}</span>}
-              </div>
-              <div className="donor-dash-profile-head">
-                <h3>{donor.full_name}</h3>
-                <p>{donor.blood_group} &bull; {donor.status === 'active' ? 'Active Donor' : capitalize(donor.status)}</p>
-              </div>
-            </div>
-            <div className="donor-dash-info-grid donor-dash-profile-grid">
-              <div className="donor-dash-info-card">
-                <div className="donor-dash-info-icon donor-dash-info-icon--blue">
-                  <FaEnvelope />
-                </div>
-                <div className="donor-dash-info-content">
-                  <span className="donor-dash-info-label">Email</span>
-                  <span className="donor-dash-info-value donor-dash-info-value--small">{donor.email || '—'}</span>
-                </div>
-              </div>
-              <div className="donor-dash-info-card">
-                <div className="donor-dash-info-icon donor-dash-info-icon--green">
-                  <FaPhoneAlt />
-                </div>
-                <div className="donor-dash-info-content">
-                  <span className="donor-dash-info-label">Phone</span>
-                  <span className="donor-dash-info-value">{donor.phone || '—'}</span>
-                </div>
-              </div>
-              <div className="donor-dash-info-card">
-                <div className="donor-dash-info-icon donor-dash-info-icon--red">
-                  <FaMapMarkerAlt />
-                </div>
-                <div className="donor-dash-info-content">
-                  <span className="donor-dash-info-label">City</span>
-                  <span className="donor-dash-info-value">
-                    {donor.city ? `${donor.city}${donor.state ? `, ${donor.state}` : ''}` : '—'}
-                  </span>
-                </div>
-              </div>
-              <div className="donor-dash-info-card">
-                <div className="donor-dash-info-icon donor-dash-info-icon--purple">
-                  <FaUser />
-                </div>
-                <div className="donor-dash-info-content">
-                  <span className="donor-dash-info-label">Gender</span>
-                  <span className="donor-dash-info-value">{capitalize(donor.gender)}</span>
-                </div>
-              </div>
-              <div className="donor-dash-info-card">
-                <div className="donor-dash-info-icon donor-dash-info-icon--purple">
-                  <FaWeight />
-                </div>
-                <div className="donor-dash-info-content">
-                  <span className="donor-dash-info-label">Weight</span>
-                  <span className="donor-dash-info-value">{donor.weight ? `${donor.weight} kg` : '—'}</span>
-                </div>
-              </div>
-              <div className="donor-dash-info-card">
-                <div className="donor-dash-info-icon donor-dash-info-icon--red">
-                  <FaHeartbeat />
-                </div>
-                <div className="donor-dash-info-content">
-                  <span className="donor-dash-info-label">Hemoglobin</span>
-                  <span className="donor-dash-info-value">{donor.hemoglobin ? `${donor.hemoglobin} g/dL` : '—'}</span>
-                </div>
-              </div>
-              <div className="donor-dash-info-card">
-                <div className="donor-dash-info-icon donor-dash-info-icon--blue">
-                  <FaCalendarAlt />
-                </div>
-                <div className="donor-dash-info-content">
-                  <span className="donor-dash-info-label">Last Donation</span>
-                  <span className="donor-dash-info-value">{formatDate(donor.last_donation) || 'Not yet donated'}</span>
-                </div>
-              </div>
-              <div className="donor-dash-info-card">
-                <div className="donor-dash-info-icon donor-dash-info-icon--green">
-                  <FaIdCard />
-                </div>
-                <div className="donor-dash-info-content">
-                  <span className="donor-dash-info-label">Registration Date</span>
-                  <span className="donor-dash-info-value">{formatDate(donor.created_at) || '—'}</span>
-                </div>
               </div>
             </div>
           </div>

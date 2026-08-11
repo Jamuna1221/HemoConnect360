@@ -9,6 +9,7 @@ import bloodRequestBankRoutes from "./modules/blood-requests/bloodRequestBank.ro
 import bloodBankRoutes from "./modules/blood-banks/bloodBank.routes.js";
 import bloodBankInventoryRoutes from "./modules/blood-bank-inventory/bloodBankInventory.routes.js";
 import adminRoutes from "./modules/admin/admin.routes.js";
+import donorEventRoutes from "./modules/notifications/donorEvent.routes.js";
 import { notFoundHandler, errorHandler } from "./shared/http/errorHandlers.js";
 const app = express();
 app.use(cors({ origin: env.corsOrigin, credentials: true }));
@@ -23,6 +24,7 @@ app.use(apiRoutes.bloodRequests.base, bloodRequestRoutes);
 app.use(apiRoutes.bloodBanks.base, bloodBankRoutes);
 app.use(apiRoutes.bloodBanks.base, bloodBankInventoryRoutes);
 app.use(apiRoutes.admin.base, adminRoutes);
+app.use(apiRoutes.donorEvents.base, donorEventRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 export default app;

@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { FaBell, FaUser, FaBars, FaTimes, FaSignOutAlt } from 'react-icons/fa'
 import logo from '../../assets/logo/Hemoconnectlogo.png'
 import { useRequester } from '../../context/RequesterContext'
+import { enableRequesterNotifications, subscribeToForegroundNotifications } from '../../services/pushNotificationService'
+import { fetchRequesterNotifications } from '../../services/notificationService'
 import './RequesterNavbar.css'
 
 const NAV_LINKS = [
@@ -16,9 +18,25 @@ const RequesterNavbar = () => {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [showNotif, setShowNotif] = useState(false)
+  const [pushStatus, setPushStatus] = useState(() => (
+    typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'enabled' : 'idle'
+  ))
+  const [pushError, setPushError] = useState('')
+  const [serverNotifications, setServerNotifications] = useState([])
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logoutUser, notifications } = useRequester()
+
+  useEffect(() => {
+    if (!user) return
+    let active = true
+    const loadNotifications = () => fetchRequesterNotifications()
+      .then((items) => { if (active) setServerNotifications(items) })
+      .catch((error) => console.warn('[requester-notifications] Load failed', error))
+    loadNotifications()
+    const timer = setInterval(loadNotifications, 8000)
+    return () => { active = false; clearInterval(timer) }
+  }, [user])
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -26,14 +44,53 @@ const RequesterNavbar = () => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  useEffect(() => {
+    let active = true
+    let unsubscribe = () => {}
+    subscribeToForegroundNotifications((payload) => {
+      if (active && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(payload.notification?.title || 'HemoConnect360', {
+          body: payload.notification?.body || 'You have a new update.',
+          icon: '/favicon.svg',
+        })
+      }
+    }).then((stop) => {
+      if (active) unsubscribe = stop
+      else stop()
+    })
+    return () => { active = false; unsubscribe() }
+  }, [])
+
   const closeMenu = () => setMenuOpen(false)
+
+  const handleEnableNotifications = async () => {
+    setPushStatus('enabling')
+    setPushError('')
+    try {
+      await enableRequesterNotifications()
+      setPushStatus('enabled')
+    } catch (error) {
+      setPushStatus('error')
+      setPushError(error.message || 'Unable to enable notifications')
+    }
+  }
 
   const handleLogout = () => {
     logoutUser()
     navigate('/requester/login')
   }
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const notificationItems = [
+    ...serverNotifications.map((notification) => ({
+      id: notification.id,
+      text: notification.message,
+      title: notification.title,
+      time: new Date(notification.created_at).toLocaleString(),
+      read: Boolean(notification.read_at),
+    })),
+    ...notifications,
+  ]
+  const unreadCount = notificationItems.filter((n) => !n.read).length
 
   return (
     <header className={`req-navbar ${scrolled ? 'req-navbar--scrolled' : ''}`}>
@@ -59,6 +116,9 @@ const RequesterNavbar = () => {
               <FaBell />
               {unreadCount > 0 && <span className="req-navbar__badge">{unreadCount}</span>}
             </button>
+            <button type="button" className="req-navbar__push-enable" onClick={handleEnableNotifications} disabled={pushStatus === 'enabling'}>
+              {pushStatus === 'enabled' ? 'Alerts On' : pushStatus === 'enabling' ? 'Enabling...' : 'Enable Alerts'}
+            </button>
             <button type="button" className="req-navbar__logout-btn" onClick={handleLogout}>
               <FaSignOutAlt /> Logout
             </button>
@@ -77,11 +137,16 @@ const RequesterNavbar = () => {
             {showNotif && (
               <div className="req-navbar__notif-dropdown">
                 <h4 className="req-navbar__notif-title">Notifications</h4>
-                {notifications.length === 0 ? (
+                <button type="button" className="req-navbar__push-enable" onClick={handleEnableNotifications} disabled={pushStatus === 'enabling'}>
+                  {pushStatus === 'enabled' ? 'Browser alerts enabled' : pushStatus === 'enabling' ? 'Enabling...' : 'Enable browser alerts'}
+                </button>
+                {pushError && <p className="req-navbar__push-error">{pushError}</p>}
+                {notificationItems.length === 0 ? (
                   <p className="req-navbar__notif-empty">No notifications</p>
                 ) : (
-                  notifications.map((n) => (
+                  notificationItems.map((n) => (
                     <div key={n.id} className={`req-navbar__notif-item ${!n.read ? 'req-navbar__notif-item--unread' : ''}`}>
+                      {n.title && <strong className="req-navbar__notif-title-text">{n.title}</strong>}
                       <p className="req-navbar__notif-text">{n.text}</p>
                       <span className="req-navbar__notif-time">{n.time}</span>
                     </div>

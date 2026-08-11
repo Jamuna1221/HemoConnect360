@@ -7,6 +7,7 @@ import {
 import { findRequestsByRequesterId } from "../requesters/requester.repository.js";
 import { env } from "../../config/env.js";
 import supabase from "../../config/supabase.js";
+import { notifyDonorsOfRequest, notifyRequesterOfMatch } from "../notifications/push.service.js";
 
 const toRequestDto = (request) => ({
   id: request.id,
@@ -71,6 +72,17 @@ export const createBloodRequest = async (requesterId, data) => {
     }
   }
 
+  await notifyDonorsOfRequest({
+    donorIds: matches.map((match) => match.donorId),
+    bloodGroup: request.blood_group,
+    hospitalName: request.hospital_name,
+  });
+  await notifyRequesterOfMatch({
+    requesterId,
+    donorCount: matches.length,
+    bloodGroup: request.blood_group,
+  });
+
   return {
     ...toRequestDto(request),
     status: matches.length > 0 ? "notified" : "searching_donors",
@@ -106,11 +118,12 @@ const withMatchStatus = async (request) => {
     return request;
   }
 
-  const status = matches?.some((match) => match.status === "donated")
+  const activeMatches = matches?.filter((match) => !["rejected", "declined", "ineligible_after_donation"].includes(match.status)) || [];
+  const status = activeMatches.some((match) => match.status === "donated")
     ? "completed"
-    : matches?.some((match) => match.status === "accepted")
+    : activeMatches.some((match) => match.status === "accepted")
       ? "accepted"
-    : matches?.length > 0
+    : activeMatches.length > 0
       ? "notified"
       : "searching_donors";
 

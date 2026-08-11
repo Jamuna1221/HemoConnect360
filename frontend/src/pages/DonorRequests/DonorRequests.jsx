@@ -10,6 +10,7 @@ const DonorRequests = () => {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [filter, setFilter] = useState('pending')
 
   useEffect(() => {
     let active = true
@@ -19,6 +20,10 @@ const DonorRequests = () => {
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [])
+
+  const visibleRequests = requests.filter((request) => filter === 'pending'
+    ? request.donorResponse === 'notified'
+    : request.donorResponse === 'accepted')
 
   return (
     <div className="donor-requests-page">
@@ -37,12 +42,18 @@ const DonorRequests = () => {
 
           {loading && <div className="donor-requests-state">Loading eligible requests...</div>}
           {!loading && error && <div className="donor-requests-state donor-requests-state--error">{error}</div>}
-          {!loading && !error && requests.length === 0 && (
+          {!loading && !error && requests.length > 0 && (
+            <div className="donor-requests-filters" role="tablist" aria-label="Request status filter">
+              <button type="button" className={filter === 'pending' ? 'donor-requests-filter--active' : ''} onClick={() => setFilter('pending')}>Pending Requests</button>
+              <button type="button" className={filter === 'accepted' ? 'donor-requests-filter--active' : ''} onClick={() => setFilter('accepted')}>Accepted Requests</button>
+            </div>
+          )}
+          {!loading && !error && visibleRequests.length === 0 && (
             <div className="donor-requests-state">No eligible blood requests are available right now.</div>
           )}
-          {!loading && !error && requests.length > 0 && (
+          {!loading && !error && visibleRequests.length > 0 && (
             <div className="donor-requests-grid">
-              {requests.map((request) => (
+              {visibleRequests.map((request) => (
                 <Link
                   to={`/donor/requests/${request.id}`}
                   key={request.id}
@@ -53,6 +64,7 @@ const DonorRequests = () => {
                     <span className="donor-request-priority">{request.priority}</span>
                   </div>
                   <h2>{request.hospitalName}</h2>
+                  <p className="donor-request-patient">Patient: {request.patientName || '—'} · {request.patientAge || '—'} years · {request.patientGender || '—'}</p>
                   <p className="donor-request-location"><FaMapMarkerAlt /> {request.city || 'Location unavailable'}</p>
                   <div className="donor-request-meta">
                     <span><FaCalendarAlt /> {request.requiredBy || 'Immediate'}</span>

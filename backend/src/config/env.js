@@ -15,12 +15,13 @@ export const env = {
   corsOrigin: process.env.CORS_ORIGIN || true,
   supabaseUrl: process.env.SUPABASE_URL,
   supabaseKey: process.env.SUPABASE_KEY,
-  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
   // Comma-separated list of admin emails allowed to access the admin API.
   adminEmails: (process.env.ADMIN_EMAILS || "admin@hemoconnect360.com")
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean),
+  firebaseServiceAccountPath: process.env.FIREBASE_SERVICE_ACCOUNT_PATH || "",
   requesterTokenSecret:
     process.env.REQUESTER_TOKEN_SECRET || process.env.SUPABASE_KEY,
   adminApiToken:

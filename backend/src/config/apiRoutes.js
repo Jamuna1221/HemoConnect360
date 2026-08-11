@@ -5,6 +5,9 @@ export const apiRoutes = {
     phoneLogin: "/phone-login",
     me: "/me",
     profile: "/me/profile",
+    pushToken: "/me/push-token",
+    notifications: "/me/notifications",
+    notificationRead: "/me/notifications/:id/read",
   },
   donors: {
     base: "/api/donors",
@@ -46,6 +49,10 @@ export const apiRoutes = {
     announcement: "/notifications/announcement",
     auditLogs: "/audit-logs",
     profile: "/profile",
+  },
+  donorEvents: {
+    base: "/api/donor-events",
+    outcome: "/outcome",
   },
 };
 

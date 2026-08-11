@@ -88,6 +88,22 @@
   color: var(--color-text);
 }
 
+.req-navbar__push-enable {
+  padding: 7px 10px;
+  color: #B42318;
+  background: #FFF0F0;
+  border: 1px solid #F3C2C0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.req-navbar__push-enable:disabled { opacity: .65; cursor: wait; }
+.req-navbar__push-error { margin: 8px 0; color: #B42318; font-size: 11px; }
+.req-navbar__notif-title-text { display: block; color: #1F2937; font-size: 12px; }
+
 .req-navbar__phone {
   font-size: 0.82rem;
   font-weight: 700;

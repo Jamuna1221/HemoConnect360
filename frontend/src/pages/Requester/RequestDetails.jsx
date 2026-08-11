@@ -22,6 +22,15 @@ const getStatusIndex = (status) => {
   return index < 0 ? 0 : index
 }
 
+const getMatchStatusLabel = (status) => ({
+  accepted: 'Accepted',
+  donated: 'Donation Completed',
+  ineligible_after_donation: 'Temporarily Ineligible',
+  notified: 'Awaiting Response',
+  rejected: 'Declined',
+  declined: 'Donation Not Completed',
+}[status] || 'Matched')
+
 const RequestDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -176,21 +185,24 @@ const RequestDetails = () => {
                 )}
                 {!matchesError && matches && matches.length > 0 && (
                   <div className="req-detail-matches-list">
-                    {matches.map((m) => (
-                      <div key={m.donorId} className="req-detail-match">
-                        <div className="req-detail-match-avatar">{m.fullName?.charAt(0) || 'D'}</div>
-                        <div className="req-detail-match-info">
-                          <strong>{m.fullName}</strong>
-                          <span>{m.bloodGroup} &bull; {m.city || 'City N/A'}</span>
-                          <span className="req-detail-match-distance">
-                            <FaMapMarkerAlt /> {(m.distanceKm ?? 0).toFixed(1)} km away
-                          </span>
-                        </div>
-                        <a className="req-detail-match-call" href={`tel:${m.phone}`}>
-                          <FaPhone /> Call
-                        </a>
-                      </div>
-                    ))}
+                     {matches.map((m) => (
+                       (() => {
+                         const matchStatus = m.status || 'notified'
+                         return <div key={m.donorId} className={`req-detail-match req-detail-match--${matchStatus}`}>
+                         <div className="req-detail-match-avatar">{m.fullName?.charAt(0) || 'D'}</div>
+                         <div className="req-detail-match-info">
+                           <strong>{m.fullName}</strong>
+                           <span>{m.bloodGroup} &bull; {m.city || 'City N/A'}</span>
+                           <span className="req-detail-match-distance">
+                             <FaMapMarkerAlt /> {(m.distanceKm ?? 0).toFixed(1)} km away
+                           </span>
+                           <span className={`req-detail-match-status req-detail-match-status--${matchStatus}`}>{getMatchStatusLabel(matchStatus)}</span>
+                         </div>
+                         {matchStatus === 'accepted' && <a className="req-detail-match-call" href={`tel:${m.phone}`}><FaPhone /> Call</a>}
+                       </div>
+                         }
+                       )()
+                     ))}
                   </div>
                 )}
               </div>
