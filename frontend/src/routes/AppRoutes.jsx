@@ -23,6 +23,8 @@ import TrackRequest from '../pages/Requester/TrackRequest'
 import RequestHistory from '../pages/Requester/RequestHistory'
 import RequestDetails from '../pages/Requester/RequestDetails'
 import RequesterProfile from '../pages/Requester/RequesterProfile'
+import AdminLogin from '../pages/AdminLogin/AdminLogin'
+import AdminDashboard from '../pages/AdminDashboard/AdminDashboard'
 
 const AppRoutes = () => {
   return (
@@ -52,6 +54,9 @@ const AppRoutes = () => {
       <Route path="/requester/history" element={<RequestHistory />} />
       <Route path="/requester/request-details/:id" element={<RequestDetails />} />
       <Route path="/requester/profile" element={<RequesterProfile />} />
+
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
     </Routes>
   )
 }

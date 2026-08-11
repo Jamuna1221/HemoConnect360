@@ -26,23 +26,11 @@ const RequestDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, requests, cancelRequest } = useRequester()
-  const [req, setReq] = useState(null)
   const [matches, setMatches] = useState(null)
   const [matchesError, setMatchesError] = useState('')
+  const req = requests.find((r) => r.id === id) || null
 
   useEffect(() => { if (!user) navigate('/requester/login') }, [user, navigate])
-
-  useEffect(() => {
-    const found = requests.find((r) => r.id === id)
-    if (found) {
-      setReq(found)
-      return
-    }
-
-    getBloodRequest(id)
-      .then((serverRequest) => setReq(serverRequest))
-      .catch(() => setReq(null))
-  }, [id, requests])
 
   useEffect(() => {
     let active = true

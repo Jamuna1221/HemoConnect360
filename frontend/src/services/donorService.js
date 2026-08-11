@@ -74,7 +74,7 @@ const insertDonorRow = async (supabase, userId, profile, idProofUrl) => {
     console.error('message:', error.message)
     console.error('details:', error.details)
     console.error('hint:', error.hint)
-    throw error
+    throw new Error(mapInsertError(error))
   }
 
   return data

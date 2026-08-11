@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import RequesterNavbar from '../../components/Requester/RequesterNavbar';
@@ -75,8 +75,8 @@ const navigate = useNavigate();
         const synced = await getBloodRequest(requestData.id)
         setRequestData(synced)
       } catch (error) {
-        console.error('[track-request] Failed to refresh request', error);
-        setLoadError(error.message || 'Unable to refresh your request timeline.');
+        console.error('[TrackRequest] Failed to fetch updated blood request details', error)
+        setLoadError(error.message || 'Unable to refresh your request timeline.')
       }
     }
 
