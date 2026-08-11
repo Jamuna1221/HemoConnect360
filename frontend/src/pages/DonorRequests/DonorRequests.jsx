@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FaArrowLeft, FaCalendarAlt, FaHospital, FaMapMarkerAlt, FaTint, FaUsers } from 'react-icons/fa'
+import { FaArrowLeft, FaCalendarAlt, FaMapMarkerAlt, FaTint, FaUsers } from 'react-icons/fa'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
 import { fetchDonorRequests } from '../../services/donorService'

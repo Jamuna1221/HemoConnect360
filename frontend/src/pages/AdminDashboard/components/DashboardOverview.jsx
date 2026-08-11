@@ -1,12 +1,10 @@
 import {
   FaUsers,
   FaHeartbeat,
-  FaIdCard,
   FaHospital,
   FaClock,
   FaCheckCircle,
-  FaTint,
-  FaExclamationTriangle
+  FaTint
 } from 'react-icons/fa'
 
 const DashboardOverview = ({
@@ -14,7 +12,6 @@ const DashboardOverview = ({
   requesters,
   requests,
   bloodBanks,
-  stock,
   auditLogs,
   onNavigateTab
 }) => {
@@ -206,7 +203,7 @@ const DashboardOverview = ({
         <div className="dashboard-sub-card">
           <h2>Recent Blood Requests</h2>
           <div className="mini-list">
-            {requests.slice(0, 3).map(r => (
+            {requests.slice(0, 10).map(r => (
               <div key={r.id} className="mini-list-item">
                 <div className="item-main">
                   <strong>{r.patientName} ({r.bloodGroup})</strong>
@@ -222,7 +219,7 @@ const DashboardOverview = ({
         <div className="dashboard-sub-card">
           <h2>Recent Activity</h2>
           <div className="mini-log-list">
-            {auditLogs.slice(0, 4).map(log => (
+            {auditLogs.slice(0, 10).map(log => (
               <div className="mini-log-row" key={log.id}>
                 <span className="log-action">{log.action}</span>
                 <span className="log-time">{log.timestamp}</span>

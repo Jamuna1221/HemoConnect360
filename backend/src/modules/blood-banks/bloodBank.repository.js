@@ -93,3 +93,25 @@ export const insertBloodBank = async (client, record) => {
   handleSupabaseError(error, "Unable to create blood bank profile");
   return data;
 };
+
+export const findAllBloodBanks = async (client) => {
+  const { data, error } = await client
+    .from(tables.bloodBanks)
+    .select(bloodBankColumns)
+    .order("created_at", { ascending: false });
+
+  handleSupabaseError(error, "Unable to fetch blood banks list");
+  return data;
+};
+
+export const updateBloodBank = async (client, id, updates) => {
+  const { data, error } = await client
+    .from(tables.bloodBanks)
+    .update(updates)
+    .eq("id", id)
+    .select(bloodBankColumns)
+    .single();
+
+  handleSupabaseError(error, "Unable to update blood bank profile");
+  return data;
+};

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSupabase } from '../../lib/supabase'
+import { apiRequest } from '../../services/api'
 import {
   FaSignOutAlt,
   FaUsers,
@@ -42,42 +43,7 @@ const AdminDashboard = () => {
   const [donors, setDonors] = useState([])
   const [requesters, setRequesters] = useState([])
   const [requests, setRequests] = useState([])
-  const [bloodBanks, setBloodBanks] = useState(() => {
-    const local = localStorage.getItem('admin_blood_banks')
-    if (local) return JSON.parse(local)
-    return [
-      { id: 'BB-1', name: 'Chennai Central Blood Bank', city: 'Chennai', phone: '044-28340101', email: 'chennaibb@gmail.com', verificationStatus: 'verified', availableUnits: 119, accountStatus: 'active', stock: [
-        { group: 'A+', available: 25, reserved: 4 },
-        { group: 'A-', available: 8, reserved: 2 },
-        { group: 'B+', available: 18, reserved: 5 },
-        { group: 'B-', available: 3, reserved: 1 },
-        { group: 'O+', available: 35, reserved: 8 },
-        { group: 'O-', available: 12, reserved: 3 },
-        { group: 'AB+', available: 16, reserved: 2 },
-        { group: 'AB-', available: 2, reserved: 0 },
-      ]},
-      { id: 'BB-2', name: 'Mumbai Red Cross', city: 'Mumbai', phone: '022-26450202', email: 'mumbaibb@gmail.com', verificationStatus: 'verified', availableUnits: 154, accountStatus: 'active', stock: [
-        { group: 'A+', available: 30, reserved: 6 },
-        { group: 'A-', available: 12, reserved: 3 },
-        { group: 'B+', available: 22, reserved: 4 },
-        { group: 'B-', available: 5, reserved: 1 },
-        { group: 'O+', available: 40, reserved: 10 },
-        { group: 'O-', available: 15, reserved: 4 },
-        { group: 'AB+', available: 26, reserved: 3 },
-        { group: 'AB-', available: 4, reserved: 1 },
-      ]},
-      { id: 'BB-3', name: 'Delhi Lions Blood Center', city: 'Delhi', phone: '011-25360303', email: 'delhibb@gmail.com', verificationStatus: 'pending', availableUnits: 72, accountStatus: 'active', stock: [
-        { group: 'A+', available: 15, reserved: 2 },
-        { group: 'A-', available: 4, reserved: 1 },
-        { group: 'B+', available: 10, reserved: 2 },
-        { group: 'B-', available: 1, reserved: 0 },
-        { group: 'O+', available: 20, reserved: 5 },
-        { group: 'O-', available: 6, reserved: 1 },
-        { group: 'AB+', available: 15, reserved: 1 },
-        { group: 'AB-', available: 1, reserved: 0 },
-      ]},
-    ]
-  })
+  const [bloodBanks, setBloodBanks] = useState([])
   const [verifications, setVerifications] = useState([])
   const [securityAlerts, setSecurityAlerts] = useState([])
   const [notifications, setNotifications] = useState([])
@@ -138,6 +104,7 @@ const AdminDashboard = () => {
         else if (requestData) {
           setRequests(requestData.map(r => ({
             id: r.id,
+            requesterId: r.requester_id,
             patientName: r.patient_name || 'Anonymous',
             bloodGroup: r.blood_group,
             units: r.units_required,
@@ -157,8 +124,8 @@ const AdminDashboard = () => {
         if (reqErr) console.error('[admin] Error fetching requesters:', reqErr)
         else if (requesterData) {
           setRequesters(requesterData.map(r => {
-            const activeCount = requestData 
-              ? requestData.filter(req => req.requester_id === r.id && req.status !== 'completed' && req.status !== 'cancelled').length 
+            const activeCount = requestData
+              ? requestData.filter(req => req.requester_id === r.id && req.status !== 'completed' && req.status !== 'cancelled').length
               : 0
             return {
               id: r.id,
@@ -172,6 +139,100 @@ const AdminDashboard = () => {
           }))
         }
 
+        // 4. Fetch Blood Banks and their stock from backend API
+        let dbBanks = []
+        try {
+          const sessionStr = localStorage.getItem('admin_session')
+          const token = sessionStr ? JSON.parse(sessionStr).token : ''
+          const payload = await apiRequest('/blood-banks', {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` }
+          })
+          if (payload && payload.data) {
+            dbBanks = payload.data.map(b => ({
+              ...b,
+              blood_bank_name: b.bloodBankName,
+              registration_number: b.registrationNumber,
+              blood_bank_type: b.bloodBankType,
+              established_year: b.establishedYear,
+              official_email: b.officialEmail,
+              primary_phone: b.primaryPhone,
+              alternate_phone: b.alternatePhone,
+              address_line: b.addressLine,
+              authorized_person_name: b.authorizedPersonName,
+              authorized_person_phone: b.authorizedPersonPhone,
+              authorized_person_email: b.authorizedPersonEmail,
+              license_doc_path: b.licenseDocPath,
+              authorization_doc_path: b.authorizationDocPath,
+              verification_status: b.verificationStatus
+            }))
+          }
+        } catch (err) {
+          console.error('[admin] Error fetching blood banks from backend:', err)
+        }
+
+        const { data: dbInventory, error: dbInventoryErr } = await supabase
+          .from('blood_bank_inventory')
+          .select('*')
+
+        if (dbInventoryErr) {
+          console.error('[admin] Error fetching blood bank inventory:', dbInventoryErr)
+        }
+
+        if (dbBanks && dbBanks.length > 0) {
+          const inventoryByBank = {}
+          if (dbInventory) {
+            dbInventory.forEach(inv => {
+              if (!inventoryByBank[inv.blood_bank_id]) {
+                inventoryByBank[inv.blood_bank_id] = []
+              }
+              inventoryByBank[inv.blood_bank_id].push({
+                group: inv.blood_group,
+                available: inv.units_available,
+                reserved: 0
+              })
+            })
+          }
+
+          const mappedBanks = dbBanks.map(b => {
+            const groups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+            const bankStock = inventoryByBank[b.id] || []
+
+            const stock = groups.map(g => {
+              const found = bankStock.find(s => s.group === g)
+              return found || { group: g, available: 0, reserved: 0 }
+            })
+
+            const totalAvailable = stock.reduce((sum, s) => sum + s.available, 0)
+            const normalizedStatus = (b.verification_status || '').toLowerCase().replace('pending_verification', 'pending')
+
+            let licenseUrl = ''
+            let authorizationUrl = ''
+            if (b.license_doc_path) {
+              licenseUrl = supabase.storage.from('blood-bank-docs').getPublicUrl(b.license_doc_path).data?.publicUrl || ''
+            }
+            if (b.authorization_doc_path) {
+              authorizationUrl = supabase.storage.from('blood-bank-docs').getPublicUrl(b.authorization_doc_path).data?.publicUrl || ''
+            }
+
+            return {
+              ...b,
+              id: b.id,
+              name: b.blood_bank_name,
+              city: b.city,
+              phone: b.primary_phone,
+              email: b.official_email,
+              verificationStatus: normalizedStatus,
+              availableUnits: totalAvailable,
+              accountStatus: 'active',
+              stock: stock,
+              licenseUrl,
+              authorizationUrl
+            }
+          })
+          setBloodBanks(mappedBanks)
+        }
+
       } catch (err) {
         console.error('[admin] Failed to fetch database records:', err)
       }
@@ -179,10 +240,6 @@ const AdminDashboard = () => {
 
     fetchData()
   }, [navigate])
-
-  useEffect(() => {
-    localStorage.setItem('admin_blood_banks', JSON.stringify(bloodBanks))
-  }, [bloodBanks])
 
   useEffect(() => {
     localStorage.setItem('admin_audit_logs', JSON.stringify(auditLogs))
@@ -248,17 +305,32 @@ const AdminDashboard = () => {
   }
 
   // Handle Verify Bank Actions
-  const handleVerifyBank = (id, verifyStatus) => {
-    const updated = bloodBanks.map(b => {
-      if (b.id === id) {
-        const logAction = 'Blood Bank Verification'
-        const desc = `Verified blood bank ${b.name} as ${verifyStatus}`
-        setAuditLogs(prev => [{ id: `L-${Date.now()}`, admin: profileForm.email, action: logAction, target: b.name, description: desc, timestamp: new Date().toISOString().split('T')[0], status: 'Success' }, ...prev])
-        return { ...b, verificationStatus: verifyStatus }
+  const handleVerifyBank = async (id, verifyStatus) => {
+    try {
+      const sessionStr = localStorage.getItem('admin_session')
+      const token = sessionStr ? JSON.parse(sessionStr).token : ''
+      const payload = await apiRequest(`/blood-banks/${id}/verify`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: verifyStatus.toUpperCase(), notes: 'Verified by Admin' })
+      })
+
+      if (payload && payload.success) {
+        const updated = bloodBanks.map(b => {
+          if (b.id === id) {
+            const logAction = 'Blood Bank Verification'
+            const desc = `Verified blood bank ${b.name} as ${verifyStatus}`
+            setAuditLogs(prev => [{ id: `L-${Date.now()}`, admin: profileForm.email, action: logAction, target: b.name, description: desc, timestamp: new Date().toISOString().split('T')[0], status: 'Success' }, ...prev])
+            return { ...b, verificationStatus: verifyStatus }
+          }
+          return b
+        })
+        setBloodBanks(updated)
       }
-      return b
-    })
-    setBloodBanks(updated)
+    } catch (err) {
+      console.error('[admin] Error verifying blood bank:', err)
+      alert(err.message || 'Failed to verify blood bank')
+    }
   }
 
   // Handle Toggle Bank Account Status
@@ -409,6 +481,7 @@ const AdminDashboard = () => {
         {activeTab === 'requesters' && (
           <RequesterManagement
             requesters={requesters}
+            requests={requests}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             onToggleStatus={toggleRequesterStatus}
@@ -439,6 +512,7 @@ const AdminDashboard = () => {
           <BloodStock
             bloodBanks={bloodBanks}
             onStockUpdate={handleStockUpdate}
+            readOnly={true}
           />
         )}
 

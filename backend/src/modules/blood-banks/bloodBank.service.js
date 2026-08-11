@@ -35,6 +35,8 @@ const toBloodBankDto = (row) => ({
   verificationStatus: row.verification_status,
   hasLicenseDocument: Boolean(row.license_doc_path),
   hasAuthorizationDocument: Boolean(row.authorization_doc_path),
+  licenseDocPath: row.license_doc_path,
+  authorizationDocPath: row.authorization_doc_path,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
@@ -223,4 +225,44 @@ export const getBloodBankProfile = async ({ accessToken, user }) => {
   }
 
   return toBloodBankDto(profile);
+};
+
+export const getAllBloodBanksForAdmin = async () => {
+  const adminClient = createAdminClient();
+  const { data, error } = await adminClient
+    .from("blood_banks")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new ApiError(500, "Unable to fetch blood banks list", error.message);
+  }
+
+  return (data || []).map(toBloodBankDto);
+};
+
+export const verifyBloodBankForAdmin = async ({ id, status, notes }) => {
+  const adminClient = createAdminClient();
+  
+  const { error } = await adminClient.rpc("admin_verify_blood_bank", {
+    p_bank_id: id,
+    p_status: status,
+    p_notes: notes || ""
+  });
+
+  if (error) {
+    throw new ApiError(500, "Failed to verify blood bank in database", error.message);
+  }
+
+  const { data: updated, error: fetchErr } = await adminClient
+    .from("blood_banks")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (fetchErr || !updated) {
+    throw new ApiError(404, "Blood bank not found after update");
+  }
+
+  return toBloodBankDto(updated);
 };

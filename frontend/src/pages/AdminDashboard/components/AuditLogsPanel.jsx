@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FaSearch, FaFilter, FaCalendarAlt, FaShieldAlt, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa'
+import { FaSearch, FaFilter, FaCalendarAlt, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa'
 
 const AuditLogsPanel = ({ auditLogs }) => {
   const [searchTerm, setSearchTerm] = useState('')

@@ -3,11 +3,14 @@ import multer from "multer";
 import { apiRoutes } from "../../config/apiRoutes.js";
 import { env } from "../../config/env.js";
 import { supabaseAuth } from "../../middleware/supabaseAuth.js";
+import { adminAuth } from "../../middleware/adminAuth.js";
 import { asyncHandler } from "../../shared/http/asyncHandler.js";
 import { ApiError } from "../../shared/http/ApiError.js";
 import {
   registerBloodBankHandler,
   getBloodBankProfileHandler,
+  getAllBloodBanksForAdminHandler,
+  verifyBloodBankForAdminHandler,
 } from "./bloodBank.controller.js";
 
 const router = Router();
@@ -51,6 +54,19 @@ router.get(
   apiRoutes.bloodBanks.me,
   supabaseAuth,
   asyncHandler(getBloodBankProfileHandler)
+);
+
+// Admin Console Endpoints
+router.get(
+  "/",
+  adminAuth,
+  asyncHandler(getAllBloodBanksForAdminHandler)
+);
+
+router.patch(
+  "/:id/verify",
+  adminAuth,
+  asyncHandler(verifyBloodBankForAdminHandler)
 );
 
 export default router;
