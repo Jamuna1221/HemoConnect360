@@ -1,0 +1,114 @@
+.bloodbank-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.bloodbank-stat-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #eef0f3;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.bloodbank-stat-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #fff1f1;
+  color: #e53935;
+  font-size: 20px;
+}
+
+.bloodbank-stat-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bloodbank-stat-card-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.bloodbank-stat-card-value {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #1a1a1a;
+}
+
+.bloodbank-stat-card-desc {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.bloodbank-stat-card-skeleton {
+  width: 64px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e8eaee 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: bloodbank-stat-shimmer 1.2s ease-in-out infinite;
+}
+
+.bloodbank-stat-card-error {
+  font-size: 14px;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.bloodbank-stat-card-retry {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e53935;
+  background: #fff1f1;
+  border: 1px solid #f5c2c2;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.bloodbank-stat-card-retry:hover {
+  background: #e53935;
+  color: #ffffff;
+}
+
+@keyframes bloodbank-stat-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 1024px) {
+  .bloodbank-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .bloodbank-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

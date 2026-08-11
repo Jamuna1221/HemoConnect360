@@ -2,10 +2,32 @@ import { createUserClient } from "../../config/supabase.js";
 import { ApiError } from "../../shared/http/ApiError.js";
 import { findBloodBankByUserId } from "../blood-banks/bloodBank.repository.js";
 import {
+  BLOOD_GROUPS,
+} from "./bloodBankInventory.validation.js";
+import {
   findBloodBankInventory,
   adjustStock,
-  findRecentInventoryTransactions,
+  findInventoryTransactions,
 } from "./bloodBankInventory.repository.js";
+
+const VALID_TRANSACTION_TYPES = [
+  "STOCK_ADDED",
+  "STOCK_REMOVED",
+  "STOCK_CORRECTION",
+];
+
+/**
+ * Normalize a user-supplied date to an inclusive day boundary. Plain date
+ * strings (YYYY-MM-DD) become the start/end of that UTC day so a `to` filter
+ * includes every record within the selected day.
+ */
+const toDayBoundary = (value, endOfDay) => {
+  if (!value) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return endOfDay ? `${value}T23:59:59.999Z` : `${value}T00:00:00.000Z`;
+  }
+  return value;
+};
 
 const toInventoryDto = (row) => {
   const unitsAvailable = Number(row.units_available) || 0;
@@ -88,9 +110,43 @@ export const getBloodBankInventoryHistory = async ({
   accessToken,
   user,
   limit,
+  page,
+  filters = {},
 }) => {
   const client = createUserClient(accessToken);
   const bloodBankId = await resolveBloodBankId(client, user.id);
-  const rows = await findRecentInventoryTransactions(client, bloodBankId, limit);
-  return rows.map(toTransactionDto);
+
+  const sanitizedFilters = {
+    bloodGroup: BLOOD_GROUPS.includes(filters.bloodGroup)
+      ? filters.bloodGroup
+      : null,
+    transactionType: VALID_TRANSACTION_TYPES.includes(filters.transactionType)
+      ? filters.transactionType
+      : null,
+    from: toDayBoundary(filters.from, false),
+    to: toDayBoundary(filters.to, true),
+  };
+
+  const { rows, count } = await findInventoryTransactions(
+    client,
+    bloodBankId,
+    { limit, page, filters: sanitizedFilters }
+  );
+
+  const transactions = rows.map(toTransactionDto);
+
+  // Legacy shape (no page): a plain list of the most recent rows, as the
+  // existing Blood Inventory widget expects. Paginated callers get the full
+  // result set with totals for building a pager.
+  if (!Number.isInteger(page) || page < 1) {
+    return transactions;
+  }
+
+  return {
+    transactions,
+    total: count,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(count / limit)),
+  };
 };

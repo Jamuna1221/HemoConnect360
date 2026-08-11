@@ -1,29 +1,103 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
-  FaHospital,
-  FaSignOutAlt,
-  FaHome,
-  FaMapMarkerAlt,
+  FaBoxes,
+  FaCalendarAlt,
+  FaCalendarCheck,
+  FaCheckCircle,
+  FaClock,
   FaEnvelope,
+  FaExclamationTriangle,
+  FaHeartbeat,
+  FaHospital,
+  FaMapMarkerAlt,
   FaPhoneAlt,
   FaUserTie,
-  FaCalendarAlt,
+  FaUsers,
 } from 'react-icons/fa'
-import logo from '../../assets/logo/Hemoconnectlogo.png'
-import { fetchBloodBankProfile } from '../../services/bloodBankService'
-import { getSupabase } from '../../lib/supabase'
-import BloodInventory from '../../components/BloodInventory'
-import BloodRequests from '../../components/BloodRequests'
+import BloodBankStatCard from '../../components/BloodBank/BloodBankStatCard'
+import {
+  fetchBloodBankCollectionDonors,
+  fetchBloodBankCollectionHistory,
+  fetchBloodBankInventory,
+  fetchBloodBankProfile,
+  fetchBloodBankRequests,
+} from '../../services/bloodBankService'
 import './BloodBankDashboard.css'
+
+const STATUS_META = {
+  ACTIVE: { label: 'Active', icon: <FaCheckCircle />, className: 'bloodbank-dash-status--active' },
+  PENDING_VERIFICATION: { label: 'Pending Verification', icon: <FaClock />, className: 'bloodbank-dash-status--pending' },
+  SUSPENDED: { label: 'Suspended', icon: <FaExclamationTriangle />, className: 'bloodbank-dash-status--suspended' },
+  REJECTED: { label: 'Rejected', icon: <FaExclamationTriangle />, className: 'bloodbank-dash-status--rejected' },
+}
+
+const humanize = (value) =>
+  String(value || '')
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+
+const getStatusMeta = (status) =>
+  STATUS_META[status] || {
+    label: humanize(status) || 'Unknown',
+    icon: <FaClock />,
+    className: 'bloodbank-dash-status--pending',
+  }
+
+const isCurrentMonth = (dateStr) => {
+  if (!dateStr) return false
+  const date = new Date(`${dateStr}T00:00:00`)
+  const now = new Date()
+  return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth()
+}
+
+const loadTotalUnits = () => fetchBloodBankInventory().then((data) => data.totalUnits)
+
+const loadPendingRequests = () =>
+  fetchBloodBankRequests({ status: 'open', limit: 1 }).then((data) => data.total)
+
+const loadActiveDonors = () =>
+  fetchBloodBankCollectionDonors().then((donors) => donors.filter((donor) => donor.eligible).length)
+
+const loadCollectionsThisMonth = () =>
+  fetchBloodBankCollectionHistory().then((collections) =>
+    collections.filter((collection) => isCurrentMonth(collection.donationDate)).length,
+  )
+
+const STAT_CARDS = [
+  {
+    icon: <FaBoxes />,
+    title: 'Total Blood Units',
+    description: 'Available units across all blood groups',
+    loader: loadTotalUnits,
+  },
+  {
+    icon: <FaHeartbeat />,
+    title: 'Pending Blood Requests',
+    description: 'Blood requests awaiting action',
+    loader: loadPendingRequests,
+  },
+  {
+    icon: <FaUsers />,
+    title: 'Active Donors',
+    description: 'Donors currently eligible to donate',
+    loader: loadActiveDonors,
+  },
+  {
+    icon: <FaCalendarCheck />,
+    title: 'Collections This Month',
+    description: 'Donations recorded this month',
+    loader: loadCollectionsThisMonth,
+  },
+]
 
 const BloodBankDashboard = () => {
   const navigate = useNavigate()
-  const location = useLocation()
-  const [profile, setProfile] = useState(location.state?.bloodBank || null)
-  const [loading, setLoading] = useState(!profile)
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [inventoryReload, setInventoryReload] = useState(0)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let active = true
@@ -39,35 +113,38 @@ const BloodBankDashboard = () => {
           navigate('/blood-bank/login', { replace: true })
           return
         }
-        setError(err.message || 'Unable to load your blood bank profile.')
+        setError(err.message || 'Unable to load blood bank information.')
       } finally {
         if (active) setLoading(false)
       }
     }
 
-    if (!profile) {
-      load()
-    }
+    load()
 
     return () => {
       active = false
     }
-  }, [navigate, profile])
+  }, [navigate, reloadKey])
 
-  const handleLogout = async () => {
-    await getSupabase().auth.signOut().catch(() => {})
-    navigate('/')
+  const retry = () => {
+    setError('')
+    setLoading(true)
+    setReloadKey((key) => key + 1)
   }
 
   if (loading) {
     return (
       <div className="bloodbank-dash-page">
-        <main className="bloodbank-dash-main">
-          <div className="bloodbank-dash-loading">
-            <div className="bloodbank-dash-spinner" />
-            <p>Loading your blood bank profile...</p>
+        <div className="bloodbank-dash-skeleton">
+          <div className="bloodbank-dash-skeleton-line bloodbank-dash-skeleton-line--eyebrow" />
+          <div className="bloodbank-dash-skeleton-line bloodbank-dash-skeleton-line--title" />
+          <div className="bloodbank-dash-skeleton-line" />
+          <div className="bloodbank-dash-grid">
+            <div className="bloodbank-dash-card bloodbank-dash-card--wide bloodbank-dash-skeleton-card" />
+            <div className="bloodbank-dash-card bloodbank-dash-skeleton-card" />
+            <div className="bloodbank-dash-card bloodbank-dash-skeleton-card" />
           </div>
-        </main>
+        </div>
       </div>
     )
   }
@@ -75,16 +152,16 @@ const BloodBankDashboard = () => {
   if (error) {
     return (
       <div className="bloodbank-dash-page">
-        <main className="bloodbank-dash-main">
-          <div className="bloodbank-dash-restricted bloodbank-dash-restricted--rejected">
-            <div className="bloodbank-dash-restricted-icon">
-              <FaHospital />
-            </div>
-            <h2>Unable to Load Profile</h2>
-            <p>{error}</p>
-            <Link to="/blood-bank/login" className="bloodbank-dash-primary-btn">Go to Login</Link>
+        <div className="bloodbank-dash-restricted bloodbank-dash-restricted--rejected">
+          <div className="bloodbank-dash-restricted-icon">
+            <FaExclamationTriangle />
           </div>
-        </main>
+          <h2>Unable to load blood bank information.</h2>
+          <p>{error}</p>
+          <button type="button" className="bloodbank-dash-retry-btn" onClick={retry}>
+            Retry
+          </button>
+        </div>
       </div>
     )
   }
@@ -92,88 +169,105 @@ const BloodBankDashboard = () => {
   if (!profile) {
     return (
       <div className="bloodbank-dash-page">
-        <main className="bloodbank-dash-main">
-          <div className="bloodbank-dash-restricted bloodbank-dash-restricted--rejected">
-            <div className="bloodbank-dash-restricted-icon">
-              <FaHospital />
-            </div>
-            <h2>No Blood Bank Profile</h2>
-            <p>No blood bank profile was found for this account. Please register your blood bank first.</p>
-            <Link to="/blood-bank/register" className="bloodbank-dash-primary-btn">Register Blood Bank</Link>
+        <div className="bloodbank-dash-restricted bloodbank-dash-restricted--rejected">
+          <div className="bloodbank-dash-restricted-icon">
+            <FaHospital />
           </div>
-        </main>
+          <h2>No Blood Bank Profile</h2>
+          <p>No blood bank profile was found for this account. Please register your blood bank first.</p>
+        </div>
       </div>
     )
   }
 
+  const statusMeta = getStatusMeta(profile.verificationStatus)
+
   return (
     <div className="bloodbank-dash-page">
-      <header className="bloodbank-dash-header">
-        <Link to="/" className="bloodbank-dash-logo">
-          <img src={logo} alt="HemoConnect360" />
-        </Link>
-        <div className="bloodbank-dash-header-actions">
-          <Link to="/" className="bloodbank-dash-ghost-btn"><FaHome /> Home</Link>
-          <button type="button" className="bloodbank-dash-outline-btn" onClick={handleLogout}>
-            <FaSignOutAlt /> Sign Out
-          </button>
+      <div className="bloodbank-dash-welcome">
+        <div>
+          <span className="bloodbank-dash-eyebrow">Blood Bank Dashboard</span>
+          <h1>Welcome, {profile.bloodBankName}</h1>
+          <p>Manage your blood inventory, blood requests, donors and collections from one place.</p>
         </div>
-      </header>
+        <span className={`bloodbank-dash-status ${statusMeta.className}`}>
+          {statusMeta.icon} {statusMeta.label}
+        </span>
+      </div>
 
-      <main className="bloodbank-dash-main">
-        <div className="bloodbank-dash-welcome">
-          <div>
-            <span className="bloodbank-dash-eyebrow">Blood Bank Dashboard</span>
-            <h1>{profile.bloodBankName}</h1>
-            <p>Your blood bank is active on HemoConnect360.</p>
+      <div className="bloodbank-dash-grid">
+        <section className="bloodbank-dash-card bloodbank-dash-card--wide">
+          <div className="bloodbank-dash-card-title">
+            <FaHospital /> Blood Bank Information
           </div>
-        </div>
-
-        <div className="bloodbank-dash-grid">
-          <section className="bloodbank-dash-card">
-            <div className="bloodbank-dash-card-title">
-              <FaHospital /> Blood Bank Details
+          <dl className="bloodbank-dash-fields">
+            <div>
+              <dt>Blood Bank Name</dt>
+              <dd>{profile.bloodBankName}</dd>
             </div>
-            <dl className="bloodbank-dash-list">
-              <div><dt>Type</dt><dd>{profile.bloodBankType}</dd></div>
-              <div><dt>Registration Number</dt><dd>{profile.registrationNumber}</dd></div>
-              <div><dt>Established</dt><dd><FaCalendarAlt /> {profile.establishedYear || '—'}</dd></div>
-              <div><dt>Official Email</dt><dd><FaEnvelope /> {profile.officialEmail}</dd></div>
-              <div><dt>Primary Phone</dt><dd><FaPhoneAlt /> {profile.primaryPhone}</dd></div>
-            </dl>
-          </section>
-
-          <section className="bloodbank-dash-card">
-            <div className="bloodbank-dash-card-title">
-              <FaMapMarkerAlt /> Address
+            <div>
+              <dt>Blood Bank Type</dt>
+              <dd>{profile.bloodBankType}</dd>
             </div>
-            <p className="bloodbank-dash-address">
-              {profile.addressLine}, {profile.city},
-              {profile.district ? ` ${profile.district},` : ''} {profile.state} - {profile.pincode}
+            <div>
+              <dt>Registration Number</dt>
+              <dd>{profile.registrationNumber}</dd>
+            </div>
+            <div>
+              <dt>Established Year</dt>
+              <dd><FaCalendarAlt /> {profile.establishedYear || '—'}</dd>
+            </div>
+            <div>
+              <dt>Official Email</dt>
+              <dd><FaEnvelope /> {profile.officialEmail}</dd>
+            </div>
+            <div>
+              <dt>Primary Contact Number</dt>
+              <dd><FaPhoneAlt /> {profile.primaryPhone}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section className="bloodbank-dash-card">
+          <div className="bloodbank-dash-card-title">
+            <FaMapMarkerAlt /> Location
+          </div>
+          <p className="bloodbank-dash-address">{profile.addressLine}</p>
+          <p className="bloodbank-dash-address">
+            {profile.city}
+            {profile.district ? `, ${profile.district}` : ''}, {profile.state} - {profile.pincode}
+          </p>
+          {profile.latitude && profile.longitude && (
+            <p className="bloodbank-dash-coords">
+              <FaMapMarkerAlt /> {profile.latitude}, {profile.longitude}
             </p>
-            {profile.latitude && profile.longitude && (
-              <p className="bloodbank-dash-coords">
-                {profile.latitude}, {profile.longitude}
-              </p>
-            )}
-          </section>
+          )}
+        </section>
 
-          <section className="bloodbank-dash-card">
-            <div className="bloodbank-dash-card-title">
-              <FaUserTie /> Authorized Person
-            </div>
-            <dl className="bloodbank-dash-list">
-              <div><dt>Name</dt><dd>{profile.authorizedPersonName}</dd></div>
-              <div><dt>Designation</dt><dd>{profile.designation}</dd></div>
-              <div><dt>Phone</dt><dd><FaPhoneAlt /> {profile.authorizedPersonPhone}</dd></div>
-              {profile.authorizedPersonEmail && <div><dt>Email</dt><dd><FaEnvelope /> {profile.authorizedPersonEmail}</dd></div>}
-            </dl>
-          </section>
-        </div>
+        <section className="bloodbank-dash-card">
+          <div className="bloodbank-dash-card-title">
+            <FaUserTie /> Authorized Person
+          </div>
+          <dl className="bloodbank-dash-list">
+            <div><dt>Name</dt><dd>{profile.authorizedPersonName}</dd></div>
+            <div><dt>Designation</dt><dd>{profile.designation}</dd></div>
+            <div><dt>Contact Number</dt><dd><FaPhoneAlt /> {profile.authorizedPersonPhone}</dd></div>
+            <div><dt>Official Email</dt><dd><FaEnvelope /> {profile.authorizedPersonEmail || '—'}</dd></div>
+          </dl>
+        </section>
+      </div>
 
-        <BloodInventory reloadSignal={inventoryReload} />
-        <BloodRequests onInventoryChanged={() => setInventoryReload((key) => key + 1)} />
-      </main>
+      <div className="bloodbank-stats-grid">
+        {STAT_CARDS.map((card) => (
+          <BloodBankStatCard
+            key={card.title}
+            icon={card.icon}
+            title={card.title}
+            description={card.description}
+            loader={card.loader}
+          />
+        ))}
+      </div>
     </div>
   )
 }

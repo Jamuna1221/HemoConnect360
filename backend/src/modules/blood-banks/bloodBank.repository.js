@@ -93,3 +93,24 @@ export const insertBloodBank = async (client, record) => {
   handleSupabaseError(error, "Unable to create blood bank profile");
   return data;
 };
+
+/**
+ * Update the caller's own profile row. The row id comes from the server-side
+ * lookup by auth.uid() (see service), never from the client. The user-scoped
+ * client + "blood_banks_update_own" RLS policy guarantee the authenticated
+ * user can only ever update their own row, and the blood_banks_verify_guard
+ * trigger keeps the verification columns locked regardless of what is sent.
+ * Duplicate registration_number / official_email surface as 409 here via the
+ * unique constraints (code 23505 handled in handleSupabaseError).
+ */
+export const updateBloodBankProfile = async (client, id, updates) => {
+  const { data, error } = await client
+    .from(tables.bloodBanks)
+    .update(updates)
+    .eq("id", id)
+    .select(bloodBankColumns)
+    .single();
+
+  handleSupabaseError(error, "Unable to update blood bank profile");
+  return data;
+};

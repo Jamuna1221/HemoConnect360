@@ -8,6 +8,7 @@ import { ApiError } from "../../shared/http/ApiError.js";
 import {
   registerBloodBankHandler,
   getBloodBankProfileHandler,
+  updateBloodBankProfileHandler,
 } from "./bloodBank.controller.js";
 
 const router = Router();
@@ -51,6 +52,12 @@ router.get(
   apiRoutes.bloodBanks.me,
   supabaseAuth,
   asyncHandler(getBloodBankProfileHandler)
+);
+
+router.patch(
+  apiRoutes.bloodBanks.me,
+  supabaseAuth,
+  asyncHandler(updateBloodBankProfileHandler)
 );
 
 export default router;

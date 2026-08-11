@@ -1,0 +1,116 @@
+.bloodbank-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f6f7f9;
+}
+
+.bloodbank-layout-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.bloodbank-layout-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 40px 64px;
+}
+
+.bloodbank-layout-state {
+  min-height: 100vh;
+  background: #f6f7f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.bloodbank-layout-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top-color: #e53935;
+  border-radius: 50%;
+  animation: bloodbank-layout-spin 0.8s linear infinite;
+  margin: 0 auto 14px;
+}
+
+@keyframes bloodbank-layout-spin {
+  to { transform: rotate(360deg); }
+}
+
+.bloodbank-layout-state p {
+  color: #6b7280;
+  font-size: 14px;
+  text-align: center;
+  margin: 0;
+}
+
+.bloodbank-layout-state-card {
+  max-width: 440px;
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 20px;
+  padding: 40px 32px;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.bloodbank-layout-state-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  margin-bottom: 6px;
+}
+
+.bloodbank-layout-state-card h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.bloodbank-layout-state-card p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #6b7280;
+  margin: 0;
+}
+
+.bloodbank-layout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #e53935, #c62828);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bloodbank-layout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(229, 57, 53, 0.3);
+}
+
+@media (max-width: 768px) {
+  .bloodbank-layout-content {
+    padding: 24px 16px 48px;
+  }
+}
