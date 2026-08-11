@@ -90,6 +90,10 @@
   border-color: #f2b8b5;
 }
 
+.donor-requests-filters { display: flex; gap: 8px; margin: 0 0 18px; padding: 5px; width: fit-content; background: #eef0f3; border-radius: 12px; }
+.donor-requests-filters button { padding: 9px 14px; color: #737b87; background: transparent; border: 0; border-radius: 9px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.donor-requests-filters button.donor-requests-filter--active { color: #b42318; background: #fff; box-shadow: 0 2px 8px rgba(24,32,43,.08); }
+
 .donor-requests-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -174,6 +178,7 @@
 }
 
 .donor-request-location,
+.donor-request-patient,
 .donor-request-meta,
 .donor-request-footer {
   color: #737b87;
@@ -186,6 +191,8 @@
   gap: 7px;
   margin: 0;
 }
+
+.donor-request-patient { margin: 0; color: #444D59; font-size: 12px; font-weight: 600; }
 
 .donor-request-meta { margin: 22px 0 18px; }
 .donor-request-meta span,

@@ -27,7 +27,7 @@ const RequestHistory = () => {
     const matchesSearch =
       req.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       hospitalName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
+     const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
     const matchesBlood = bloodFilter === 'all' || req.bloodGroup === bloodFilter;
     return matchesSearch && matchesStatus && matchesBlood;
   });
@@ -60,8 +60,13 @@ const RequestHistory = () => {
             <div className="req-history-filter-group">
               <FaFilter className="req-history-filter-icon" />
               <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                {['all', 'submitted', 'searching', 'completed', 'cancelled'].map((s) => (
-                  <option key={s} value={s}>{s === 'all' ? 'All Status' : s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                {[
+                  ['all', 'All Requests'],
+                  ['notified', 'Donors Notified'],
+                  ['accepted', 'Donor Accepted'],
+                  ['completed', 'Blood Donated / Completed'],
+                ].map(([value, label]) => (
+                   <option key={value} value={value}>{label}</option>
                 ))}
               </select>
             </div>

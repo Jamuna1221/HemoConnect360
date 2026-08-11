@@ -1,0 +1,21 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBg-GpOMpIDNWv4udrLtEk_rFVpiaDEBQ4",
+  authDomain: "hemoconnect-2e1d5.firebaseapp.com",
+  projectId: "hemoconnect-2e1d5",
+  storageBucket: "hemoconnect-2e1d5.firebasestorage.app",
+  messagingSenderId: "540641644272",
+  appId: "1:540641644272:web:cd82d26c7763185fb7bc35",
+  measurementId: "G-THY7FB8WCR"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);

@@ -31,6 +31,14 @@
 .donor-request-detail-reject { color: #b42318; background: #fff0f0; }
 .donor-request-detail-status { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; font-size: 14px; font-weight: 700; }
 .donor-request-detail-status--accepted { color: #17834a; }.donor-request-detail-status--rejected { color: #b42318; }
+.donor-request-detail-activity { grid-column: 1 / -1; }
+.donor-request-detail-timeline { display: grid; gap: 15px; }
+.donor-request-detail-event { display: flex; align-items: flex-start; gap: 12px; }
+.donor-request-detail-event-dot { flex: 0 0 10px; width: 10px; height: 10px; margin-top: 5px; background: #1c9b55; border-radius: 50%; box-shadow: 0 0 0 4px #e8f8ee; }
+.donor-request-detail-event--closed .donor-request-detail-event-dot { background: #b42318; box-shadow: 0 0 0 4px #fff0f0; }
+.donor-request-detail-event strong, .donor-request-detail-event small { display: block; }
+.donor-request-detail-event strong { color: #333d49; font-size: 13px; }
+.donor-request-detail-event small { margin-top: 3px; color: #737b87; font-size: 11px; }
 .donor-request-detail-error, .donor-request-detail-state { margin-top: 18px; padding: 16px 18px; color: #b42318; font-size: 13px; background: #fff3f2; border: 1px solid #f0c5c5; border-radius: 14px; }
 .donor-request-detail-dashboard { display: inline-block; margin-top: 25px; color: #d83232; font-size: 13px; font-weight: 700; text-decoration: none; }
 @media (max-width: 700px) { .donor-request-detail-main { padding: 96px 16px 55px; }.donor-request-detail-hero { padding: 25px 22px; }.donor-request-detail-hero > svg { display: none; }.donor-request-detail-grid { grid-template-columns: 1fr; }.donor-request-detail-actions { flex-direction: column; }.donor-request-detail-actions button { width: 100%; } }
