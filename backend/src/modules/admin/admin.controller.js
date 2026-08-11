@@ -24,7 +24,16 @@ export const getVerificationHandler = async (req, res) => {
 };
 
 export const applyVerificationHandler = async (req, res) => {
-  const { type, id, action, reason } = req.body || {};
+  const { type, id, reason } = req.body || {};
+  let action = req.body.action;
+  if (!action) {
+    if (req.path.includes("approve")) action = "approve";
+    else if (req.path.includes("reject")) action = "reject";
+    else if (req.path.includes("reverify")) action = "reverify";
+  }
+
+  console.log("applyVerificationHandler debug:", { path: req.path, type, action, id, reason });
+
   const data = await applyVerification({
     type,
     id,

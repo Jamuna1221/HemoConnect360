@@ -44,11 +44,6 @@ const toBloodBankDto = (row) => ({
   updatedAt: row.updated_at,
 });
 
-/**
- * Whitelist of profile fields the owner may edit. camelCase API key -> column.
- * Verification columns, document paths, user_id and id are intentionally NOT
- * listed: they are read-only. The verify_guard trigger is the DB backstop.
- */
 const PROFILE_UPDATE_FIELDS = {
   bloodBankName: "blood_bank_name",
   bloodBankType: "blood_bank_type",
@@ -91,18 +86,6 @@ const isUserAlreadyRegisteredError = (error) => {
   );
 };
 
-/**
- * Create (or reuse) the Supabase Auth account for a blood bank registration.
- *
- * The account is always created with email_confirm: true through the Admin API,
- * so the user can sign in immediately even when the global "Confirm email"
- * setting is enabled. The service-role key is used only here, server-side, and
- * is never exposed to the frontend.
- *
- * If the email is already registered, the supplied password is verified against
- * the existing account with the anon key; only the account owner can complete
- * the registration. The existing account is force-confirmed as well.
- */
 const getOrCreateAuthUser = async ({ email, password, metadata }) => {
   const adminClient = createAdminClient();
 
@@ -146,19 +129,6 @@ const getOrCreateAuthUser = async ({ email, password, metadata }) => {
   throw new ApiError(500, "Unable to create the account", error.message);
 };
 
-/**
- * Register a blood bank.
- *
- * The Auth account is created server-side with email_confirm: true (Admin API),
- * so registration never depends on the "Confirm email" setting. The user id
- * comes from the created/verified account - never from the client. Documents
- * are uploaded to Supabase Storage first and the profile row is inserted last
- * so a failed insert triggers cleanup of the uploaded files; a failed upload
- * never leaves an incomplete registration.
- *
- * The stored verification status is always PENDING_VERIFICATION - client input
- * is never used for it.
- */
 export const registerBloodBank = async ({ input }) => {
   const adminClient = createAdminClient();
 
@@ -272,7 +242,7 @@ export const getAllBloodBanksForAdmin = async () => {
 
 export const verifyBloodBankForAdmin = async ({ id, status, notes }) => {
   const adminClient = createAdminClient();
-  
+
   const { error } = await adminClient.rpc("admin_verify_blood_bank", {
     p_bank_id: id,
     p_status: status,
@@ -296,15 +266,6 @@ export const verifyBloodBankForAdmin = async ({ id, status, notes }) => {
   return toBloodBankDto(updated);
 };
 
-/**
- * Update the signed-in blood bank's own profile.
- *
- * The bank row is resolved from auth.uid() (findBloodBankByUserId on the
- * user-scoped client), so the id used for the UPDATE is never supplied by the
- * client. Only the whitelisted fields are written; updated_at is stamped
- * explicitly (no trigger on the table). The returned DTO is the committed
- * row re-read through the same RLS-protected client.
- */
 export const updateBloodBankProfile = async ({ accessToken, user, input }) => {
   const client = createUserClient(accessToken);
   const existing = await findBloodBankByUserId(client, user.id);

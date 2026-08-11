@@ -110,7 +110,14 @@ const DashboardOverview = ({
           <h4>Blood Request Overview</h4>
           <div className="overview-chart-mock">
             <div className="trend-line-container">
-              <svg viewBox="0 0 300 100" className="trend-svg">
+              <svg viewBox="0 0 300 100" className="trend-svg" style={{ overflow: 'visible' }}>
+                <defs>
+                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#E53935" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#E53935" stopOpacity="0.00" />
+                  </linearGradient>
+                </defs>
+                <path d="M10,80 Q50,40 100,60 T200,30 T300,10 L300,100 L10,100 Z" fill="url(#chartGradient)" />
                 <path d="M10,80 Q50,40 100,60 T200,30 T300,10" fill="none" stroke="#E53935" strokeWidth="3" />
                 <circle cx="10" cy="80" r="4" fill="#E53935" />
                 <circle cx="100" cy="60" r="4" fill="#E53935" />

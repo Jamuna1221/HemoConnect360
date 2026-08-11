@@ -1,4 +1,4 @@
-﻿import { createAdminClient } from "../../config/supabase.js";
+import { createAdminClient } from "../../config/supabase.js";
 import { ApiError } from "../../shared/http/ApiError.js";
 import {
   fetchAllDonors,
@@ -402,12 +402,13 @@ export const applyVerification = async ({ type, id, action, reason, adminEmail }
     const bank = banks.find((b) => b.id === id);
     if (!bank) throw new ApiError(404, "Blood bank not found");
     target = bank.blood_bank_name;
-    await setBloodBankVerification(client, {
-      bloodBankId: id,
-      verificationStatus: newStatus,
-      verificationNotes: reason || null,
-      adminUserId,
-    });
+    await setBloodBankVerification(
+      client,
+      id,
+      newStatus,
+      reason || null,
+      adminUserId
+    );
   } else {
     throw new ApiError(400, "Invalid verification type");
   }

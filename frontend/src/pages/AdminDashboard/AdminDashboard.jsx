@@ -49,6 +49,8 @@ import {
   fetchAdminProfile,
   updateAdminProfile,
   changeAdminPassword,
+  fetchAllBloodBanks,
+  verifyBloodBank,
 } from '../../services/adminService'
 
 const AdminDashboard = () => {
@@ -146,6 +148,21 @@ const AdminDashboard = () => {
     try {
       const res = await fetchAdminOverview()
       setOverview(res)
+      if (res?.bloodBanks) {
+        const mappedBanks = res.bloodBanks.map(b => {
+          let verificationStatus = 'pending'
+          const rawStatus = String(b.verificationStatus).toUpperCase()
+          if (rawStatus === 'APPROVED' || rawStatus === 'VERIFIED' || rawStatus === 'SUCCESS') verificationStatus = 'verified'
+          else if (rawStatus === 'REJECTED' || rawStatus === 'FAILED') verificationStatus = 'rejected'
+          else verificationStatus = 'pending'
+
+          return {
+            ...b,
+            verificationStatus
+          }
+        })
+        setBloodBanks(mappedBanks)
+      }
     } catch (err) {
       setOverviewError(err?.message || 'Failed to load overview.')
     } finally {
@@ -223,6 +240,77 @@ const AdminDashboard = () => {
     }
   }, [])
 
+  const loadLegacyData = useCallback(async () => {
+    try {
+      const supabase = getSupabase()
+
+      // 1. Fetch Donors from Database
+      const { data: donorData, error: donorErr } = await supabase
+        .from('donors')
+        .select('*')
+
+      if (donorErr) console.error('[admin] Error fetching donors:', donorErr)
+      else if (donorData) {
+        setDonors(donorData.map(d => ({
+          id: d.id,
+          fullName: d.full_name,
+          bloodGroup: d.blood_group,
+          phone: d.phone,
+          city: d.city,
+          email: d.email || '',
+          status: d.status || 'active'
+        })))
+      }
+
+      // 2. Fetch Blood Requests from Database
+      const { data: requestData, error: requestErr } = await supabase
+        .from('blood_requests')
+        .select('*')
+
+      if (requestErr) console.error('[admin] Error fetching blood requests:', requestErr)
+      else if (requestData) {
+        setRequests(requestData.map(r => ({
+          id: r.id,
+          requesterId: r.requester_id,
+          patientName: r.patient_name || 'Anonymous',
+          bloodGroup: r.blood_group,
+          units: r.units_required,
+          city: r.city,
+          status: r.status,
+          priority: r.priority || 'normal',
+          hospitalName: r.hospital_name || 'N/A'
+        })))
+      }
+
+      // 3. Fetch Requesters (users table with role='requester')
+      const { data: requesterData, error: reqErr } = await supabase
+        .from('users')
+        .select('*')
+        .eq('role', 'requester')
+
+      if (reqErr) console.error('[admin] Error fetching requesters:', reqErr)
+      else if (requesterData) {
+        setRequesters(requesterData.map(r => {
+          const activeCount = requestData
+            ? requestData.filter(req => req.requester_id === r.id && req.status !== 'completed' && req.status !== 'cancelled').length
+            : 0
+          return {
+            id: r.id,
+            fullName: r.full_name || 'Anonymous Requester',
+            phone: r.phone,
+            city: r.city || 'N/A',
+            email: r.email || '',
+            activeRequests: activeCount,
+            status: r.account_status || 'active'
+          }
+        }))
+      }
+
+    } catch (err) {
+      console.error('[admin] Failed to fetch database records:', err)
+    }
+  }, [])
+
   // Auth guard + initial data
   useEffect(() => {
     const session = localStorage.getItem('admin_session')
@@ -231,86 +319,15 @@ const AdminDashboard = () => {
       return
     }
 
-    const fetchData = async () => {
-      try {
-        const supabase = getSupabase()
-
-        // 1. Fetch Donors from Database
-        const { data: donorData, error: donorErr } = await supabase
-          .from('donors')
-          .select('*')
-
-        if (donorErr) console.error('[admin] Error fetching donors:', donorErr)
-        else if (donorData) {
-          setDonors(donorData.map(d => ({
-            id: d.id,
-            fullName: d.full_name,
-            bloodGroup: d.blood_group,
-            phone: d.phone,
-            city: d.city,
-            email: d.email || '',
-            status: d.status || 'active'
-          })))
-        }
-
-        // 2. Fetch Blood Requests from Database
-        const { data: requestData, error: requestErr } = await supabase
-          .from('blood_requests')
-          .select('*')
-
-        if (requestErr) console.error('[admin] Error fetching blood requests:', requestErr)
-        else if (requestData) {
-          setRequests(requestData.map(r => ({
-            id: r.id,
-            patientName: r.patient_name || 'Anonymous',
-            bloodGroup: r.blood_group,
-            units: r.units_required,
-            city: r.city,
-            status: r.status,
-            priority: r.priority || 'normal',
-            hospitalName: r.hospital_name || 'N/A'
-          })))
-        }
-
-        // 3. Fetch Requesters (users table with role='requester')
-        const { data: requesterData, error: reqErr } = await supabase
-          .from('users')
-          .select('*')
-          .eq('role', 'requester')
-
-        if (reqErr) console.error('[admin] Error fetching requesters:', reqErr)
-        else if (requesterData) {
-          setRequesters(requesterData.map(r => {
-            const activeCount = requestData
-              ? requestData.filter(req => req.requester_id === r.id && req.status !== 'completed' && req.status !== 'cancelled').length
-              : 0
-            return {
-              id: r.id,
-              fullName: r.full_name || 'Anonymous Requester',
-              phone: r.phone,
-              city: r.city || 'N/A',
-              email: r.email || '',
-              activeRequests: activeCount,
-              status: 'active'
-            }
-          }))
-        }
-
-      } catch (err) {
-        console.error('[admin] Failed to fetch database records:', err)
-      }
-    }
-
-    fetchData()
-  }, [navigate])
+    loadLegacyData()
+  }, [navigate, loadLegacyData])
 
   // Lazy-load admin API data per tab
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (activeTab === 'dashboard' && !overview) loadOverview()
+      if ((activeTab === 'dashboard' || activeTab === 'banks' || activeTab === 'stock' || activeTab === 'reports') && !overview) loadOverview()
       if (activeTab === 'verification' && !verificationData) loadVerification()
       if (activeTab === 'security' && !securityData) loadSecurity()
-      if (activeTab === 'reports' && !overview) loadOverview()
       if (activeTab === 'notifications' && !notificationsData) loadNotifications()
       if (activeTab === 'audit' && !auditData) loadAudit()
       if (activeTab === 'profile' && !profileData) loadProfile()
@@ -349,14 +366,12 @@ const AdminDashboard = () => {
   }
 
   // Handle Verify Bank Actions
-  const handleVerifyBank = (id, verifyStatus) => {
-    setBloodBanks(prev => prev.map(b => {
-      if (b.id === id) {
-        return { ...b, verificationStatus: verifyStatus }
-      }
-      return b
-    }))
-  }
+  const handleVerifyBank = (id, verifyStatus) =>
+    runWithBanner(async () => {
+      const dbStatus = verifyStatus === 'verified' ? 'APPROVED' : 'REJECTED'
+      await verifyBloodBank(id, dbStatus, 'Updated via Admin Control Panel')
+      await loadOverview()
+    })
 
   // Handle Toggle Bank Account Status
   const handleToggleBankStatus = (id) => {
@@ -392,18 +407,24 @@ const AdminDashboard = () => {
     runWithBanner(async () => {
       await approveVerification(type, id)
       await loadVerification()
+      await loadLegacyData()
+      await loadOverview()
     })
 
   const handleRejectVerification = (type, id, reason) =>
     runWithBanner(async () => {
       await rejectVerification(type, id, reason)
       await loadVerification()
+      await loadLegacyData()
+      await loadOverview()
     })
 
   const handleReverify = (type, id, reason) =>
     runWithBanner(async () => {
       await requestReverification(type, id, reason)
       await loadVerification()
+      await loadLegacyData()
+      await loadOverview()
     })
 
   // ---- Security actions ----
@@ -470,7 +491,6 @@ const AdminDashboard = () => {
           <button className={`nav-item ${activeTab === 'banks' ? 'active' : ''}`} onClick={() => navigateTab('banks')}><FaHospital /> Blood Bank Management</button>
           <button className={`nav-item ${activeTab === 'stock' ? 'active' : ''}`} onClick={() => navigateTab('stock')}><FaTint /> Blood Stock</button>
           <button className={`nav-item ${activeTab === 'verification' ? 'active' : ''}`} onClick={() => navigateTab('verification')}><FaIdCard /> Verification</button>
-          <button className={`nav-item ${activeTab === 'security' ? 'active' : ''}`} onClick={() => navigateTab('security')}><FaExclamationTriangle /> Security</button>
           <button className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => navigateTab('reports')}><FaChartBar /> Reports</button>
           <button className={`nav-item ${activeTab === 'notifications' ? 'active' : ''}`} onClick={() => navigateTab('notifications')}><FaBroadcastTower /> Notifications</button>
           <button className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => navigateTab('audit')}><FaHistory /> Audit Logs</button>
@@ -518,6 +538,7 @@ const AdminDashboard = () => {
         {activeTab === 'requesters' && (
           <RequesterManagement
             requesters={requesters}
+            requests={requests}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             onToggleStatus={toggleRequesterStatus}
@@ -548,6 +569,7 @@ const AdminDashboard = () => {
           <BloodStock
             bloodBanks={bloodBanks}
             onStockUpdate={handleStockUpdate}
+            readOnly={true}
           />
         )}
 
@@ -563,15 +585,6 @@ const AdminDashboard = () => {
           />
         )}
 
-        {activeTab === 'security' && (
-          <SecurityPanel
-            data={securityData}
-            loading={securityLoading}
-            error={securityError}
-            onRetry={loadSecurity}
-            onAction={handleSecurityAction}
-          />
-        )}
 
         {activeTab === 'reports' && (
           <ReportsAnalytics

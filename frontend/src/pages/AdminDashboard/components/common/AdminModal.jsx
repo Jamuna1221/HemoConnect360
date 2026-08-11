@@ -1,5 +1,7 @@
+import { createPortal } from 'react-dom'
+
 const AdminModal = ({ icon, title, onClose, children, footer, width }) => {
-  return (
+  return createPortal(
     <div className="admin-modal-overlay" onClick={onClose}>
       <div
         className="admin-modal-card"
@@ -16,7 +18,8 @@ const AdminModal = ({ icon, title, onClose, children, footer, width }) => {
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-footer">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

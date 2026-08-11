@@ -290,6 +290,23 @@
   flex-grow: 1;
 }
 
+.demand-chart-mock .bar-track {
+  width: 100% !important;
+  max-width: none !important;
+  height: 8px !important;
+  background: #f1f5f9 !important;
+  border-radius: 4px !important;
+  overflow: hidden !important;
+  display: block !important;
+}
+
+.demand-chart-mock .bar-fill {
+  height: 100% !important;
+  border-radius: 4px !important;
+  display: block !important;
+  transition: width 0.4s ease !important;
+}
+
 .demand-bar-row {
   display: flex;
   align-items: center;
@@ -301,19 +318,6 @@
   font-size: 0.8rem;
   font-weight: 700;
   color: #334155;
-}
-
-.bar-track {
-  flex-grow: 1;
-  height: 8px;
-  background: #f1f5f9;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.bar-fill {
-  height: 100%;
-  border-radius: 4px;
 }
 
 .percent-val {
@@ -3054,3 +3058,205 @@
     align-items: stretch;
   }
 }
+
+/* Premium Blood Stock Styles */
+.stock-visual-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stock-card-premium {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.006);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.stock-card-premium:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+}
+
+.stock-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.group-avatar-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ef4444;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.group-avatar-badge svg {
+  animation: pulse-droplet 2s infinite ease-in-out;
+}
+
+.stock-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stock-data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.counter-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.counter-adjust-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: all 0.15s ease;
+}
+
+.counter-adjust-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.stock-progress-wrap {
+  margin-top: 8px;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.stock-progress-track {
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stock-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Chart Styles */
+.stock-chart-section-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.stock-chart-section-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 20px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.blood-stock-bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.stock-chart-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.chart-group-lbl {
+  width: 40px;
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 0.95rem;
+}
+
+.chart-bar-track-wrap {
+  flex-grow: 1;
+  height: 28px;
+  background: #f8fafc;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #f1f5f9;
+}
+
+.chart-bar-fill-dynamic {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: 12px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+}
+
+.bar-inside-value {
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes pulse-droplet {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.12); opacity: 0.9; }
+}
+
+/* Reports Horizontal Progress Bars */
+.status-distribution-list .bar-track {
+  width: 100% !important;
+  max-width: none !important;
+  height: 8px !important;
+  background: #f1f5f9 !important;
+  border-radius: 4px !important;
+  overflow: hidden !important;
+  display: block !important;
+}
+
+.status-distribution-list .bar-fill {
+  height: 100% !important;
+  border-radius: 4px !important;
+  display: block !important;
+}
+

@@ -31,10 +31,22 @@ const post = async (path, body) => {
   return res.data
 }
 
+const patch = async (path, body) => {
+  const res = await apiRequest(path, {
+    method: 'PATCH',
+    headers: adminHeaders(),
+    body: JSON.stringify(body || {}),
+  })
+  return res.data
+}
+
 const get = async (path) => {
   const res = await apiRequest(path, { headers: adminHeaders() })
   return res.data
 }
+
+export const fetchAllBloodBanks = () => get('/blood-banks/')
+export const verifyBloodBank = (id, status, notes) => patch(`/blood-banks/${id}/verify`, { status, notes })
 
 export const fetchAdminOverview = () => get('/admin/overview')
 

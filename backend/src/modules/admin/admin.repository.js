@@ -100,17 +100,16 @@ export const setBloodBankVerification = async (
   adminUserId
 ) => {
   const { data, error } = await client.rpc(
-    "admin_set_blood_bank_verification",
+    "admin_verify_blood_bank",
     {
-      p_blood_bank_id: bankId,
-      p_verification_status: status,
-      p_verification_notes: notes || "",
-      p_admin_user_id: adminUserId || null,
+      p_bank_id: bankId,
+      p_status: status,
+      p_notes: notes || "",
     }
   );
 
   handleSupabaseError(error, "Unable to update blood bank verification");
-  return data?.[0] || null;
+  return data || null;
 };
 
 export const updateDonorAccountStatus = async (client, donorId, status) => {

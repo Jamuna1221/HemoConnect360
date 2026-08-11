@@ -127,3 +127,4 @@ export const updateBloodBankProfile = async (client, id, updates) => {
   handleSupabaseError(error, "Unable to update blood bank profile");
   return data;
 };
+

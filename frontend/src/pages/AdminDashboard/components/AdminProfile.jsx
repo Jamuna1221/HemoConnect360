@@ -166,52 +166,6 @@ const AdminProfile = ({ data, loading, error, onRetry, onSaveProfile, onChangePa
           </div>
         </div>
 
-        <div className="profile-card">
-          <h4 className="profile-card-title">Notification Preferences</h4>
-          {notifyToggles.map((t) => (
-            <div className="preference-row" key={t.key}>
-              <div className="preference-text">
-                <strong>{t.label}</strong>
-                <p>{t.desc}</p>
-              </div>
-              <button className="toggle-btn" onClick={() => togglePref(t.key)} title={prefs[t.key] ?? true ? 'Turn off' : 'Turn on'}>
-                {prefs[t.key] ?? true ? <FaToggleOn /> : <FaToggleOff />}
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <div className="profile-card">
-          <h4 className="profile-card-title">System Preferences</h4>
-          <div className="form-group">
-            <label htmlFor="defaultTab">Default Tab</label>
-            <select
-              id="defaultTab"
-              value={systemPrefs.defaultTab || 'dashboard'}
-              onChange={(e) => changeSystemPref({ defaultTab: e.target.value })}
-            >
-              <option value="dashboard">Dashboard</option>
-              <option value="donors">Donor Management</option>
-              <option value="requests">Blood Requests</option>
-              <option value="verification">Verification</option>
-              <option value="security">Security</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="itemsPerPage">Items Per Page</label>
-            <select
-              id="itemsPerPage"
-              value={Number(systemPrefs.itemsPerPage) || 20}
-              onChange={(e) => changeSystemPref({ itemsPerPage: Number(e.target.value) })}
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </div>
-          <p className="form-hint">These preferences control how the control panel behaves for your account.</p>
-        </div>
 
         <div className="profile-card">
           <h4 className="profile-card-title">Account Security</h4>
