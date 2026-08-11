@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaUser, FaHospital, FaCalendarAlt, FaPhone, FaMapMarkerAlt, FaCheckCircle, FaClock, FaTimes, FaUserFriends } from 'react-icons/fa'
 import { useRequester } from '../../context/RequesterContext'
-import { getBloodRequest, getBloodRequestMatches } from '../../services/requesterService'
+import { getBloodRequestMatches } from '../../services/requesterService'
 import RequesterNavbar from '../../components/Requester/RequesterNavbar'
 import './RequestDetails.css'
 

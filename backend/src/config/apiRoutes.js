@@ -31,5 +31,21 @@ export const apiRoutes = {
     bankReject: "/:id/reject",
     bankComplete: "/:id/complete",
   },
+  admin: {
+    base: "/api/admin",
+    overview: "/overview",
+    verification: "/verification",
+    verificationApprove: "/verification/approve",
+    verificationReject: "/verification/reject",
+    verificationReverify: "/verification/reverify",
+    security: "/security",
+    securityAction: "/security/action",
+    notifications: "/notifications",
+    notificationRead: "/notifications/read",
+    notificationReadAll: "/notifications/read-all",
+    announcement: "/notifications/announcement",
+    auditLogs: "/audit-logs",
+    profile: "/profile",
+  },
 };
 

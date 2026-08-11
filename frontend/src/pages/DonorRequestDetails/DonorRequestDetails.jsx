@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { FaArrowLeft, FaCalendarAlt, FaCheckCircle, FaHospital, FaMapMarkerAlt, FaPhone, FaTimes, FaTint, FaUsers } from 'react-icons/fa'
+import { FaArrowLeft, FaCalendarAlt, FaCheckCircle, FaHospital, FaPhone, FaTimes, FaTint, FaUsers } from 'react-icons/fa'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
 import { acceptDonorRequest, fetchDonorRequests, recordDonorOutcome, rejectDonorRequest } from '../../services/donorService'
@@ -14,18 +14,20 @@ const DonorRequestDetails = () => {
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
 
-  const loadRequest = async () => {
-    try {
-      const requests = await fetchDonorRequests()
-      setRequest(requests.find((item) => item.id === id) || null)
-    } catch (err) {
-      setError(err.message || 'Unable to load this request.')
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    const loadRequest = async () => {
+      try {
+        const requests = await fetchDonorRequests()
+        setRequest(requests.find((item) => item.id === id) || null)
+      } catch (err) {
+        setError(err.message || 'Unable to load this request.')
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
-  useEffect(() => { loadRequest() }, [id])
+    loadRequest()
+  }, [id])
 
   const respond = async (action) => {
     setWorking(true)
