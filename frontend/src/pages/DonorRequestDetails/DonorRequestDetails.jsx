@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { FaArrowLeft, FaCalendarAlt, FaCheckCircle, FaHospital, FaMapMarkerAlt, FaPhone, FaTimes, FaTint, FaUsers } from 'react-icons/fa'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { FaArrowLeft, FaCalendarAlt, FaCheckCircle, FaClipboardCheck, FaHospital, FaPhone, FaTimes, FaTint, FaUsers } from 'react-icons/fa'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
 import { acceptDonorRequest, fetchDonorRequests, recordDonorOutcome, rejectDonorRequest } from '../../services/donorService'
@@ -8,6 +8,7 @@ import './DonorRequestDetails.css'
 
 const DonorRequestDetails = () => {
   const { id } = useParams()
+  const location = useLocation()
   const navigate = useNavigate()
   const [request, setRequest] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -26,6 +27,21 @@ const DonorRequestDetails = () => {
   }
 
   useEffect(() => { loadRequest() }, [id])
+
+  const response = location.state?.historyStatus === 'ineligible'
+    ? 'ineligible_after_donation'
+    : location.state?.historyStatus === 'not_donated'
+      ? 'declined'
+      : location.state?.historyStatus === 'rejected'
+        ? 'rejected'
+        : request?.donorResponse
+
+  const activity = request ? [
+    request.matchedAt && { label: 'Request matched to you', date: request.matchedAt, tone: 'complete' },
+    ['accepted', 'donated', 'declined'].includes(response) && { label: response === 'accepted' ? 'You accepted this request' : response === 'donated' ? 'Blood donation completed' : 'You reported that blood was not donated', date: request.matchedAt, tone: response === 'declined' ? 'closed' : 'complete' },
+    response === 'rejected' && { label: 'You rejected this request', date: request.matchedAt, tone: 'closed' },
+    response === 'ineligible_after_donation' && { label: 'Closed because you completed another donation', date: request.matchedAt, tone: 'closed' },
+  ].filter(Boolean) : []
 
   const respond = async (action) => {
     setWorking(true)
@@ -67,7 +83,7 @@ const DonorRequestDetails = () => {
       <Navbar />
       <main className="donor-request-detail-main">
         <div className="donor-request-detail-container">
-          <button type="button" className="donor-request-detail-back" onClick={() => navigate('/donor/requests')}><FaArrowLeft /> All Requests</button>
+          <button type="button" className="donor-request-detail-back" onClick={() => navigate(location.state?.from || '/donor/requests')}><FaArrowLeft /> {location.state?.from === '/donor/donations' ? 'Donation History' : 'All Requests'}</button>
           {loading && <div className="donor-request-detail-state">Loading request...</div>}
           {!loading && !request && <div className="donor-request-detail-state">This request is no longer available to you.</div>}
           {!loading && request && (
@@ -82,6 +98,27 @@ const DonorRequestDetails = () => {
               </div>
               {error && <div className="donor-request-detail-error">{error}</div>}
               <div className="donor-request-detail-grid">
+                <section className="donor-request-detail-card">
+                  <h2><FaTint /> Patient Details</h2>
+                  <p><strong>Name:</strong> {request.patientName || '—'}</p>
+                  <p><strong>Age:</strong> {request.patientAge || '—'}</p>
+                  <p><strong>Gender:</strong> {request.patientGender || '—'}</p>
+                  <p><strong>Blood group:</strong> {request.bloodGroup}</p>
+                  <p><strong>Units required:</strong> {request.units}</p>
+                </section>
+                <section className="donor-request-detail-card donor-request-detail-activity">
+                  <h2><FaClipboardCheck /> Your Donor Activity</h2>
+                  {activity.length === 0 ? <p>No response activity recorded yet.</p> : (
+                    <div className="donor-request-detail-timeline">
+                      {activity.map((event, index) => (
+                        <div className={`donor-request-detail-event donor-request-detail-event--${event.tone}`} key={`${event.label}-${index}`}>
+                          <span className="donor-request-detail-event-dot" />
+                          <div><strong>{event.label}</strong><small>{event.date ? new Date(event.date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'Date not available'}</small></div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
                 <section className="donor-request-detail-card">
                   <h2><FaHospital /> Hospital Details</h2>
                   <p><strong>Hospital:</strong> {request.hospitalName}</p>
@@ -102,7 +139,7 @@ const DonorRequestDetails = () => {
               </div>
               <section className="donor-request-detail-card donor-request-detail-response">
                 <p className="donor-request-detail-disclaimer">This is a potential match based on blood group, donation interval, and distance. Final compatibility must be confirmed by the blood bank.</p>
-                {request.donorResponse === 'accepted' ? (
+                {response === 'accepted' ? (
                   <>
                     <div className="donor-request-detail-status donor-request-detail-status--accepted"><FaCheckCircle /> You accepted this request. Did the blood bank complete the donation?</div>
                     <div className="donor-request-detail-actions">
@@ -110,12 +147,14 @@ const DonorRequestDetails = () => {
                       <button type="button" className="donor-request-detail-reject" onClick={() => recordOutcome(false)} disabled={working}><FaTimes /> Blood Donated: No</button>
                     </div>
                   </>
-                ) : request.donorResponse === 'donated' ? (
+                ) : response === 'donated' ? (
                   <div className="donor-request-detail-status donor-request-detail-status--accepted"><FaCheckCircle /> Blood donated. Request completed.</div>
-                ) : request.donorResponse === 'rejected' ? (
+                ) : response === 'rejected' ? (
                   <div className="donor-request-detail-status donor-request-detail-status--rejected"><FaTimes /> You rejected this request.</div>
-                ) : request.donorResponse === 'declined' ? (
+                ) : response === 'declined' ? (
                   <div className="donor-request-detail-status donor-request-detail-status--rejected"><FaTimes /> You reported that the blood was not donated. The slot is available again.</div>
+                ) : response === 'ineligible_after_donation' ? (
+                  <div className="donor-request-detail-status donor-request-detail-status--rejected"><FaTimes /> This request was closed because you completed another donation. No response is required.</div>
                 ) : (
                   <div className="donor-request-detail-actions">
                     <button type="button" className="donor-request-detail-accept" onClick={() => respond('accept')} disabled={working || request.acceptedCount >= request.maxAccepted}>

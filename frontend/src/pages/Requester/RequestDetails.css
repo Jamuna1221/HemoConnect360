@@ -56,6 +56,13 @@
 .req-detail-match-info span { font-size: 12px; color: #6B7280; display: flex; align-items: center; gap: 4px; }
 .req-detail-match-distance { color: #16A34A !important; font-weight: 600; }
 .req-detail-match-call { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: linear-gradient(135deg, #22C55E, #16A34A); color: #fff; border-radius: 10px; font-size: 12px; font-weight: 700; text-decoration: none; font-family: 'Poppins', sans-serif; }
+.req-detail-match-status { width: fit-content; padding: 4px 8px; border-radius: 999px; font-size: 10px !important; font-weight: 700; }
+.req-detail-match-status--accepted { color: #15803D !important; background: #DCFCE7; }
+.req-detail-match-status--donated { color: #166534 !important; background: #D1FAE5; }
+.req-detail-match-status--ineligible_after_donation { color: #9A5B18 !important; background: #FEF3C7; }
+.req-detail-match-status--notified { color: #1D4ED8 !important; background: #DBEAFE; }
+.req-detail-match-status--rejected, .req-detail-match-status--declined { color: #B42318 !important; background: #FEE2E2; }
+.req-detail-match--ineligible_after_donation { opacity: .72; }
 
 @media (max-width: 1024px) { .req-detail-grid { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .req-detail-main { padding: 20px 4%; } .req-detail-top { flex-direction: column; align-items: flex-start; } .req-detail-top h1 { font-size: 22px; } }

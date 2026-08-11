@@ -15,7 +15,8 @@ export const env = {
   corsOrigin: process.env.CORS_ORIGIN || true,
   supabaseUrl: process.env.SUPABASE_URL,
   supabaseKey: process.env.SUPABASE_KEY,
-  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
+  firebaseServiceAccountPath: process.env.FIREBASE_SERVICE_ACCOUNT_PATH || "",
   requesterTokenSecret:
     process.env.REQUESTER_TOKEN_SECRET || process.env.SUPABASE_KEY,
   donorMatchRadiusKm: Number(process.env.DONOR_MATCH_RADIUS_KM || 10),

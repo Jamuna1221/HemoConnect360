@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -31,17 +31,26 @@ const VerifyEmail = () => {
   const callbackError = location.state?.error || ''
 
   const [resend, setResend] = useState({ status: 'idle', message: '' })
+  const [cooldown, setCooldown] = useState(0)
   const mailUrl = getMailProviderUrl(email)
+
+  useEffect(() => {
+    if (!cooldown) return undefined
+    const timer = setInterval(() => setCooldown((value) => Math.max(0, value - 1)), 1000)
+    return () => clearInterval(timer)
+  }, [cooldown])
 
   const handleResend = async () => {
     if (!email) {
       setResend({ status: 'error', message: 'No email address on file. Please register again.' })
       return
     }
+    if (cooldown > 0) return
     setResend({ status: 'sending', message: '' })
     try {
       await resendDonorVerification(email)
       setResend({ status: 'sent', message: 'Verification email sent again. Please check your inbox.' })
+      setCooldown(60)
     } catch (err) {
       setResend({ status: 'error', message: err.message || 'Unable to resend the verification email. Please try again.' })
     }
@@ -107,9 +116,9 @@ const VerifyEmail = () => {
               type="button"
               className="verify-email-btn verify-email-btn--secondary"
               onClick={handleResend}
-              disabled={resend.status === 'sending'}
+               disabled={resend.status === 'sending' || cooldown > 0}
             >
-              <FaPaperPlane /> {resend.status === 'sending' ? 'Sending...' : 'Resend Verification Email'}
+              <FaPaperPlane /> {resend.status === 'sending' ? 'Sending...' : cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend Verification Email'}
             </button>
           </div>
 

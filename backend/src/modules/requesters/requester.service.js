@@ -1,5 +1,7 @@
 import { ApiError } from "../../shared/http/ApiError.js";
 import { createRequesterToken } from "../../shared/security/requesterToken.js";
+import supabase from "../../config/supabase.js";
+import supabaseAdmin from "../../config/supabaseAdmin.js";
 import {
   createRequesterUser,
   findRequesterById,
@@ -98,4 +100,43 @@ export const saveRequesterProfile = async (requesterId, profile) => {
   });
 
   return buildAccountPayload(updatedUser, false);
+};
+
+export const registerRequesterPushToken = async (requesterId, token) => {
+  if (!supabaseAdmin) {
+    throw new ApiError(503, "Push notifications are not configured on the backend");
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("requester_push_tokens")
+    .upsert({ requester_id: requesterId, token, platform: "web", last_seen_at: new Date().toISOString() }, { onConflict: "token" })
+    .select("id, requester_id, token, platform, last_seen_at")
+    .single();
+
+  if (error) throw new ApiError(500, "Unable to save requester notification device", error.message);
+  return data;
+};
+
+export const getRequesterNotifications = async (requesterId) => {
+  if (!supabaseAdmin) throw new ApiError(503, "Notifications are not configured on the backend");
+  const { data, error } = await supabaseAdmin
+    .from("notifications")
+    .select("id, type, title, message, read_at, created_at")
+    .eq("recipient_type", "requester")
+    .eq("recipient_id", requesterId)
+    .order("created_at", { ascending: false })
+    .limit(20);
+  if (error) throw new ApiError(500, "Unable to load notifications", error.message);
+  return data || [];
+};
+
+export const markRequesterNotificationRead = async (requesterId, notificationId) => {
+  if (!supabaseAdmin) throw new ApiError(503, "Notifications are not configured on the backend");
+  const { error } = await supabaseAdmin
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", notificationId)
+    .eq("recipient_type", "requester")
+    .eq("recipient_id", requesterId);
+  if (error) throw new ApiError(500, "Unable to update notification", error.message);
 };
