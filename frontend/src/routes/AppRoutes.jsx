@@ -34,7 +34,7 @@ import BloodBankCollections from '../pages/BloodBank/BloodBankCollections'
 import StockHistory from '../pages/BloodBank/StockHistory'
 import NearbyRequests from '../pages/BloodBank/NearbyRequests'
 import BloodBankProfile from '../pages/BloodBank/BloodBankProfile'
-import BloodBankReports from '../pages/BloodBank/BloodBankReports'
+import BloodBankSettings from '../pages/BloodBank/BloodBankSettings'
 import AdminLogin from '../pages/AdminLogin/AdminLogin'
 import AdminDashboard from '../pages/AdminDashboard/AdminDashboard'
 
@@ -78,7 +78,7 @@ const AppRoutes = () => {
         <Route path="collections" element={<BloodBankCollections />} />
         <Route path="nearby-requests" element={<NearbyRequests />} />
         <Route path="stock-history" element={<StockHistory />} />
-        <Route path="reports" element={<BloodBankReports />} />
+        <Route path="settings" element={<BloodBankSettings />} />
       </Route>
 
       <Route path="/admin/login" element={<AdminLogin />} />

@@ -114,3 +114,39 @@ export const updateBloodBankProfile = async (client, id, updates) => {
   handleSupabaseError(error, "Unable to update blood bank profile");
   return data;
 };
+
+const bloodBankSettingsColumns =
+  "blood_bank_id, user_id, blood_request_notifications, nearby_request_notifications, inventory_notifications, collection_notifications, system_notifications, default_request_radius_km, created_at, updated_at";
+
+/**
+ * Read the signed-in bank's settings row. Returns null when the bank has not
+ * saved any settings yet; the service then falls back to the defaults (which
+ * match the table's column defaults).
+ */
+export const getBloodBankSettingsRow = async (client, bankId) => {
+  const { data, error } = await client
+    .from(tables.bloodBankSettings)
+    .select(bloodBankSettingsColumns)
+    .eq("blood_bank_id", bankId)
+    .maybeSingle();
+
+  handleSupabaseError(error, "Unable to fetch blood bank settings");
+  return data;
+};
+
+/**
+ * Insert or update the settings row. The blood_bank_id and user_id come from
+ * the server-side lookup by auth.uid() (see service), never from the client.
+ * RLS policies ("blood_bank_settings_insert_own" / "_update_own") keep the
+ * write scoped to the authenticated user's own row.
+ */
+export const upsertBloodBankSettings = async (client, record) => {
+  const { data, error } = await client
+    .from(tables.bloodBankSettings)
+    .upsert(record, { onConflict: "blood_bank_id" })
+    .select(bloodBankSettingsColumns)
+    .single();
+
+  handleSupabaseError(error, "Unable to save blood bank settings");
+  return data;
+};

@@ -9,6 +9,8 @@ import {
   removeBloodBankDocuments,
   insertBloodBank,
   updateBloodBankProfile as updateBloodBankProfileRecord,
+  getBloodBankSettingsRow,
+  upsertBloodBankSettings,
 } from "./bloodBank.repository.js";
 
 const PENDING_VERIFICATION = "PENDING_VERIFICATION";
@@ -280,4 +282,95 @@ export const updateBloodBankProfile = async ({ accessToken, user, input }) => {
 
   const updated = await updateBloodBankProfileRecord(client, existing.id, updates);
   return toBloodBankDto(updated);
+};
+
+/**
+ * Default settings returned when the bank has never saved a settings row.
+ * They match the blood_bank_settings column defaults exactly, so they are the
+ * true effective values the app uses.
+ */
+const DEFAULT_SETTINGS = {
+  bloodRequestNotifications: true,
+  nearbyRequestNotifications: true,
+  inventoryNotifications: true,
+  collectionNotifications: true,
+  systemNotifications: true,
+  defaultRequestRadiusKm: 25,
+  updatedAt: null,
+};
+
+const toSettingsDto = (row) =>
+  row
+    ? {
+        bloodRequestNotifications: row.blood_request_notifications,
+        nearbyRequestNotifications: row.nearby_request_notifications,
+        inventoryNotifications: row.inventory_notifications,
+        collectionNotifications: row.collection_notifications,
+        systemNotifications: row.system_notifications,
+        defaultRequestRadiusKm: row.default_request_radius_km,
+        updatedAt: row.updated_at,
+      }
+    : { ...DEFAULT_SETTINGS };
+
+/**
+ * Whitelist of editable settings. camelCase API key -> column. blood_bank_id
+ * and user_id are intentionally absent: they come from the JWT lookup.
+ */
+const SETTINGS_UPDATE_FIELDS = {
+  bloodRequestNotifications: "blood_request_notifications",
+  nearbyRequestNotifications: "nearby_request_notifications",
+  inventoryNotifications: "inventory_notifications",
+  collectionNotifications: "collection_notifications",
+  systemNotifications: "system_notifications",
+  defaultRequestRadiusKm: "default_request_radius_km",
+};
+
+/**
+ * Read the signed-in blood bank's settings. Identity is resolved from the JWT
+ * (findBloodBankByUserId) on the user-scoped client; the settings row is owned
+ * by that user and protected by RLS. Banks that never saved anything get the
+ * defaults.
+ */
+export const getBloodBankSettings = async ({ accessToken, user }) => {
+  const client = createUserClient(accessToken);
+  const bank = await findBloodBankByUserId(client, user.id);
+
+  if (!bank) {
+    throw new ApiError(404, "Blood bank profile not found");
+  }
+
+  const row = await getBloodBankSettingsRow(client, bank.id);
+  return toSettingsDto(row);
+};
+
+/**
+ * Persist the signed-in blood bank's settings.
+ *
+ * Only whitelisted fields are written and only when explicitly provided.
+ * blood_bank_id + user_id are resolved from auth.uid() server-side, so the
+ * client can never write to (or create) another bank's settings row. A failed
+ * database write raises and is surfaced as an error - the frontend never shows
+ * a success message for a failed save.
+ */
+export const updateBloodBankSettings = async ({ accessToken, user, input }) => {
+  const client = createUserClient(accessToken);
+  const bank = await findBloodBankByUserId(client, user.id);
+
+  if (!bank) {
+    throw new ApiError(404, "Blood bank profile not found");
+  }
+
+  const record = {
+    blood_bank_id: bank.id,
+    user_id: user.id,
+    updated_at: new Date().toISOString(),
+  };
+  for (const [key, column] of Object.entries(SETTINGS_UPDATE_FIELDS)) {
+    if (key in input && input[key] !== undefined) {
+      record[column] = input[key];
+    }
+  }
+
+  const saved = await upsertBloodBankSettings(client, record);
+  return toSettingsDto(saved);
 };

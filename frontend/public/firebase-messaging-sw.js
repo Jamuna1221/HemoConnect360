@@ -21,7 +21,33 @@ messaging.onBackgroundMessage((payload) => {
   const options = {
     body: payload.notification?.body || 'You have a new blood request update.',
     icon: '/favicon.svg',
+    badge: '/favicon.svg',
     data: payload.data || {},
   }
   self.registration.showNotification(title, options)
+})
+
+const getNotificationTarget = (data) => {
+  const type = data?.type || ''
+  if (type === 'blood_request') return '/donor/requests'
+  if (type === 'donors_matched' || type === 'donation_outcome' || type === 'blood_bank_update') {
+    return '/requester/track'
+  }
+  return '/'
+}
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const url = getNotificationTarget(event.notification.data || {})
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client) {
+          client.navigate(url)
+          return client.focus()
+        }
+      }
+      return self.clients.openWindow(url)
+    })
+  )
 })

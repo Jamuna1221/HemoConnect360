@@ -1,145 +1,223 @@
 .bloodbank-sidebar {
-  width: 268px;
+  width: 280px;
   flex-shrink: 0;
-  background: #fff;
+  background: #ffffff;
   border-right: 1px solid #eef0f3;
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100vh;
-  padding: 20px 16px;
+  padding: 24px 18px 18px;
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.04);
 }
 
+/* ---- Brand / logo ---- */
 .bloodbank-sidebar-brand {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 6px 16px;
+  gap: 8px;
+  padding: 0 2px 22px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.bloodbank-sidebar-logo {
+  display: inline-flex;
+  min-width: 0;
 }
 
 .bloodbank-sidebar-logo img {
-  height: 36px;
+  height: 52px;
+  width: auto;
+  max-width: 100%;
+  display: block;
 }
 
 .bloodbank-sidebar-close {
   display: none;
-  background: none;
-  border: none;
+  background: #f3f4f6;
+  border: 1px solid #eef0f3;
   color: #6b7280;
-  font-size: 18px;
-  padding: 4px;
+  font-size: 14px;
+  padding: 8px;
+  border-radius: 10px;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
+.bloodbank-sidebar-close:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* ---- Blood bank profile card ---- */
 .bloodbank-sidebar-bank {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #fafafa;
-  border: 1px solid #eef0f3;
-  border-radius: 14px;
-  padding: 12px;
-  margin-bottom: 20px;
+  background: linear-gradient(135deg, #fff1f1 0%, #fef7f7 100%);
+  border: 1px solid #fecaca;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 24px;
+}
+
+.bloodbank-sidebar-bank::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(180deg, #e53935, #c62828);
 }
 
 .bloodbank-sidebar-bank-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #fee2e2, #fecaca);
-  color: #dc2626;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #e53935, #c62828);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
   flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(229, 57, 53, 0.24);
 }
 
 .bloodbank-sidebar-bank-text {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .bloodbank-sidebar-bank-text strong {
-  font-size: 13px;
-  color: #1a1a1a;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.35;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .bloodbank-sidebar-bank-text span {
-  font-size: 11px;
-  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
   text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* ---- Navigation ---- */
 .bloodbank-sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   flex: 1;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 2px;
+}
+
+.bloodbank-sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.bloodbank-sidebar-nav::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 999px;
 }
 
 .bloodbank-sidebar-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
   color: #9ca3af;
   padding: 0 12px 8px;
 }
 
 .bloodbank-sidebar-link {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 11px 12px;
-  border-radius: 10px;
-  font-size: 14px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 14.5px;
   font-weight: 600;
-  color: #6b7280;
-  transition: all 0.2s ease;
+  color: #4b5563;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.bloodbank-sidebar-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 4px;
+  height: 22px;
+  border-radius: 0 6px 6px 0;
+  background: linear-gradient(180deg, #e53935, #c62828);
+  transition: transform 0.2s ease;
 }
 
 .bloodbank-sidebar-link:hover {
-  color: #1a1a1a;
-  background: #f6f7f9;
+  color: #dc2626;
+  background: #fef2f2;
+  transform: translateX(2px);
 }
 
 .bloodbank-sidebar-link--active {
   color: #dc2626;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: linear-gradient(135deg, #fef2f2, #fff5f5);
+  border-color: #fecaca;
+  font-weight: 700;
+}
+
+.bloodbank-sidebar-link--active::before {
+  transform: translateY(-50%) scaleY(1);
 }
 
 .bloodbank-sidebar-link-icon {
   display: inline-flex;
-  font-size: 15px;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  font-size: 16px;
+  flex-shrink: 0;
 }
 
+/* ---- Footer ---- */
 .bloodbank-sidebar-footer {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-top: 16px;
+  padding-top: 18px;
   border-top: 1px solid #eef0f3;
 }
 
 .bloodbank-sidebar-home {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #9ca3af;
-  padding: 4px 12px;
-  transition: color 0.2s ease;
+  padding: 6px 12px;
+  border-radius: 10px;
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
 .bloodbank-sidebar-home:hover {
   color: #e53935;
+  background: #fef2f2;
 }
 
 .bloodbank-sidebar-logout {
@@ -154,13 +232,14 @@
   color: #dc2626;
   font-size: 14px;
   font-weight: 700;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 .bloodbank-sidebar-logout:hover {
-  background: #e53935;
+  background: linear-gradient(135deg, #e53935, #c62828);
   color: #fff;
   border-style: solid;
+  transform: translateY(-1px);
 }
 
 .bloodbank-sidebar-backdrop {
@@ -175,7 +254,7 @@
     z-index: 60;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 0 40px rgba(15, 23, 42, 0.16);
   }
 
   .bloodbank-sidebar--open {

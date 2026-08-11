@@ -10,7 +10,7 @@ export const notifyDonorOutcome = async (req, res) => {
     .from("donor_matches")
     .select("donor_id")
     .eq("blood_request_id", requestId)
-    .eq("donor_id", req.supabaseUser.id)
+    .eq("donor_id", req.user.id)
     .maybeSingle();
   if (error || !match) return res.status(403).json({ success: false, message: "You are not matched to this request" });
   await notifyRequesterOfOutcome({ requestId, donated });

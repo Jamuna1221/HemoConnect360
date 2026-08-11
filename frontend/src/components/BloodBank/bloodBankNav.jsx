@@ -3,10 +3,10 @@ import {
   FaBoxes,
   FaHeartbeat,
   FaHandHoldingHeart,
-  FaChartBar,
   FaHistory,
   FaMapMarkerAlt,
   FaUserCircle,
+  FaCog,
 } from 'react-icons/fa'
 
 export const BLOOD_BANK_NAV = [
@@ -17,7 +17,7 @@ export const BLOOD_BANK_NAV = [
   { label: 'Collection Records', path: '/blood-bank/collections', icon: <FaHandHoldingHeart /> },
   { label: 'Nearby Requests', path: '/blood-bank/nearby-requests', icon: <FaMapMarkerAlt /> },
   { label: 'Stock History', path: '/blood-bank/stock-history', icon: <FaHistory /> },
-  { label: 'Reports', path: '/blood-bank/reports', icon: <FaChartBar /> },
+  { label: 'Settings', path: '/blood-bank/settings', icon: <FaCog /> },
 ]
 
 export const getBloodBankPageTitle = (pathname) => {

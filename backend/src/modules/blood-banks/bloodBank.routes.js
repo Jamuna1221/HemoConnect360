@@ -9,6 +9,8 @@ import {
   registerBloodBankHandler,
   getBloodBankProfileHandler,
   updateBloodBankProfileHandler,
+  getBloodBankSettingsHandler,
+  updateBloodBankSettingsHandler,
 } from "./bloodBank.controller.js";
 
 const router = Router();
@@ -58,6 +60,18 @@ router.patch(
   apiRoutes.bloodBanks.me,
   supabaseAuth,
   asyncHandler(updateBloodBankProfileHandler)
+);
+
+router.get(
+  apiRoutes.bloodBanks.settings,
+  supabaseAuth,
+  asyncHandler(getBloodBankSettingsHandler)
+);
+
+router.patch(
+  apiRoutes.bloodBanks.settings,
+  supabaseAuth,
+  asyncHandler(updateBloodBankSettingsHandler)
 );
 
 export default router;

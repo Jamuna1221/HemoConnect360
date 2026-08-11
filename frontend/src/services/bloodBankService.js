@@ -127,6 +127,86 @@ export const updateBloodBankProfile = async (updates) => {
 }
 
 /**
+ * Load the signed-in blood bank's real settings from the backend. Values come
+ * from the blood_bank_settings row owned by the authenticated user; banks that
+ * never saved anything receive the effective defaults.
+ *
+ * @returns {Promise<Object>} { bloodRequestNotifications,
+ *   nearbyRequestNotifications, inventoryNotifications, collectionNotifications,
+ *   systemNotifications, defaultRequestRadiusKm, updatedAt }
+ */
+export const fetchBloodBankSettings = async () => {
+  const payload = await apiRequest('/blood-banks/settings', {
+    method: 'GET',
+    headers: await authHeaders(),
+  })
+
+  return payload.data || null
+}
+
+/**
+ * Persist the signed-in blood bank's settings. The backend resolves the bank
+ * from the JWT and only accepts the known preference fields.
+ *
+ * @param {Object} settings
+ * @returns {Promise<Object>} the committed settings DTO
+ */
+export const updateBloodBankSettings = async (settings) => {
+  const payload = await apiRequest('/blood-banks/settings', {
+    method: 'PATCH',
+    headers: await authHeaders(),
+    body: JSON.stringify(settings),
+  })
+
+  return payload.data
+}
+
+const mapPasswordError = (error) => {
+  const message = (error?.message || '').toLowerCase()
+  const status = error?.status
+
+  if (message.includes('session')) {
+    return 'Your session has expired. Please sign in again before changing your password.'
+  }
+  if (message.includes('network') || message.includes('fetch')) {
+    return 'Network error. Please check your connection and try again.'
+  }
+  if (status === 429 || message.includes('rate limit') || message.includes('too many')) {
+    return 'Too many attempts. Please wait a moment and try again.'
+  }
+  return error?.message || 'Unable to update your password.'
+}
+
+/**
+ * Change the signed-in blood bank's password through Supabase Auth. The
+ * password goes directly to Supabase Auth - it is never sent to the
+ * HemoConnect360 backend and never stored in any app database table.
+ *
+ * @param {Object} input
+ * @param {string} input.newPassword
+ * @returns {Promise<void>}
+ */
+export const changeBloodBankPassword = async ({ newPassword }) => {
+  const supabase = getSupabase()
+  const { error } = await supabase.auth.updateUser({ password: newPassword })
+
+  if (error) {
+    throw new Error(mapPasswordError(error))
+  }
+}
+
+/**
+ * Sign the blood bank out of Supabase Auth. The caller is responsible for
+ * navigating to the login page.
+ *
+ * @returns {Promise<void>}
+ */
+export const signOutBloodBank = async () => {
+  const supabase = getSupabase()
+  await supabase.auth.signOut().catch(() => {})
+}
+
+/**
  * Sign an existing blood bank in with Supabase Auth and load their real
  * profile from the backend.
  *

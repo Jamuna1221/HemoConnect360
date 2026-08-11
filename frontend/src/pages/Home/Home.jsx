@@ -88,6 +88,7 @@ const Home = () => {
   const closeMenu = () => setMenuOpen(false);
   const goToRequesterLogin = () => navigate('/requester/login');
   const goToDonorRegistration = () => navigate('/donor/register');
+  const goToBloodBankLogin = () => navigate('/blood-bank/login');
 
   return (
     <div className="home">
@@ -112,11 +113,19 @@ const Home = () => {
             <button type="button" className="navbar__cta navbar__cta--mobile" onClick={goToDonorRegistration}>
               Become a Donor
             </button>
+            <button type="button" className="navbar__cta navbar__cta--mobile" onClick={goToBloodBankLogin}>
+              Blood Bank Portal
+            </button>
           </nav>
 
-          <button type="button" className="navbar__cta navbar__cta--desktop" onClick={goToDonorRegistration}>
-            Become a Donor
-          </button>
+          <div className="navbar__actions">
+            <button type="button" className="navbar__cta navbar__cta--desktop" onClick={goToDonorRegistration}>
+              Become a Donor
+            </button>
+            <button type="button" className="navbar__cta navbar__cta--desktop" onClick={goToBloodBankLogin}>
+              Blood Bank Portal
+            </button>
+          </div>
 
           <button
             type="button"

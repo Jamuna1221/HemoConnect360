@@ -17,6 +17,7 @@ export const apiRoutes = {
     base: "/api/blood-banks",
     register: "/register",
     me: "/me",
+    settings: "/settings",
     inventory: "/inventory",
     inventoryHistory: "/inventory/history",
     collections: "/collections",

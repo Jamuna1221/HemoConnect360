@@ -168,3 +168,79 @@ export const notifyRequesterOfOutcome = async ({ requestId, donated }) => {
     console.error("[push] Requester outcome notification failed", { error: error.message });
   }
 };
+
+const BLOOD_BANK_UPDATE_MESSAGES = {
+  accepted: {
+    type: "blood_bank_update",
+    title: "Blood bank accepted your request",
+    body: (request) => `${request.hospital_name} has accepted your ${request.blood_group} blood request.`,
+  },
+  rejected: {
+    type: "blood_bank_update",
+    title: "Blood bank could not fulfill your request",
+    body: (request) => `Your ${request.blood_group} blood request was declined by ${request.hospital_name}.`,
+  },
+  completed: {
+    type: "blood_bank_update",
+    title: "Blood request completed",
+    body: (request) => `Your ${request.blood_group} blood request has been completed.`,
+  },
+};
+
+export const notifyRequesterOfBloodBankUpdate = async ({ requestId, status }) => {
+  try {
+    if (!initializePush()) return;
+
+    const { data: request, error: requestError } = await adminSupabase
+      .from("blood_requests")
+      .select("requester_id, blood_group, hospital_name")
+      .eq("id", requestId)
+      .single();
+    if (requestError || !request) throw requestError || new Error("Request not found");
+
+    const message = BLOOD_BANK_UPDATE_MESSAGES[status];
+    if (!message) return;
+
+    const body = message.body(request);
+    await createNotifications([{
+      recipient_type: "requester",
+      recipient_id: request.requester_id,
+      request_id: requestId,
+      type: message.type,
+      title: message.title,
+      message: body,
+    }]);
+
+    const { data: tokenRows, error } = await adminSupabase
+      .from("requester_push_tokens")
+      .select("token")
+      .eq("requester_id", request.requester_id);
+    if (error) throw error;
+    const tokens = (tokenRows || []).map((row) => row.token);
+    if (tokens.length === 0) return;
+
+    const result = await messaging.sendEachForMulticast({
+      tokens,
+      notification: {
+        title: message.title,
+        body,
+      },
+      data: { type: message.type, requestId, status },
+    });
+
+    const invalidTokens = result.responses
+      .map((response, index) => response.success ? null : tokens[index])
+      .filter(Boolean);
+    console.info("[push] Blood bank update notification result", {
+      requestId,
+      status,
+      successCount: result.successCount,
+      failureCount: result.failureCount,
+    });
+    if (invalidTokens.length > 0) {
+      await adminSupabase.from("requester_push_tokens").delete().in("token", invalidTokens);
+    }
+  } catch (error) {
+    console.error("[push] Blood bank update notification failed", { error: error.message });
+  }
+};

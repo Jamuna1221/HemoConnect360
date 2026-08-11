@@ -30,11 +30,18 @@ export const getBrowserPushToken = async () => {
   const permission = await Notification.requestPermission()
   if (permission !== 'granted') throw new Error('Notification permission was not granted.')
 
+  const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
+  if (!vapidKey) {
+    throw new Error(
+      'Firebase Web Push VAPID key is not configured. Add VITE_FIREBASE_VAPID_KEY to the frontend .env (Firebase Console > Project settings > Cloud Messaging > Web Push certificates).',
+    )
+  }
+
   const messaging = await getFirebaseMessaging()
   if (!messaging) throw new Error('Firebase messaging is not supported in this browser.')
   const registration = await getServiceWorkerRegistration()
   const token = await getToken(messaging, {
-    vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+    vapidKey,
     serviceWorkerRegistration: registration,
   })
   if (!token) throw new Error('Firebase did not return a notification token.')

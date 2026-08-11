@@ -288,3 +288,71 @@ export const validateBloodBankUpdate = (body = {}) => {
     authorizedPersonEmail,
   };
 };
+
+const SETTINGS_FIELDS = [
+  "bloodRequestNotifications",
+  "nearbyRequestNotifications",
+  "inventoryNotifications",
+  "collectionNotifications",
+  "systemNotifications",
+  "defaultRequestRadiusKm",
+];
+
+/**
+ * Validate a settings update (PATCH /api/blood-banks/settings).
+ *
+ * Only the six known preference fields are accepted - anything else is
+ * rejected outright (including blood_bank_id / user_id, which are always
+ * derived from the JWT server-side). Boolean preferences must be real
+ * booleans and the default radius must be a whole number in [1, 500],
+ * matching the blood_bank_nearby_requests RPC clamp.
+ */
+export const validateBloodBankSettingsUpdate = (body = {}) => {
+  const unknown = Object.keys(body).filter((field) => !SETTINGS_FIELDS.includes(field));
+  if (unknown.length > 0) {
+    throw new ApiError(400, `Unknown settings field: ${unknown[0]}`);
+  }
+
+  const booleanField = (key, label) => {
+    if (body[key] === undefined) return undefined;
+    if (typeof body[key] !== "boolean") {
+      throw new ApiError(400, `${label} must be a boolean`);
+    }
+    return body[key];
+  };
+
+  let radius = body.defaultRequestRadiusKm;
+  if (radius !== undefined) {
+    if (!Number.isInteger(radius) || radius < 1 || radius > 500) {
+      throw new ApiError(
+        400,
+        "Default request radius must be a whole number between 1 and 500 km"
+      );
+    }
+    radius = Number(radius);
+  }
+
+  return {
+    bloodRequestNotifications: booleanField(
+      "bloodRequestNotifications",
+      "Blood request notifications"
+    ),
+    nearbyRequestNotifications: booleanField(
+      "nearbyRequestNotifications",
+      "Nearby request notifications"
+    ),
+    inventoryNotifications: booleanField(
+      "inventoryNotifications",
+      "Inventory notifications"
+    ),
+    collectionNotifications: booleanField(
+      "collectionNotifications",
+      "Collection notifications"
+    ),
+    systemNotifications: booleanField(
+      "systemNotifications",
+      "System notifications"
+    ),
+    defaultRequestRadiusKm: radius,
+  };
+};

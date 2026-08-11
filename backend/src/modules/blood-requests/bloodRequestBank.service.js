@@ -1,6 +1,7 @@
 import { createUserClient } from "../../config/supabase.js";
 import { ApiError } from "../../shared/http/ApiError.js";
 import { findBloodBankByUserId } from "../blood-banks/bloodBank.repository.js";
+import { notifyRequesterOfBloodBankUpdate } from "../notifications/push.service.js";
 import {
   findBloodRequests,
   countBloodRequests,
@@ -178,6 +179,7 @@ export const acceptBloodBankRequest = async ({ accessToken, user, id }) => {
   await resolveBloodBank(client, user.id);
 
   await acceptRequest(client, id);
+  await notifyRequesterOfBloodBankUpdate({ requestId: id, status: "accepted" });
 
   const [detail, stats] = await Promise.all([
     getBloodBankRequestDetail({ accessToken, user, id }),
@@ -197,6 +199,7 @@ export const rejectBloodBankRequest = async ({
   await resolveBloodBank(client, user.id);
 
   await rejectRequest(client, id, reason);
+  await notifyRequesterOfBloodBankUpdate({ requestId: id, status: "rejected" });
 
   const [detail, stats] = await Promise.all([
     getBloodBankRequestDetail({ accessToken, user, id }),
@@ -211,6 +214,7 @@ export const completeBloodBankRequest = async ({ accessToken, user, id }) => {
   await resolveBloodBank(client, user.id);
 
   await completeRequest(client, id);
+  await notifyRequesterOfBloodBankUpdate({ requestId: id, status: "completed" });
 
   const [detail, stats] = await Promise.all([
     getBloodBankRequestDetail({ accessToken, user, id }),

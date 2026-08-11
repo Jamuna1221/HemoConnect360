@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   FaMapMarkerAlt,
@@ -22,6 +22,7 @@ import {
   rejectBloodRequest,
   completeBloodRequest,
   fetchBloodBankInventory,
+  fetchBloodBankSettings,
 } from '../../services/bloodBankService'
 import './BloodBankDashboard.css'
 import './NearbyRequests.css'
@@ -84,6 +85,7 @@ const NearbyRequests = () => {
   const [priority, setPriority] = useState('')
   const [status, setStatus] = useState('open')
   const [radiusKm, setRadiusKm] = useState(25)
+  const [defaultRadiusKm, setDefaultRadiusKm] = useState(25)
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [sort, setSort] = useState('nearest')
@@ -99,6 +101,7 @@ const NearbyRequests = () => {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
+  const radiusTouched = useRef(false)
 
   const [detail, setDetail] = useState(null)
   const [detailLoading, setDetailLoading] = useState(false)
@@ -151,6 +154,28 @@ const NearbyRequests = () => {
   useEffect(() => {
     let active = true
 
+    const loadDefaultRadius = async () => {
+      try {
+        const data = await fetchBloodBankSettings()
+        if (!active || radiusTouched.current) return
+        setDefaultRadiusKm(data.defaultRequestRadiusKm)
+        setRadiusKm(data.defaultRequestRadiusKm)
+      } catch {
+        if (!active) return
+        setDefaultRadiusKm(25)
+      }
+    }
+
+    loadDefaultRadius()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+
     const loadInventory = async () => {
       try {
         const { inventory } = await fetchBloodBankInventory()
@@ -176,6 +201,7 @@ const NearbyRequests = () => {
   }
 
   const changeFilter = (setter) => (e) => {
+    if (setter === setRadiusKm) radiusTouched.current = true
     setter(e.target.value)
     setPage(1)
   }
@@ -184,7 +210,8 @@ const NearbyRequests = () => {
     setBloodGroup('')
     setPriority('')
     setStatus('open')
-    setRadiusKm(25)
+    setRadiusKm(defaultRadiusKm)
+    radiusTouched.current = true
     setFrom('')
     setTo('')
     setSort('nearest')
@@ -195,7 +222,9 @@ const NearbyRequests = () => {
   const goNext = () => setPage((p) => Math.min(totalPages, p + 1))
 
   const totalPages = Math.max(1, Math.ceil(total / limit))
-  const hasFilters = Boolean(bloodGroup || priority || from || to || radiusKm !== 25 || sort !== 'nearest')
+  const hasFilters = Boolean(
+    bloodGroup || priority || from || to || radiusKm !== defaultRadiusKm || sort !== 'nearest'
+  )
 
   const openDetail = async (id) => {
     setDetailLoading(true)
