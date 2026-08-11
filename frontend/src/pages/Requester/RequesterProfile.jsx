@@ -26,6 +26,7 @@ const RequesterProfile = () => {
 
   useEffect(() => {
     if (!user) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm({
       fullName: user.fullName || '',
       age: user.age || '',

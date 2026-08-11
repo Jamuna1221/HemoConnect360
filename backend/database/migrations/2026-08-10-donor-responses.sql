@@ -44,7 +44,7 @@ begin
       m.status,
       (select count(*)::integer from public.donor_matches accepted
        where accepted.blood_request_id = p_request_id
-         and accepted.status = 'accepted'),
+         and accepted.status in ('accepted', 'donated')),
       5
     from public.donor_matches m
     join public.donors d on d.id = m.donor_id
@@ -102,7 +102,14 @@ begin
       br.notes,
       br.required_by,
       br.priority,
-      br.status,
+      case
+        when exists (
+          select 1 from public.donor_matches donated
+          where donated.blood_request_id = br.id
+            and donated.status = 'donated'
+        ) then 'completed'
+        else br.status
+      end,
       m.status,
       m.distance_km,
       case
@@ -114,7 +121,7 @@ begin
       m.match_score,
       (select count(*)::integer from public.donor_matches accepted
        where accepted.blood_request_id = br.id
-         and accepted.status = 'accepted'),
+         and accepted.status in ('accepted', 'donated')),
       5,
       m.matched_at
     from public.donor_matches m
@@ -165,9 +172,9 @@ begin
 
   select count(*)::integer into v_count
   from public.donor_matches
-  where blood_request_id = p_request_id and status = 'accepted';
+  where blood_request_id = p_request_id and status in ('accepted', 'donated');
 
-  if v_status = 'accepted' then
+  if v_status in ('accepted', 'donated') then
     return query select true, v_count, 5, 'You already accepted this request.';
     return;
   end if;
@@ -206,11 +213,11 @@ begin
   set status = 'rejected'
   where blood_request_id = p_request_id
     and donor_id = p_donor_id
-    and status <> 'accepted';
+    and status = 'notified';
 
   if not found then
     return query select false,
-      (select count(*)::integer from public.donor_matches where blood_request_id = p_request_id and status = 'accepted'),
+      (select count(*)::integer from public.donor_matches where blood_request_id = p_request_id and status in ('accepted', 'donated')),
       5,
       'This request cannot be rejected.';
     return;
@@ -218,7 +225,7 @@ begin
 
   select count(*)::integer into v_count
   from public.donor_matches
-  where blood_request_id = p_request_id and status = 'accepted';
+  where blood_request_id = p_request_id and status in ('accepted', 'donated');
 
   return query select true, v_count, 5, 'Request rejected.';
 end;
@@ -226,3 +233,88 @@ $$;
 
 grant execute on function public.accept_donor_request to authenticated;
 grant execute on function public.reject_donor_request to authenticated;
+
+-- Record whether an accepted donor actually completed donation. A negative
+-- outcome removes that donor from the accepted count, allowing another donor
+-- to take the open slot.
+create or replace function public.record_donor_outcome(
+  p_request_id uuid,
+  p_donor_id uuid,
+  p_donated boolean
+)
+returns table (updated boolean, accepted_count integer, max_accepted integer, message text)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_status text;
+  v_count integer;
+  v_hospital_name text;
+  v_city text;
+  v_units integer;
+begin
+  if auth.uid() is distinct from p_donor_id then
+    return query select false, 0, 5, 'You can only respond as yourself.';
+    return;
+  end if;
+
+  perform 1 from public.donor_matches
+  where blood_request_id = p_request_id
+  for update;
+
+  select m.status into v_status
+  from public.donor_matches m
+  where m.blood_request_id = p_request_id and m.donor_id = p_donor_id;
+
+  if v_status is null or v_status not in ('accepted', 'donated') then
+    return query select false,
+      (select count(*)::integer from public.donor_matches where blood_request_id = p_request_id and status in ('accepted', 'donated')),
+      5,
+      'Only an accepted donor can record a donation outcome.';
+    return;
+  end if;
+
+  if v_status = 'donated' then
+    return query select true,
+      (select count(*)::integer from public.donor_matches where blood_request_id = p_request_id and status in ('accepted', 'donated')),
+      5,
+      'Donation outcome was already recorded.';
+    return;
+  end if;
+
+  if p_donated then
+    select br.hospital_name, br.city, br.units_required
+      into v_hospital_name, v_city, v_units
+    from public.blood_requests br
+    where br.id = p_request_id;
+
+    insert into public.donations (
+      donor_id, donation_date, blood_bank, city, units, notes
+    )
+    values (
+      p_donor_id,
+      current_date,
+      coalesce(v_hospital_name, 'Blood request donation'),
+      v_city,
+      greatest(coalesce(v_units, 1), 1),
+      'Donation confirmed from blood request'
+    );
+  end if;
+
+  update public.donor_matches
+  set status = case when p_donated then 'donated' else 'declined' end
+  where blood_request_id = p_request_id and donor_id = p_donor_id;
+
+  select count(*)::integer into v_count
+  from public.donor_matches
+  where blood_request_id = p_request_id and status in ('accepted', 'donated');
+
+  return query select true, v_count, 5,
+    case when p_donated then 'Donation recorded. Request completed.'
+         else 'Donation declined. The acceptance slot is available again.'
+    end;
+end;
+$$;
+
+grant execute on function public.record_donor_outcome to authenticated;

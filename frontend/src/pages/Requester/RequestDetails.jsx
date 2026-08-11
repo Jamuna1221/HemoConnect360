@@ -3,24 +3,34 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaUser, FaHospital, FaCalendarAlt, FaPhone, FaMapMarkerAlt, FaCheckCircle, FaClock, FaTimes, FaUserFriends } from 'react-icons/fa'
 import { useRequester } from '../../context/RequesterContext'
-import { getBloodRequestMatches } from '../../services/requesterService'
+import { getBloodRequest, getBloodRequestMatches } from '../../services/requesterService'
 import RequesterNavbar from '../../components/Requester/RequesterNavbar'
 import './RequestDetails.css'
+
+const TIMELINE_STEPS = [
+  { step: 'submitted', label: 'Request Submitted' },
+  { step: 'searching', label: 'Searching Donors' },
+  { step: 'notified', label: 'Donors Notified' },
+  { step: 'accepted', label: 'Donor Accepted' },
+  { step: 'donated', label: 'Blood Donated' },
+  { step: 'completed', label: 'Completed' },
+]
+
+const getStatusIndex = (status) => {
+  const normalized = status === 'searching_donors' ? 'searching' : status
+  const index = TIMELINE_STEPS.findIndex((step) => step.step === normalized)
+  return index < 0 ? 0 : index
+}
 
 const RequestDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, requests, cancelRequest } = useRequester()
-  const [req, setReq] = useState(null)
   const [matches, setMatches] = useState(null)
   const [matchesError, setMatchesError] = useState('')
+  const req = requests.find((r) => r.id === id) || null
 
   useEffect(() => { if (!user) navigate('/requester/login') }, [user, navigate])
-
-  useEffect(() => {
-    const found = requests.find((r) => r.id === id)
-    setReq(found || null)
-  }, [id, requests])
 
   useEffect(() => {
     let active = true
@@ -49,20 +59,37 @@ const RequestDetails = () => {
     </div>
   )
 
-  const displayTimeline = req.timeline?.map((step) => ({
-    ...step,
-    completed: step.step === 'notified' && matches?.length > 0
-      ? true
-      : step.step === 'accepted' && matches?.some((match) => match.status === 'accepted')
-        ? true
-        : step.completed,
-    time: step.step === 'notified' && matches?.length > 0 && !step.time
-      ? 'Donors matched and notified'
-      : step.step === 'accepted' && matches?.some((match) => match.status === 'accepted') && !step.time
-        ? 'A donor accepted this request'
-        : step.time,
-  })) || []
-  const currentStep = displayTimeline.findIndex((t) => !t.completed)
+  const baseTimeline = req.timeline?.length
+    ? req.timeline
+    : TIMELINE_STEPS.map((step, index) => ({
+        ...step,
+        completed: index < getStatusIndex(req.status),
+        time: index < getStatusIndex(req.status) ? 'Completed' : null,
+      }))
+  const hasMatches = (matches?.length || 0) > 0
+  const hasAccepted = matches?.some((match) => ['accepted', 'donated'].includes(match.status))
+  const hasDonated = matches?.some((match) => match.status === 'donated')
+  const currentStep = hasDonated
+    ? 5
+    : hasAccepted
+      ? 4
+      : hasMatches
+        ? 3
+        : Math.max(1, getStatusIndex(req.status))
+  const displayTimeline = baseTimeline.map((step, index) => {
+    const stepName = step.step || step.status
+    return {
+      ...step,
+      completed: index < currentStep,
+      time: stepName === 'notified' && hasMatches && !step.time
+        ? 'Donors matched and notified'
+        : stepName === 'accepted' && hasAccepted && !step.time
+          ? 'A donor accepted this request'
+          : ['donated', 'completed'].includes(stepName) && hasDonated && !step.time
+            ? 'Donation confirmed'
+            : step.time,
+    }
+  })
   const progress = displayTimeline.length
     ? ((displayTimeline.filter((t) => t.completed).length / displayTimeline.length) * 100)
     : 0

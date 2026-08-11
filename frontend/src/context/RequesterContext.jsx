@@ -1,5 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react'
-import { clearRequesterToken, requesterPhoneLogin, updateRequesterProfile, createBloodRequest, listBloodRequests, cancelBloodRequest } from '../services/requesterService'
+import { clearRequesterToken, requesterPhoneLogin, updateRequesterProfile, createBloodRequest, cancelBloodRequest } from '../services/requesterService'
 
 const RequesterContext = createContext(null)
 
@@ -44,10 +45,6 @@ export const RequesterProvider = ({ children }) => {
   }, [user])
 
   useEffect(() => {
-    setRequests(getStoredRequests(user?.phone))
-  }, [user?.phone])
-
-  useEffect(() => {
     if (user?.phone) {
       localStorage.setItem(`requester_requests_${user.phone}`, JSON.stringify(requests))
     }
@@ -66,6 +63,7 @@ export const RequesterProvider = ({ children }) => {
 
     localStorage.setItem('requesterUsers', JSON.stringify(nextUsers))
     setUser(nextUser)
+    setRequests(getStoredRequests(nextUser.phone))
     return nextUser
   }
 
@@ -92,6 +90,7 @@ const loginUser = async (userData) => {
   const logoutUser = () => {
     clearRequesterToken()
     setUser(null)
+    setRequests([])
   }
 
   const saveProfile = async (profileData) => {
@@ -164,16 +163,19 @@ const loginUser = async (userData) => {
           ? new Date().toLocaleString()
           : step.time,
       }))
-      setRequests((prev) =>
-        prev.map((r) => (r.id === newRequest.id ? { ...synced, timeline: syncedTimeline } : r))
-      )
+      setRequests((prev) => {
+        const updated = prev.map((r) => (r.id === newRequest.id ? { ...synced, timeline: syncedTimeline } : r))
+        if (user?.phone) {
+          localStorage.setItem(`requester_requests_${user.phone}`, JSON.stringify(updated))
+        }
+        return updated
+      })
       newRequest.timeline = syncedTimeline
+      return { ...synced, timeline: syncedTimeline }
     } catch (error) {
-      console.error('[requester] Blood request sync failed', error)
+      console.error('[RequesterContext] Failed to create blood request in backend', error)
       throw error
     }
-
-    return newRequest
   }
 
   const updateRequest = (id, updates) => {
@@ -189,7 +191,8 @@ const loginUser = async (userData) => {
 
     try {
       await cancelBloodRequest(id)
-    } catch {
+    } catch (err) {
+      console.error('[RequesterContext] Failed to cancel blood request in backend', err)
     }
   }
 

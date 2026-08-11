@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FaBell, FaUser, FaBars, FaTimes, FaSignOutAlt } from 'react-icons/fa';
 import logo from '../../assets/logo/Hemoconnectlogo.png';
 import { useAuthContext } from '../../context/useAuthContext';
@@ -10,6 +10,8 @@ const NAV_LINKS = [
   { label: 'Find Donors', href: '#find-donors' },
   { label: 'Requests', href: '/donor/requests' },
   { label: 'Profile', href: '/donor/profile' },
+  { label: 'Donations', href: '/donor/donations' },
+  { label: 'Dashboard', href: '/donor/dashboard' },
   { label: 'About Us', href: '#about' },
   { label: 'Contact', href: '#contact' },
 ];
@@ -24,6 +26,7 @@ const getInitials = (fullName) => {
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user, donor, loading, signOut } = useAuthContext();
@@ -35,6 +38,9 @@ const Navbar = () => {
   }, []);
 
   const closeMenu = () => setMenuOpen(false);
+  const visibleNavLinks = location.pathname === '/'
+    ? NAV_LINKS
+    : NAV_LINKS.filter((link) => ['Dashboard', 'Requests', 'Profile', 'Donations'].includes(link.label));
 
   const handleLogout = async () => {
     closeMenu();
@@ -87,7 +93,7 @@ const Navbar = () => {
         </a>
 
         <nav className={`navbar__links ${menuOpen ? 'navbar__links--open' : ''}`}>
-          {NAV_LINKS.map((link, index) => (
+          {visibleNavLinks.map((link, index) => (
             <a
               key={link.href}
               href={link.href}
