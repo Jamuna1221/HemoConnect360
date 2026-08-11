@@ -27,8 +27,10 @@ const AuthCallback = () => {
     }
 
     // The verified user now has a session, so RLS will allow the deferred
-    // donor profile to be created. This is idempotent. If the creation fails,
+    // profile to be created. This is idempotent. If the creation fails,
     // the database error is surfaced instead of silently continuing.
+    // (Blood bank registration never uses this flow - it is completed
+    // immediately at signup with email confirmation disabled.)
     const handleSession = async (session) => {
       if (!active) return
       if (session?.user) {

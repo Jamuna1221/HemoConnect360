@@ -1,0 +1,290 @@
+.bloodbank-login-page {
+  min-height: 100vh;
+  background: #fff;
+  font-family: inherit;
+}
+
+.bloodbank-login-back {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.bloodbank-login-back:hover {
+  color: #e53935;
+}
+
+.bloodbank-login-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+.bloodbank-login-left {
+  background: linear-gradient(160deg, #7f1d1d 0%, #b91c1c 45%, #e53935 100%);
+  color: #fff;
+  padding: 64px 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 24px;
+}
+
+.bloodbank-login-brand {
+  margin-bottom: 8px;
+}
+
+.bloodbank-login-logo-img {
+  width: 220px;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.25));
+}
+
+.bloodbank-login-title {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.bloodbank-login-title span {
+  color: #fecaca;
+}
+
+.bloodbank-login-sub {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.bloodbank-login-features {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.bloodbank-login-feature {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  padding: 16px 18px;
+  backdrop-filter: blur(6px);
+}
+
+.bloodbank-login-feature-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.bloodbank-login-feature h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.bloodbank-login-feature p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 2px 0 0;
+}
+
+.bloodbank-login-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  background: #fafafa;
+}
+
+.bloodbank-login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 36px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.07);
+}
+
+.bloodbank-login-card-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: #dc2626;
+  margin-bottom: 18px;
+}
+
+.bloodbank-login-card h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.bloodbank-login-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 6px 0 24px;
+}
+
+.bloodbank-login-field {
+  margin-bottom: 16px;
+}
+
+.bloodbank-login-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.bloodbank-login-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.bloodbank-login-input-icon {
+  position: absolute;
+  left: 14px;
+  color: #9ca3af;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.bloodbank-login-input-wrap input {
+  width: 100%;
+  padding: 13px 14px 13px 42px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #1a1a1a;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bloodbank-login-input-wrap input:focus {
+  border-color: #e53935;
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12);
+}
+
+.bloodbank-login-input-eye {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 8px;
+}
+
+.bloodbank-login-input-eye:hover {
+  color: #374151;
+}
+
+.bloodbank-login-error {
+  display: block;
+  color: #dc2626;
+  font-size: 13px;
+  margin: 10px 0 4px;
+}
+
+.bloodbank-login-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px;
+  background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bloodbank-login-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(229, 57, 53, 0.35);
+}
+
+.bloodbank-login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.bloodbank-login-register {
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+  margin: 20px 0 0;
+}
+
+.bloodbank-login-register a {
+  color: #dc2626;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.bloodbank-login-register a:hover {
+  text-decoration: underline;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .bloodbank-login-container {
+    grid-template-columns: 1fr;
+  }
+
+  .bloodbank-login-left {
+    padding: 40px 28px;
+    min-height: 320px;
+  }
+
+  .bloodbank-login-title {
+    font-size: 28px;
+  }
+
+  .bloodbank-login-right {
+    padding: 32px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bloodbank-login-card {
+    padding: 28px 20px;
+  }
+
+  .bloodbank-login-features {
+    display: none;
+  }
+}

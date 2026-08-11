@@ -1,0 +1,774 @@
+/* ============================================================
+   BLOOD BANK REGISTRATION PAGE — HemoConnect360 Theme
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+.bloodbank-page {
+  width: 100%;
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  color: #222;
+  background: #fff;
+}
+
+.bloodbank-main {
+  width: 100%;
+}
+
+/* ─── Back Button ─── */
+.bloodbank-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0 0 40px;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #E53935;
+  background: #fff;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bloodbank-back-btn:hover {
+  background: #FFF1F1;
+  border-color: #E53935;
+  transform: translateX(-2px);
+}
+
+/* ─── Page Header ─── */
+.bloodbank-form-section {
+  width: calc(100% - 80px);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 0 80px;
+}
+
+.bloodbank-page-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.bloodbank-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #E53935;
+  background: #FFF1F1;
+  border: 1px solid #fecaca;
+  border-radius: 50px;
+  padding: 6px 16px;
+  margin-bottom: 16px;
+}
+
+.bloodbank-page-header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+}
+
+.bloodbank-page-header h1::after {
+  content: '';
+  display: block;
+  width: 56px;
+  height: 4px;
+  background: #e53935;
+  border-radius: 2px;
+  margin: 12px auto 0;
+}
+
+.bloodbank-page-header p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #777;
+  margin: 0 auto;
+  max-width: 620px;
+}
+
+/* ─── Form Card ─── */
+.bloodbank-form {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.bloodbank-form__form {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ─── Form Group / Section Title ─── */
+.bloodbank-form__group {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.bloodbank-form__group:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.bloodbank-section-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.bloodbank-section-title__icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #e53935;
+}
+
+.bloodbank-section-title__text h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 2px 0;
+}
+
+.bloodbank-section-title__text p {
+  font-size: 13px;
+  color: #999;
+  margin: 0;
+}
+
+/* ─── Grid & Fields ─── */
+.bloodbank-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.bloodbank-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bloodbank-form__field--full {
+  grid-column: 1 / -1;
+}
+
+.bloodbank-form__field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.bloodbank-form__input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.bloodbank-form__input-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 14px;
+  color: #bbb;
+  pointer-events: none;
+  transition: color 0.3s ease;
+}
+
+.bloodbank-form__input-wrapper:focus-within .bloodbank-form__input-icon {
+  color: #e53935;
+}
+
+.bloodbank-form__field input,
+.bloodbank-form__field select {
+  width: 100%;
+  padding: 12px 14px 12px 40px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #333;
+  background: #fafafa;
+  border: 1.5px solid #eee;
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  box-sizing: border-box;
+}
+
+.bloodbank-form__field input::placeholder {
+  color: #bbb;
+}
+
+.bloodbank-form__field input:focus,
+.bloodbank-form__field select:focus {
+  border-color: #e53935;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
+}
+
+.bloodbank-form__field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+/* ─── Password ─── */
+.bloodbank-form__input--password {
+  padding-right: 44px;
+}
+
+.bloodbank-form__input-eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  color: #bbb;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+  transition: color 0.3s ease;
+}
+
+.bloodbank-form__input-eye:hover {
+  color: #e53935;
+}
+
+.bloodbank-form__input-wrapper:focus-within .bloodbank-form__input-eye {
+  color: #e53935;
+}
+
+.bloodbank-form__strength {
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.bloodbank-form__strength--weak { color: #EF4444; }
+.bloodbank-form__strength--medium { color: #F59E0B; }
+.bloodbank-form__strength--strong { color: #22C55E; }
+
+/* ─── File Upload ─── */
+.bloodbank-form__input-wrapper--file {
+  cursor: pointer;
+}
+
+.bloodbank-form__input-wrapper--file input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.bloodbank-form__input-wrapper--file input[type="file"] + .bloodbank-form__file-label {
+  width: 100%;
+  padding: 12px 14px 12px 40px;
+  font-size: 14px;
+  color: #bbb;
+  background: #fafafa;
+  border: 1.5px dashed #ddd;
+  border-radius: 12px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.bloodbank-form__input-wrapper--file:hover .bloodbank-form__file-label {
+  border-color: #e53935;
+}
+
+/* ─── File Preview ─── */
+.bloodbank-form__preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  border: 1.5px solid #eee;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-top: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.bloodbank-form__preview:hover {
+  border-color: #e0e0e0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.bloodbank-form__preview-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFF2F2;
+}
+
+.bloodbank-form__preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bloodbank-form__preview-pdf-icon {
+  font-size: 26px;
+  color: #e53935;
+}
+
+.bloodbank-form__preview-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bloodbank-form__preview-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bloodbank-form__preview-size {
+  font-size: 12px;
+  color: #999;
+}
+
+.bloodbank-form__preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.bloodbank-form__preview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.bloodbank-form__preview-btn--view {
+  background: #EFF6FF;
+  color: #3B82F6;
+}
+
+.bloodbank-form__preview-btn--view:hover {
+  background: #DBEAFE;
+}
+
+.bloodbank-form__preview-btn--remove {
+  background: #FEF2F2;
+  color: #EF4444;
+}
+
+.bloodbank-form__preview-btn--remove:hover {
+  background: #FEE2E2;
+}
+
+/* ─── Checkbox ─── */
+.bloodbank-form__checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bloodbank-form__checkbox input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.bloodbank-form__checkbox-mark {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background: #fafafa;
+  transition: border-color 0.3s ease, background 0.3s ease;
+  position: relative;
+  margin-top: 2px;
+}
+
+.bloodbank-form__checkbox input:checked + .bloodbank-form__checkbox-mark {
+  border-color: #e53935;
+  background: #e53935;
+}
+
+.bloodbank-form__checkbox input:checked + .bloodbank-form__checkbox-mark::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.bloodbank-form__checkbox-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #666;
+}
+
+/* ─── Errors ─── */
+.bloodbank-form__field-error {
+  display: block;
+  font-size: 12px;
+  color: #e53935;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.bloodbank-form__input-wrapper--error input,
+.bloodbank-form__input-wrapper--error select {
+  border-color: #e53935;
+}
+
+.bloodbank-form__submit-error {
+  color: #e53e3e;
+  margin: 0;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* ─── Location ─── */
+.bloodbank-form__locate-btn {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #c62828;
+  background: #fff;
+  border: 1.5px dashed #e53935;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.bloodbank-form__locate-btn:hover:not(:disabled) {
+  background: #fff0f0;
+}
+
+.bloodbank-form__locate-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.bloodbank-form__locate-icon--spin {
+  animation: bloodbank-locate-spin 1s linear infinite;
+}
+
+@keyframes bloodbank-locate-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.bloodbank-form__locate-status {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #2e7d32;
+}
+
+.bloodbank-form__locate-coords {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #555;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+}
+
+/* ─── Submit Button ─── */
+.bloodbank-form__submit {
+  width: 100%;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  color: #fff;
+  background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.bloodbank-form__submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(229, 57, 53, 0.35);
+}
+
+.bloodbank-form__submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.bloodbank-form__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ─── Success State ─── */
+.bloodbank-success {
+  width: calc(100% - 80px);
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 0 80px;
+}
+
+.bloodbank-success__card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 48px 40px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.bloodbank-success__icon {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: #16a34a;
+}
+
+.bloodbank-success__badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #B45309;
+  background: #FEF3C7;
+  border: 1px solid #FDE68A;
+  border-radius: 50px;
+  padding: 6px 14px;
+}
+
+.bloodbank-success__btn--primary {
+  background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+  color: #fff;
+  border: none;
+  box-shadow: none;
+}
+
+.bloodbank-success__btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(229, 57, 53, 0.35);
+}
+
+.bloodbank-success__btn--secondary {
+  background: #fff;
+  color: #e53935;
+  border: 1.5px solid #e53935;
+  box-shadow: none;
+}
+
+.bloodbank-success__btn--secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(229, 57, 53, 0.15);
+}
+
+.bloodbank-success__card h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.bloodbank-success__text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #666;
+  margin: 0;
+  max-width: 460px;
+}
+
+.bloodbank-success__text strong {
+  color: #1a1a1a;
+}
+
+.bloodbank-success__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 460px;
+  background: #FAFAFA;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-top: 8px;
+}
+
+.bloodbank-success__step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #444;
+}
+
+.bloodbank-success__step svg {
+  color: #e53935;
+  flex-shrink: 0;
+}
+
+.bloodbank-success__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.bloodbank-success__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  color: #fff;
+  background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+  border: none;
+  border-radius: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.bloodbank-success__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(229, 57, 53, 0.35);
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (≤1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+  .bloodbank-back-btn {
+    margin-left: 40px;
+  }
+
+  .bloodbank-form-section,
+  .bloodbank-success {
+    padding: 32px 0 60px;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (≤640px)
+   ============================================================ */
+@media (max-width: 640px) {
+  .bloodbank-back-btn {
+    margin: 16px 0 0 20px;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .bloodbank-form-section,
+  .bloodbank-success {
+    width: calc(100% - 32px);
+    padding: 24px 0 48px;
+  }
+
+  .bloodbank-page-header h1 {
+    font-size: 24px;
+  }
+
+  .bloodbank-form {
+    padding: 24px;
+  }
+
+  .bloodbank-form__grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .bloodbank-form__field--full {
+    grid-column: auto;
+  }
+
+  .bloodbank-success__card {
+    padding: 32px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bloodbank-form__preview {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .bloodbank-form__preview-thumb {
+    width: 48px;
+    height: 48px;
+  }
+
+  .bloodbank-form__preview-actions {
+    width: 100%;
+  }
+
+  .bloodbank-form__preview-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 12px;
+  }
+}

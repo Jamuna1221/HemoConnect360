@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import RequesterNavbar from '../../components/Requester/RequesterNavbar';
@@ -43,7 +43,9 @@ const navigate = useNavigate();
       try {
         const synced = await getBloodRequest(requestData.id)
         setRequestData(synced)
-      } catch {}
+      } catch (err) {
+        console.error('Failed to sync blood request status', err)
+      }
     }
 
     fetch()
@@ -80,6 +82,27 @@ const navigate = useNavigate();
             <h2 className="trk-title">Track Your Request</h2>
             <span className="trk-request-id">{requestData?.id || 'No active request'}</span>
           </div>
+
+          {(requestData?.status === 'approved' || requestData?.status === 'completed') && (
+            <div className="trk-bank-banner trk-bank-banner--approved">
+              <span>✔</span>
+              <p>
+                <strong>{requestData.status === 'completed' ? 'Request completed' : 'Approved by blood bank'}</strong>
+                {requestData.status === 'approved' && ' — your blood units are reserved and being prepared.'}
+                {requestData.status === 'completed' && ' — your blood units have been delivered to the hospital.'}
+              </p>
+            </div>
+          )}
+
+          {requestData?.status === 'rejected' && (
+            <div className="trk-bank-banner trk-bank-banner--rejected">
+              <span>✕</span>
+              <p>
+                <strong>Rejected by blood bank</strong>
+                {requestData.rejectionReason ? ` — ${requestData.rejectionReason}` : '.'}
+              </p>
+            </div>
+          )}
 
           <div className="trk-map-placeholder">
             <div className="trk-map-pulse trk-map-pulse-1" />

@@ -3,7 +3,7 @@ import { tables } from "../../config/tables.js";
 import { ApiError } from "../../shared/http/ApiError.js";
 
 const requestColumns =
-  "id, requester_id, patient_name, patient_age, patient_gender, blood_group, units_required, hospital_name, city, hospital_address, required_by, priority, contact_name, contact_phone, contact_email, notes, status, latitude, longitude, created_at, updated_at";
+  "id, requester_id, patient_name, patient_age, patient_gender, blood_group, units_required, hospital_name, city, hospital_address, required_by, priority, contact_name, contact_phone, contact_email, notes, status, latitude, longitude, accepted_by_blood_bank_id, rejected_by_blood_bank_id, rejection_reason, accepted_at, rejected_at, completed_at, created_at, updated_at";
 
 // Public columns returned to the client (donor / requester) without geo
 const publicRequestColumns =

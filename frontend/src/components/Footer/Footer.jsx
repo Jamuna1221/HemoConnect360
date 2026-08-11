@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { FaTint, FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaFacebookF, FaTwitter, FaInstagram, FaYoutube } from 'react-icons/fa';
 import './Footer.css';
 
@@ -6,6 +7,8 @@ const QUICK_LINKS = [
   { label: 'Why Donate', href: '#why-donate' },
   { label: 'About Us', href: '#about' },
   { label: 'How It Works', href: '#how-it-works' },
+  { label: 'Register Blood Bank', to: '/blood-bank/register' },
+  { label: 'Blood Bank Login', to: '/blood-bank/login' },
   { label: 'FAQs', href: '#faq' },
 ];
 
@@ -33,7 +36,11 @@ const Footer = () => {
           <ul className="footer__links">
             {QUICK_LINKS.map((link) => (
               <li key={link.label}>
-                <a href={link.href}>{link.label}</a>
+                {link.to ? (
+                  <Link to={link.to}>{link.label}</Link>
+                ) : (
+                  <a href={link.href}>{link.label}</a>
+                )}
               </li>
             ))}
           </ul>

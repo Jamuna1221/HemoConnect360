@@ -27,6 +27,12 @@ const toRequestDto = (request) => ({
   status: request.status,
   latitude: request.latitude,
   longitude: request.longitude,
+  acceptedByBloodBankId: request.accepted_by_blood_bank_id,
+  rejectedByBloodBankId: request.rejected_by_blood_bank_id,
+  rejectionReason: request.rejection_reason,
+  acceptedAt: request.accepted_at,
+  rejectedAt: request.rejected_at,
+  completedAt: request.completed_at,
   createdAt: request.created_at,
   updatedAt: request.updated_at,
 });
@@ -72,8 +78,18 @@ export const createBloodRequest = async (requesterId, data) => {
   };
 };
 
+// Statuses that are final or bank-managed must never be overridden by the
+// donor-matching derivation below.
+const FIXED_STATUSES = [
+  "cancelled",
+  "fulfilled",
+  "approved",
+  "rejected",
+  "completed",
+];
+
 const withMatchStatus = async (request) => {
-  if (request.status === "cancelled" || request.status === "fulfilled") {
+  if (FIXED_STATUSES.includes(request.status)) {
     return request;
   }
 
@@ -181,7 +197,7 @@ export const cancelBloodRequest = async (requestId, requesterId) => {
   if (request.requester_id !== requesterId) {
     throw new ApiError(403, "You can only cancel your own blood requests");
   }
-  if (request.status === "cancelled" || request.status === "fulfilled") {
+  if (FIXED_STATUSES.includes(request.status)) {
     throw new ApiError(400, `Cannot cancel a request with status "${request.status}"`);
   }
 

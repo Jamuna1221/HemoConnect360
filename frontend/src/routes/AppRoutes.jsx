@@ -22,6 +22,9 @@ import TrackRequest from '../pages/Requester/TrackRequest'
 import RequestHistory from '../pages/Requester/RequestHistory'
 import RequestDetails from '../pages/Requester/RequestDetails'
 import RequesterProfile from '../pages/Requester/RequesterProfile'
+import BloodBankRegister from '../pages/BloodBank/BloodBankRegister'
+import BloodBankLogin from '../pages/BloodBank/BloodBankLogin'
+import BloodBankDashboard from '../pages/BloodBank/BloodBankDashboard'
 
 const AppRoutes = () => {
   return (
@@ -50,6 +53,10 @@ const AppRoutes = () => {
       <Route path="/requester/history" element={<RequestHistory />} />
       <Route path="/requester/request-details/:id" element={<RequestDetails />} />
       <Route path="/requester/profile" element={<RequesterProfile />} />
+
+      <Route path="/blood-bank/register" element={<BloodBankRegister />} />
+      <Route path="/blood-bank/login" element={<BloodBankLogin />} />
+      <Route path="/blood-bank/dashboard" element={<BloodBankDashboard />} />
     </Routes>
   )
 }

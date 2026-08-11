@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   FaBell,
   FaMapMarkerAlt,
@@ -69,6 +69,8 @@ const QUICK_LINKS = [
   { label: 'About Us', href: '#about' },
   { label: 'How It Works', href: '#how-it-works' },
   { label: 'Why Donate', href: '#why-donate' },
+  { label: 'Register Blood Bank', to: '/blood-bank/register' },
+  { label: 'Blood Bank Login', to: '/blood-bank/login' },
   { label: 'FAQs', href: '#faq' },
 ];
 
@@ -309,7 +311,11 @@ const Home = () => {
             <ul className="footer__links">
               {QUICK_LINKS.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href}>{link.label}</a>
+                  {link.to ? (
+                    <Link to={link.to}>{link.label}</Link>
+                  ) : (
+                    <a href={link.href}>{link.label}</a>
+                  )}
                 </li>
               ))}
             </ul>
