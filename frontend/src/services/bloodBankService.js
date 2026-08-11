@@ -105,6 +105,28 @@ export const fetchBloodBankProfile = async () => {
 }
 
 /**
+ * Update the signed-in blood bank's own profile. The backend identifies the
+ * bank from the JWT and only writes the whitelisted fields; verification
+ * details and documents are read-only.
+ *
+ * @param {Object} updates - camelCase fields (bloodBankName, bloodBankType,
+ *   registrationNumber, establishedYear, officialEmail, primaryPhone,
+ *   alternatePhone, addressLine, city, district, state, pincode, latitude,
+ *   longitude, authorizedPersonName, designation, authorizedPersonPhone,
+ *   authorizedPersonEmail)
+ * @returns {Promise<Object>} the committed profile DTO
+ */
+export const updateBloodBankProfile = async (updates) => {
+  const payload = await apiRequest('/blood-banks/me', {
+    method: 'PATCH',
+    headers: await authHeaders(),
+    body: JSON.stringify(updates),
+  })
+
+  return payload.data
+}
+
+/**
  * Sign an existing blood bank in with Supabase Auth and load their real
  * profile from the backend.
  *
@@ -209,6 +231,40 @@ export const fetchBloodBankInventoryHistory = async (limit = 20) => {
   return payload.data || []
 }
 
+export const INVENTORY_TRANSACTION_TYPES = ['STOCK_ADDED', 'STOCK_REMOVED', 'STOCK_CORRECTION']
+
+/**
+ * Load the signed-in blood bank's real stock history with backend-side
+ * filtering and pagination. Every inventory transaction (manual stock
+ * adjustments, recorded collections and request accepts) appears here.
+ *
+ * @param {Object} [filters]
+ * @param {string} [filters.bloodGroup] - one of BLOOD_GROUPS
+ * @param {string} [filters.transactionType] - one of INVENTORY_TRANSACTION_TYPES
+ * @param {string} [filters.from] - YYYY-MM-DD start date (inclusive)
+ * @param {string} [filters.to] - YYYY-MM-DD end date (inclusive)
+ * @param {number} [filters.page]
+ * @param {number} [filters.limit]
+ * @returns {Promise<{ transactions: Array, total: number, page: number, limit: number, totalPages: number }>}
+ */
+export const fetchBloodBankStockHistory = async ({
+  bloodGroup,
+  transactionType,
+  from,
+  to,
+  page = 1,
+  limit = 10,
+} = {}) => {
+  const payload = await apiRequest(
+    `/blood-banks/inventory/history${buildQuery({ bloodGroup, transactionType, from, to, page, limit })}`,
+    {
+      method: 'GET',
+      headers: await authHeaders(),
+    },
+  )
+  return payload.data || { transactions: [], total: 0, page, limit, totalPages: 1 }
+}
+
 const buildQuery = (params) => {
   const query = new URLSearchParams()
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -237,6 +293,35 @@ export const fetchBloodBankRequests = async (filters = {}) => {
     headers: await authHeaders(),
   })
   return payload.data || { requests: [], total: 0, stats: {}, page: 1, limit: 20 }
+}
+
+/**
+ * Load blood requests near the signed-in blood bank, sorted by real distance.
+ * Distance, radius filtering and pagination happen server-side in the
+ * blood_bank_nearby_requests RPC using the bank's real coordinates from the
+ * JWT. needsLocation is true when the bank profile has no coordinates yet.
+ *
+ * @param {Object} [filters]
+ * @param {number} [filters.radiusKm]
+ * @param {string} [filters.bloodGroup]
+ * @param {string} [filters.priority]
+ * @param {'all'|'open'|'decided'|string} [filters.status]
+ * @param {string} [filters.from] - needed-by date (YYYY-MM-DD)
+ * @param {string} [filters.to] - needed-by date (YYYY-MM-DD)
+ * @param {'nearest'|'urgent'|'newest'} [filters.sort]
+ * @param {number} [filters.page]
+ * @param {number} [filters.limit]
+ * @returns {Promise<{ requests: Array, total: number, needsLocation: boolean, page: number, limit: number }>}
+ */
+export const fetchNearbyBloodRequests = async (filters = {}) => {
+  const payload = await apiRequest(
+    `/blood-requests/blood-bank/nearby${buildQuery(filters)}`,
+    {
+      method: 'GET',
+      headers: await authHeaders(),
+    },
+  )
+  return payload.data || { requests: [], total: 0, needsLocation: false, page: 1, limit: 10 }
 }
 
 /**
@@ -299,4 +384,71 @@ export const completeBloodRequest = async (id) => {
     body: JSON.stringify({}),
   })
   return payload.data
+}
+
+/**
+ * Load the donors the signed-in blood bank can collect from. Eligibility is
+ * computed server-side from the last donation and the group's interval.
+ *
+ * @returns {Promise<Array>} donor records ({ id, fullName, phone, bloodGroup,
+ *   city, gender, dob, weight, hemoglobin, lastDonation, eligible, nextEligible })
+ */
+export const fetchBloodBankCollectionDonors = async () => {
+  const payload = await apiRequest('/blood-banks/collections/donors', {
+    method: 'GET',
+    headers: await authHeaders(),
+  })
+  return payload.data || []
+}
+
+/**
+ * Look up one donor by phone number.
+ *
+ * @param {string} phone - 10-digit phone number
+ * @returns {Promise<Object|null>} donor record, or null if not found
+ */
+export const fetchBloodBankDonorByPhone = async (phone) => {
+  const payload = await apiRequest(`/blood-banks/collections/donors/${encodeURIComponent(phone)}`, {
+    method: 'GET',
+    headers: await authHeaders(),
+  })
+  return payload.data || null
+}
+
+/**
+ * Load the signed-in blood bank's collection history. The backend returns all
+ * records; date/group filtering is done client-side.
+ *
+ * @returns {Promise<Array>} collection records ({ id, donorId, donorName,
+ *   donorPhone, bloodGroup, donationDate, units, city, notes, createdAt })
+ */
+export const fetchBloodBankCollectionHistory = async () => {
+  const payload = await apiRequest('/blood-banks/collections/history', {
+    method: 'GET',
+    headers: await authHeaders(),
+  })
+  return payload.data || []
+}
+
+/**
+ * Record a blood collection. The backend verifies the donor, eligibility,
+ * blood-group match and duplicate prevention atomically, and adds the units to
+ * the signed-in bank's inventory in the same transaction.
+ *
+ * @param {Object} input
+ * @param {string} input.donorPhone - 10-digit phone number
+ * @param {string} input.bloodGroup - one of the 8 ABO/Rh groups
+ * @param {string} input.donationDate - YYYY-MM-DD, not in the future
+ * @param {number} input.units - whole number between 1 and 5
+ * @param {string} [input.notes]
+ * @returns {Promise<{ donation: Object }>} { donation: { id, donorId,
+ *   donorName, bloodGroup, donationDate, units, bloodBankId, newInventoryQuantity } }
+ */
+export const recordBloodBankCollection = async ({ donorPhone, bloodGroup, donationDate, units, notes }) => {
+  const payload = await apiRequest('/blood-banks/collections', {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({ donorPhone, bloodGroup, donationDate, units, notes: notes ?? '' }),
+  })
+  return payload.data || { donation: null }
 }

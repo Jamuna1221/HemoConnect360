@@ -4,6 +4,7 @@ import { findBloodBankByUserId } from "../blood-banks/bloodBank.repository.js";
 import {
   findBloodRequests,
   countBloodRequests,
+  findNearbyBloodRequests,
   findBloodRequestById,
   findRequestActions,
   getRequestStats,
@@ -49,12 +50,14 @@ const toRequestDto = (row, bankLocation) => ({
   contactEmail: row.contact_email,
   notes: row.notes,
   status: row.status,
-  distanceKm: haversineKm(
-    bankLocation?.latitude,
-    bankLocation?.longitude,
-    row.latitude,
-    row.longitude
-  ),
+  distanceKm:
+    row.distance_km ??
+    haversineKm(
+      bankLocation?.latitude,
+      bankLocation?.longitude,
+      row.latitude,
+      row.longitude
+    ),
   acceptedByBloodBankId: row.accepted_by_blood_bank_id,
   rejectedByBloodBankId: row.rejected_by_blood_bank_id,
   rejectionReason: row.rejection_reason,
@@ -109,6 +112,45 @@ export const listBloodBankRequests = async ({
     requests: requests.map((row) => toRequestDto(row, bankLocation)),
     total,
     stats,
+    page: filters.page,
+    limit: filters.limit,
+  };
+};
+
+export const listNearbyBloodBankRequests = async ({
+  accessToken,
+  user,
+  filters,
+}) => {
+  const client = createUserClient(accessToken);
+  const bank = await resolveBloodBank(client, user.id);
+
+  const bankLocation = {
+    latitude: bank.latitude,
+    longitude: bank.longitude,
+  };
+
+  if (
+    bankLocation.latitude === null ||
+    bankLocation.latitude === undefined ||
+    bankLocation.longitude === null ||
+    bankLocation.longitude === undefined
+  ) {
+    return {
+      requests: [],
+      total: 0,
+      needsLocation: true,
+      page: filters.page,
+      limit: filters.limit,
+    };
+  }
+
+  const { rows, total } = await findNearbyBloodRequests(client, filters);
+
+  return {
+    requests: rows.map((row) => toRequestDto(row, bankLocation)),
+    total,
+    needsLocation: false,
     page: filters.page,
     limit: filters.limit,
   };

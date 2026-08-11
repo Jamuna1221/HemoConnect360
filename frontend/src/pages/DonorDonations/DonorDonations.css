@@ -4,3 +4,21 @@
 .donor-donations-eligibility { display: flex; align-items: center; gap: 16px; padding: 20px 23px; margin-bottom: 18px; background: #effaf3; border: 1px solid #bce7ca; border-radius: 19px; }.donor-donations-eligibility--waiting { background: #fff9ed; border-color: #f2d594; }.donor-donations-eligibility-icon { display: grid; place-items: center; width: 43px; height: 43px; color: #17834a; background: #d5f3df; border-radius: 13px; }.donor-donations-eligibility--waiting .donor-donations-eligibility-icon { color: #b76b13; background: #ffedc5; }.donor-donations-eligibility span, .donor-donations-eligibility small { display: block; color: #6e786f; font-size: 11px; }.donor-donations-eligibility strong { display: block; margin: 2px 0; color: #1b3928; font-size: 17px; }.donor-donations-eligibility--waiting strong { color: #704a18; }
 .donor-donations-list { display: flex; flex-direction: column; gap: 12px; }.donor-donation-row { display: grid; grid-template-columns: 61px 1fr auto; align-items: center; gap: 17px; padding: 19px 22px; background: #fff; border: 1px solid #e7e9ed; border-radius: 18px; box-shadow: 0 7px 24px rgba(24,32,43,.035); }.donor-donation-date { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 54px; height: 54px; color: #b42318; background: #fff0f0; border-radius: 14px; }.donor-donation-date strong { font-size: 20px; line-height: 1; }.donor-donation-date span { margin-top: 3px; font-size: 11px; font-weight: 700; text-transform: uppercase; }.donor-donation-info { min-width: 0; }.donor-donation-info h2 { margin: 0 0 5px; font-size: 16px; }.donor-donation-info span, .donor-donation-info p, .donor-donation-info small { color: #737b87; font-size: 12px; }.donor-donation-info span { display: inline-flex; align-items: center; gap: 5px; }.donor-donation-info p { display: inline-block; margin: 8px 13px 0 0; }.donor-donation-info small { display: block; margin-top: 5px; }.donor-donation-check { width: 20px; height: 20px; color: #1c9b55; }.donor-donations-state { padding: 48px 22px; color: #737b87; font-size: 14px; text-align: center; background: #fff; border: 1px dashed #d9dde3; border-radius: 20px; }.donor-donations-state--error { color: #b42318; background: #fff7f6; border-color: #f2b8b5; }
 @media (max-width: 620px) { .donor-donations-main { padding: 96px 16px 55px; }.donor-donations-heading { align-items: flex-start; flex-direction: column; }.donor-donations-total { align-items: flex-start; }.donor-donation-row { grid-template-columns: 54px 1fr auto; padding: 16px; }.donor-donation-date { width: 48px; height: 48px; }.donor-donation-info h2 { font-size: 14px; }.donor-donations-eligibility { align-items: flex-start; } }
+
+/* Override the starter global dark-mode heading color on this light page. */
+.donor-donations-heading h1,
+.donor-donation-info h2,
+.donor-donation-date strong { color: #18202b; }
+
+.donor-donation-date strong { color: #b42318; }
+
+.donor-donations-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 15px; padding: 5px; width: fit-content; background: #eef0f3; border-radius: 12px; }
+.donor-donations-filters button { padding: 9px 13px; color: #737b87; background: transparent; border: 0; border-radius: 9px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.donor-donations-filters button.donor-donations-filter--active { color: #b42318; background: #fff; box-shadow: 0 2px 8px rgba(24,32,43,.08); }
+.donor-donation-status { padding: 7px 10px; border-radius: 999px; font-size: 10px; font-weight: 800; white-space: nowrap; }
+.donor-donation-status--donated { color: #17834a; background: #e8f8ee; }
+.donor-donation-status--not_donated { color: #a25b12; background: #fff4d9; }
+.donor-donation-status--rejected { color: #b42318; background: #fff0f0; }
+.donor-donation-status--ineligible { color: #6b4f0d; background: #fff4d9; }
+.donor-donation-row--clickable { cursor: pointer; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.donor-donation-row--clickable:hover, .donor-donation-row--clickable:focus-visible { border-color: #efb1b1; box-shadow: 0 10px 28px rgba(216,50,50,.1); outline: none; transform: translateY(-1px); }

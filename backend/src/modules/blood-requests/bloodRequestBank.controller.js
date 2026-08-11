@@ -1,5 +1,6 @@
 import {
   listBloodBankRequests,
+  listNearbyBloodBankRequests,
   getBloodBankRequestDetail,
   acceptBloodBankRequest,
   rejectBloodBankRequest,
@@ -7,6 +8,7 @@ import {
 } from "./bloodRequestBank.service.js";
 import {
   validateListQuery,
+  validateNearbyListQuery,
   validateRejectReason,
   validateAcceptBody,
 } from "./bloodRequestBank.validation.js";
@@ -14,6 +16,17 @@ import {
 export const listBloodBankRequestsHandler = async (req, res) => {
   const filters = validateListQuery(req.query);
   const data = await listBloodBankRequests({
+    accessToken: req.accessToken,
+    user: req.user,
+    filters,
+  });
+
+  res.json({ success: true, data });
+};
+
+export const listNearbyBloodBankRequestsHandler = async (req, res) => {
+  const filters = validateNearbyListQuery(req.query);
+  const data = await listNearbyBloodBankRequests({
     accessToken: req.accessToken,
     user: req.user,
     filters,

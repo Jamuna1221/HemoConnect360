@@ -1,5 +1,6 @@
 import { getSupabase } from '../lib/supabase'
 import { savePendingDonor, getPendingDonor, clearPendingDonor } from './pendingDonor'
+import { apiRequest } from './api'
 
 const STORAGE_BUCKET = 'donor-docs'
 
@@ -475,6 +476,9 @@ export const fetchDonorRequests = async () => {
 
   return (data || []).map((request) => ({
     id: request.request_id,
+    patientName: request.patient_name,
+    patientAge: request.patient_age,
+    patientGender: request.patient_gender,
     bloodGroup: request.blood_group,
     units: request.units_required,
     hospitalName: request.hospital_name,
@@ -533,6 +537,16 @@ export const recordDonorOutcome = async (requestId, donated) => {
     p_donated: donated,
   })
   if (error) throw new Error(error.message)
+  if (data?.[0]?.updated) {
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (sessionData.session?.access_token) {
+      await apiRequest('/donor-events/outcome', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+        body: JSON.stringify({ requestId, donated }),
+      }).catch((eventError) => console.warn('[donor:notifications] Outcome push failed', eventError))
+    }
+  }
   return data?.[0] || data
 }
 
@@ -572,7 +586,7 @@ export const resendDonorVerification = async (email) => {
 
   if (error) {
     console.error('[donor:verify] Resend verification email failed', { email, error })
-    throw new Error(mapAuthError(error.message))
+    throw new Error(mapAuthError(error.message, error.status))
   }
 
   console.log('[donor:verify] Verification email resent', { email })
@@ -597,13 +611,16 @@ const mapLoginError = (error) => {
   return error?.message || 'Unable to sign in. Please try again.'
 }
 
-const mapAuthError = (message) => {
+const mapAuthError = (message, status) => {
   const msg = (message || '').toLowerCase()
   if (msg.includes('already registered') || msg.includes('already been registered')) {
     return 'An account with this email already exists. Please sign in instead.'
   }
   if (msg.includes('password')) {
     return 'Password must be at least 6 characters long.'
+  }
+  if (status === 429 || msg.includes('rate limit') || msg.includes('too many') || msg.includes('security purposes')) {
+    return 'A verification email was requested recently. Please wait a minute before trying again.'
   }
   return message || 'Unable to create your account. Please try again.'
 }

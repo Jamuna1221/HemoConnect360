@@ -115,3 +115,15 @@ export const updateBloodBank = async (client, id, updates) => {
   handleSupabaseError(error, "Unable to update blood bank profile");
   return data;
 };
+
+export const updateBloodBankProfile = async (client, id, updates) => {
+  const { data, error } = await client
+    .from(tables.bloodBanks)
+    .update(updates)
+    .eq("id", id)
+    .select(bloodBankColumns)
+    .single();
+
+  handleSupabaseError(error, "Unable to update blood bank profile");
+  return data;
+};

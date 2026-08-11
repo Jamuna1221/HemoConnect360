@@ -577,6 +577,32 @@
   scroll-margin-top: 90px;
 }
 
+.donor-dash-notification-control {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0 22px;
+}
+
+.donor-dash-notification-control button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  color: #991B1B;
+  background: #fff;
+  border: 1px solid rgba(153, 27, 27, .18);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.donor-dash-notification-control button:disabled { opacity: .65; cursor: wait; }
+.donor-dash-notification-control span { color: #FEE2E2; font-size: 12px; }
+
 .donor-dash-requests-list {
   display: flex;
   flex-direction: column;

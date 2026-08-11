@@ -24,10 +24,17 @@ import RequestHistory from '../pages/Requester/RequestHistory'
 import RequestDetails from '../pages/Requester/RequestDetails'
 import RequesterProfile from '../pages/Requester/RequesterProfile'
 
+import BloodBankLayout from '../components/BloodBank/BloodBankLayout'
 import BloodBankRegister from '../pages/BloodBank/BloodBankRegister'
 import BloodBankLogin from '../pages/BloodBank/BloodBankLogin'
 import BloodBankDashboard from '../pages/BloodBank/BloodBankDashboard'
-
+import BloodBankInventory from '../pages/BloodBank/BloodBankInventory'
+import BloodBankRequests from '../pages/BloodBank/BloodBankRequests'
+import BloodBankCollections from '../pages/BloodBank/BloodBankCollections'
+import StockHistory from '../pages/BloodBank/StockHistory'
+import NearbyRequests from '../pages/BloodBank/NearbyRequests'
+import BloodBankProfile from '../pages/BloodBank/BloodBankProfile'
+import BloodBankReports from '../pages/BloodBank/BloodBankReports'
 import AdminLogin from '../pages/AdminLogin/AdminLogin'
 import AdminDashboard from '../pages/AdminDashboard/AdminDashboard'
 
@@ -62,7 +69,17 @@ const AppRoutes = () => {
 
       <Route path="/blood-bank/register" element={<BloodBankRegister />} />
       <Route path="/blood-bank/login" element={<BloodBankLogin />} />
-      <Route path="/blood-bank/dashboard" element={<BloodBankDashboard />} />
+      <Route path="/blood-bank" element={<BloodBankLayout />}>
+        <Route index element={<Navigate to="/blood-bank/dashboard" replace />} />
+        <Route path="dashboard" element={<BloodBankDashboard />} />
+        <Route path="profile" element={<BloodBankProfile />} />
+        <Route path="inventory" element={<BloodBankInventory />} />
+        <Route path="requests" element={<BloodBankRequests />} />
+        <Route path="collections" element={<BloodBankCollections />} />
+        <Route path="nearby-requests" element={<NearbyRequests />} />
+        <Route path="stock-history" element={<StockHistory />} />
+        <Route path="reports" element={<BloodBankReports />} />
+      </Route>
 
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin/dashboard" element={<AdminDashboard />} />

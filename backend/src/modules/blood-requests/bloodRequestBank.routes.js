@@ -4,6 +4,7 @@ import { supabaseAuth } from "../../middleware/supabaseAuth.js";
 import { asyncHandler } from "../../shared/http/asyncHandler.js";
 import {
   listBloodBankRequestsHandler,
+  listNearbyBloodBankRequestsHandler,
   getBloodBankRequestDetailHandler,
   acceptBloodBankRequestHandler,
   rejectBloodBankRequestHandler,
@@ -16,6 +17,13 @@ router.get(
   apiRoutes.bloodRequests.bankList,
   supabaseAuth,
   asyncHandler(listBloodBankRequestsHandler)
+);
+
+// Registered before bankDetail (/:id) so "/nearby" is not captured as an id.
+router.get(
+  apiRoutes.bloodRequests.bankNearby,
+  supabaseAuth,
+  asyncHandler(listNearbyBloodBankRequestsHandler)
 );
 
 router.get(

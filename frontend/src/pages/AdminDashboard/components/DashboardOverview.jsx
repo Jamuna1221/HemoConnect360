@@ -222,7 +222,7 @@ const DashboardOverview = ({
             {auditLogs.slice(0, 10).map(log => (
               <div className="mini-log-row" key={log.id}>
                 <span className="log-action">{log.action}</span>
-                <span className="log-time">{log.timestamp}</span>
+                <span className="log-time">{log.createdAt ? new Date(log.createdAt).toLocaleString() : ''}</span>
               </div>
             ))}
           </div>

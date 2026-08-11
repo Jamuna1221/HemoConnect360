@@ -9,6 +9,7 @@ import { ApiError } from "../../shared/http/ApiError.js";
 import {
   registerBloodBankHandler,
   getBloodBankProfileHandler,
+  updateBloodBankProfileHandler,
   getAllBloodBanksForAdminHandler,
   verifyBloodBankForAdminHandler,
 } from "./bloodBank.controller.js";
@@ -54,6 +55,12 @@ router.get(
   apiRoutes.bloodBanks.me,
   supabaseAuth,
   asyncHandler(getBloodBankProfileHandler)
+);
+
+router.patch(
+  apiRoutes.bloodBanks.me,
+  supabaseAuth,
+  asyncHandler(updateBloodBankProfileHandler)
 );
 
 // Admin Console Endpoints

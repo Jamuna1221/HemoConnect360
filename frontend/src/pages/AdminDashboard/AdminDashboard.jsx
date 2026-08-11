@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSupabase } from '../../lib/supabase'
-import { apiRequest } from '../../services/api'
 import {
   FaSignOutAlt,
   FaUsers,
@@ -33,39 +32,198 @@ import NotificationsCenter from './components/NotificationsCenter'
 import AuditLogsPanel from './components/AuditLogsPanel'
 import AdminProfile from './components/AdminProfile'
 
+import {
+  getAdminEmail,
+  fetchAdminOverview,
+  fetchAdminVerification,
+  approveVerification,
+  rejectVerification,
+  requestReverification,
+  fetchSecurityFlags,
+  applySecurityAction,
+  fetchNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  publishAnnouncement,
+  fetchAuditLogs,
+  fetchAdminProfile,
+  updateAdminProfile,
+  changeAdminPassword,
+} from '../../services/adminService'
+
 const AdminDashboard = () => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [searchQuery, setSearchQuery] = useState('')
   const [bloodFilter, setBloodFilter] = useState('all')
+  const [confirmLogout, setConfirmLogout] = useState(false)
+  const [errorBanner, setErrorBanner] = useState('')
 
-  // Datasets state
+  // Datasets state (existing sections)
   const [donors, setDonors] = useState([])
   const [requesters, setRequesters] = useState([])
   const [requests, setRequests] = useState([])
-  const [bloodBanks, setBloodBanks] = useState([])
-  const [verifications, setVerifications] = useState([])
-  const [securityAlerts, setSecurityAlerts] = useState([])
-  const [notifications, setNotifications] = useState([])
-  const [auditLogs, setAuditLogs] = useState(() => {
-    const local = localStorage.getItem('admin_audit_logs')
+  const [bloodBanks, setBloodBanks] = useState(() => {
+    const local = localStorage.getItem('admin_blood_banks')
     if (local) return JSON.parse(local)
     return [
-      { id: 'L-1', admin: 'admin@hemoconnect360.com', action: 'Donor Approval', target: 'Sneha Patel', description: 'Approved donor verification documents', timestamp: '2026-08-10', status: 'Success' },
-      { id: 'L-2', admin: 'admin@hemoconnect360.com', action: 'User Suspension', target: 'Vikram Singh', description: 'Suspended donor account due to inactivity', timestamp: '2026-08-10', status: 'Success' },
-      { id: 'L-3', admin: 'admin@hemoconnect360.com', action: 'Blood Bank Verification', target: 'Chennai Central Blood Bank', description: 'Verified credentials and partner authorization', timestamp: '2026-08-09', status: 'Success' },
-      { id: 'L-4', admin: 'admin@hemoconnect360.com', action: 'Blood Request Rejection', target: 'REQ-05', description: 'Rejected request due to missing prescription details', timestamp: '2026-08-08', status: 'Failed' },
+      { id: 'BB-1', name: 'Chennai Central Blood Bank', city: 'Chennai', phone: '044-28340101', email: 'chennaibb@gmail.com', verificationStatus: 'verified', availableUnits: 119, accountStatus: 'active', stock: [
+        { group: 'A+', available: 25, reserved: 4 },
+        { group: 'A-', available: 8, reserved: 2 },
+        { group: 'B+', available: 18, reserved: 5 },
+        { group: 'B-', available: 3, reserved: 1 },
+        { group: 'O+', available: 35, reserved: 8 },
+        { group: 'O-', available: 12, reserved: 3 },
+        { group: 'AB+', available: 16, reserved: 2 },
+        { group: 'AB-', available: 2, reserved: 0 },
+      ]},
+      { id: 'BB-2', name: 'Mumbai Red Cross', city: 'Mumbai', phone: '022-26450202', email: 'mumbaibb@gmail.com', verificationStatus: 'verified', availableUnits: 154, accountStatus: 'active', stock: [
+        { group: 'A+', available: 30, reserved: 6 },
+        { group: 'A-', available: 12, reserved: 3 },
+        { group: 'B+', available: 22, reserved: 4 },
+        { group: 'B-', available: 5, reserved: 1 },
+        { group: 'O+', available: 40, reserved: 10 },
+        { group: 'O-', available: 15, reserved: 4 },
+        { group: 'AB+', available: 26, reserved: 3 },
+        { group: 'AB-', available: 4, reserved: 1 },
+      ]},
+      { id: 'BB-3', name: 'Delhi Lions Blood Center', city: 'Delhi', phone: '011-25360303', email: 'delhibb@gmail.com', verificationStatus: 'pending', availableUnits: 72, accountStatus: 'active', stock: [
+        { group: 'A+', available: 15, reserved: 2 },
+        { group: 'A-', available: 4, reserved: 1 },
+        { group: 'B+', available: 10, reserved: 2 },
+        { group: 'B-', available: 1, reserved: 0 },
+        { group: 'O+', available: 20, reserved: 5 },
+        { group: 'O-', available: 6, reserved: 1 },
+        { group: 'AB+', available: 15, reserved: 1 },
+        { group: 'AB-', available: 1, reserved: 0 },
+      ]},
     ]
   })
 
-  // Profile Form State
-  const [profileForm, setProfileForm] = useState({ name: 'System Admin', email: 'admin@hemoconnect360.com', currentPassword: '', newPassword: '' })
-  const [profileMsg, setProfileMsg] = useState('')
+  // Admin API state (upgraded sections)
+  const [overview, setOverview] = useState(null)
+  const [overviewLoading, setOverviewLoading] = useState(false)
+  const [overviewError, setOverviewError] = useState('')
 
-  // Broadcast Alert Form State
-  const [alertForm, setAlertForm] = useState({ targetGroup: 'all', targetCity: '', message: '' })
-  const [broadcastMsg, setBroadcastMsg] = useState('')
+  const [verificationData, setVerificationData] = useState(null)
+  const [verificationLoading, setVerificationLoading] = useState(false)
+  const [verificationError, setVerificationError] = useState('')
 
+  const [securityData, setSecurityData] = useState(null)
+  const [securityLoading, setSecurityLoading] = useState(false)
+  const [securityError, setSecurityError] = useState('')
+
+  const [notificationsData, setNotificationsData] = useState(null)
+  const [notificationsLoading, setNotificationsLoading] = useState(false)
+  const [notificationsError, setNotificationsError] = useState('')
+
+  const [auditData, setAuditData] = useState(null)
+  const [auditLoading, setAuditLoading] = useState(false)
+  const [auditError, setAuditError] = useState('')
+
+  const [profileData, setProfileData] = useState(null)
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [profileError, setProfileError] = useState('')
+
+  const adminEmail = getAdminEmail()
+
+  const runWithBanner = async (fn) => {
+    try {
+      await fn()
+      return true
+    } catch (err) {
+      setErrorBanner(err?.message || 'Something went wrong. Please try again.')
+      setTimeout(() => setErrorBanner(''), 4000)
+      return false
+    }
+  }
+
+  // Data loaders
+  const loadOverview = useCallback(async () => {
+    await Promise.resolve()
+    setOverviewLoading(true)
+    setOverviewError('')
+    try {
+      const res = await fetchAdminOverview()
+      setOverview(res)
+    } catch (err) {
+      setOverviewError(err?.message || 'Failed to load overview.')
+    } finally {
+      setOverviewLoading(false)
+    }
+  }, [])
+
+  const loadVerification = useCallback(async () => {
+    await Promise.resolve()
+    setVerificationLoading(true)
+    setVerificationError('')
+    try {
+      const res = await fetchAdminVerification()
+      setVerificationData(res)
+    } catch (err) {
+      setVerificationError(err?.message || 'Failed to load verification records.')
+    } finally {
+      setVerificationLoading(false)
+    }
+  }, [])
+
+  const loadSecurity = useCallback(async () => {
+    await Promise.resolve()
+    setSecurityLoading(true)
+    setSecurityError('')
+    try {
+      const res = await fetchSecurityFlags()
+      setSecurityData(res)
+    } catch (err) {
+      setSecurityError(err?.message || 'Failed to load security flags.')
+    } finally {
+      setSecurityLoading(false)
+    }
+  }, [])
+
+  const loadNotifications = useCallback(async () => {
+    await Promise.resolve()
+    setNotificationsLoading(true)
+    setNotificationsError('')
+    try {
+      const res = await fetchNotifications()
+      setNotificationsData(res)
+    } catch (err) {
+      setNotificationsError(err?.message || 'Failed to load notifications.')
+    } finally {
+      setNotificationsLoading(false)
+    }
+  }, [])
+
+  const loadAudit = useCallback(async () => {
+    await Promise.resolve()
+    setAuditLoading(true)
+    setAuditError('')
+    try {
+      const res = await fetchAuditLogs()
+      setAuditData(res)
+    } catch (err) {
+      setAuditError(err?.message || 'Failed to load audit logs.')
+    } finally {
+      setAuditLoading(false)
+    }
+  }, [])
+
+  const loadProfile = useCallback(async () => {
+    await Promise.resolve()
+    setProfileLoading(true)
+    setProfileError('')
+    try {
+      const res = await fetchAdminProfile()
+      setProfileData(res)
+    } catch (err) {
+      setProfileError(err?.message || 'Failed to load profile.')
+    } finally {
+      setProfileLoading(false)
+    }
+  }, [])
+
+  // Auth guard + initial data
   useEffect(() => {
     const session = localStorage.getItem('admin_session')
     if (!session) {
@@ -104,7 +262,6 @@ const AdminDashboard = () => {
         else if (requestData) {
           setRequests(requestData.map(r => ({
             id: r.id,
-            requesterId: r.requester_id,
             patientName: r.patient_name || 'Anonymous',
             bloodGroup: r.blood_group,
             units: r.units_required,
@@ -139,100 +296,6 @@ const AdminDashboard = () => {
           }))
         }
 
-        // 4. Fetch Blood Banks and their stock from backend API
-        let dbBanks = []
-        try {
-          const sessionStr = localStorage.getItem('admin_session')
-          const token = sessionStr ? JSON.parse(sessionStr).token : ''
-          const payload = await apiRequest('/blood-banks', {
-            method: 'GET',
-            headers: { Authorization: `Bearer ${token}` }
-          })
-          if (payload && payload.data) {
-            dbBanks = payload.data.map(b => ({
-              ...b,
-              blood_bank_name: b.bloodBankName,
-              registration_number: b.registrationNumber,
-              blood_bank_type: b.bloodBankType,
-              established_year: b.establishedYear,
-              official_email: b.officialEmail,
-              primary_phone: b.primaryPhone,
-              alternate_phone: b.alternatePhone,
-              address_line: b.addressLine,
-              authorized_person_name: b.authorizedPersonName,
-              authorized_person_phone: b.authorizedPersonPhone,
-              authorized_person_email: b.authorizedPersonEmail,
-              license_doc_path: b.licenseDocPath,
-              authorization_doc_path: b.authorizationDocPath,
-              verification_status: b.verificationStatus
-            }))
-          }
-        } catch (err) {
-          console.error('[admin] Error fetching blood banks from backend:', err)
-        }
-
-        const { data: dbInventory, error: dbInventoryErr } = await supabase
-          .from('blood_bank_inventory')
-          .select('*')
-
-        if (dbInventoryErr) {
-          console.error('[admin] Error fetching blood bank inventory:', dbInventoryErr)
-        }
-
-        if (dbBanks && dbBanks.length > 0) {
-          const inventoryByBank = {}
-          if (dbInventory) {
-            dbInventory.forEach(inv => {
-              if (!inventoryByBank[inv.blood_bank_id]) {
-                inventoryByBank[inv.blood_bank_id] = []
-              }
-              inventoryByBank[inv.blood_bank_id].push({
-                group: inv.blood_group,
-                available: inv.units_available,
-                reserved: 0
-              })
-            })
-          }
-
-          const mappedBanks = dbBanks.map(b => {
-            const groups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-            const bankStock = inventoryByBank[b.id] || []
-
-            const stock = groups.map(g => {
-              const found = bankStock.find(s => s.group === g)
-              return found || { group: g, available: 0, reserved: 0 }
-            })
-
-            const totalAvailable = stock.reduce((sum, s) => sum + s.available, 0)
-            const normalizedStatus = (b.verification_status || '').toLowerCase().replace('pending_verification', 'pending')
-
-            let licenseUrl = ''
-            let authorizationUrl = ''
-            if (b.license_doc_path) {
-              licenseUrl = supabase.storage.from('blood-bank-docs').getPublicUrl(b.license_doc_path).data?.publicUrl || ''
-            }
-            if (b.authorization_doc_path) {
-              authorizationUrl = supabase.storage.from('blood-bank-docs').getPublicUrl(b.authorization_doc_path).data?.publicUrl || ''
-            }
-
-            return {
-              ...b,
-              id: b.id,
-              name: b.blood_bank_name,
-              city: b.city,
-              phone: b.primary_phone,
-              email: b.official_email,
-              verificationStatus: normalizedStatus,
-              availableUnits: totalAvailable,
-              accountStatus: 'active',
-              stock: stock,
-              licenseUrl,
-              authorizationUrl
-            }
-          })
-          setBloodBanks(mappedBanks)
-        }
-
       } catch (err) {
         console.error('[admin] Failed to fetch database records:', err)
       }
@@ -241,111 +304,68 @@ const AdminDashboard = () => {
     fetchData()
   }, [navigate])
 
+  // Lazy-load admin API data per tab
   useEffect(() => {
-    localStorage.setItem('admin_audit_logs', JSON.stringify(auditLogs))
-  }, [auditLogs])
+    const timer = setTimeout(() => {
+      if (activeTab === 'dashboard' && !overview) loadOverview()
+      if (activeTab === 'verification' && !verificationData) loadVerification()
+      if (activeTab === 'security' && !securityData) loadSecurity()
+      if (activeTab === 'reports' && !overview) loadOverview()
+      if (activeTab === 'notifications' && !notificationsData) loadNotifications()
+      if (activeTab === 'audit' && !auditData) loadAudit()
+      if (activeTab === 'profile' && !profileData) loadProfile()
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [activeTab, overview, verificationData, securityData, notificationsData, auditData, profileData, loadOverview, loadVerification, loadSecurity, loadNotifications, loadAudit, loadProfile])
 
+  // Persist legacy datasets
+  useEffect(() => {
+    localStorage.setItem('admin_blood_banks', JSON.stringify(bloodBanks))
+  }, [bloodBanks])
 
-
-  const handleLogout = () => {
+  const confirmSignOut = () => {
     localStorage.removeItem('admin_session')
     navigate('/admin/login', { replace: true })
   }
 
   // Toggle Donor Status
   const toggleDonorStatus = (id) => {
-    const updated = donors.map(d => {
+    setDonors(prev => prev.map(d => {
       if (d.id === id) {
-        const nextStatus = d.status === 'active' ? 'suspended' : 'active'
-        const logAction = nextStatus === 'active' ? 'User Activation' : 'User Suspension'
-        const desc = `${nextStatus === 'active' ? 'Activated' : 'Suspended'} donor account: ${d.fullName}`
-        setAuditLogs(prev => [{ id: `L-${Date.now()}`, admin: profileForm.email, action: logAction, target: d.fullName, description: desc, timestamp: new Date().toISOString().split('T')[0], status: 'Success' }, ...prev])
-        return { ...d, status: nextStatus }
+        return { ...d, status: d.status === 'active' ? 'suspended' : 'active' }
       }
       return d
-    })
-    setDonors(updated)
+    }))
   }
 
   // Toggle Requester Status
   const toggleRequesterStatus = (id) => {
-    const updated = requesters.map(r => {
+    setRequesters(prev => prev.map(r => {
       if (r.id === id) {
-        const nextStatus = r.status === 'active' ? 'flagged' : 'active'
-        const logAction = nextStatus === 'active' ? 'User Activation' : 'User Suspension'
-        const desc = `${nextStatus === 'active' ? 'Cleared' : 'Flagged'} requester account: ${r.fullName}`
-        setAuditLogs(prev => [{ id: `L-${Date.now()}`, admin: profileForm.email, action: logAction, target: r.fullName, description: desc, timestamp: new Date().toISOString().split('T')[0], status: 'Success' }, ...prev])
-        return { ...r, status: nextStatus }
+        return { ...r, status: r.status === 'active' ? 'flagged' : 'active' }
       }
       return r
-    })
-    setRequesters(updated)
-  }
-
-  // Handle Verification Actions
-  const handleVerification = (id, approve) => {
-    const target = verifications.find(v => v.id === id)
-    if (!target) return
-    const logAction = approve ? 'Donor Approval' : 'Donor Rejection'
-    const desc = `${approve ? 'Approved' : 'Rejected'} verification document for donor: ${target.donorName}`
-    setAuditLogs(prev => [{ id: `L-${Date.now()}`, admin: profileForm.email, action: logAction, target: target.donorName, description: desc, timestamp: new Date().toISOString().split('T')[0], status: 'Success' }, ...prev])
-
-    setVerifications(prev => prev.filter(v => v.id !== id))
-  }
-
-  // Handle Security Action (Resolve Alert)
-  const handleResolveAlert = (id) => {
-    const target = securityAlerts.find(s => s.id === id)
-    if (!target) return
-    const logAction = 'Resolve Security Threat'
-    const desc = `Resolved flagged alert: ${target.type} for user ${target.user}`
-    setAuditLogs(prev => [{ id: `L-${Date.now()}`, admin: profileForm.email, action: logAction, target: target.user, description: desc, timestamp: new Date().toISOString().split('T')[0], status: 'Success' }, ...prev])
-
-    setSecurityAlerts(prev => prev.map(s => s.id === id ? { ...s, status: 'resolved' } : s))
+    }))
   }
 
   // Handle Verify Bank Actions
-  const handleVerifyBank = async (id, verifyStatus) => {
-    try {
-      const sessionStr = localStorage.getItem('admin_session')
-      const token = sessionStr ? JSON.parse(sessionStr).token : ''
-      const payload = await apiRequest(`/blood-banks/${id}/verify`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ status: verifyStatus.toUpperCase(), notes: 'Verified by Admin' })
-      })
-
-      if (payload && payload.success) {
-        const updated = bloodBanks.map(b => {
-          if (b.id === id) {
-            const logAction = 'Blood Bank Verification'
-            const desc = `Verified blood bank ${b.name} as ${verifyStatus}`
-            setAuditLogs(prev => [{ id: `L-${Date.now()}`, admin: profileForm.email, action: logAction, target: b.name, description: desc, timestamp: new Date().toISOString().split('T')[0], status: 'Success' }, ...prev])
-            return { ...b, verificationStatus: verifyStatus }
-          }
-          return b
-        })
-        setBloodBanks(updated)
+  const handleVerifyBank = (id, verifyStatus) => {
+    setBloodBanks(prev => prev.map(b => {
+      if (b.id === id) {
+        return { ...b, verificationStatus: verifyStatus }
       }
-    } catch (err) {
-      console.error('[admin] Error verifying blood bank:', err)
-      alert(err.message || 'Failed to verify blood bank')
-    }
+      return b
+    }))
   }
 
   // Handle Toggle Bank Account Status
   const handleToggleBankStatus = (id) => {
-    const updated = bloodBanks.map(b => {
+    setBloodBanks(prev => prev.map(b => {
       if (b.id === id) {
-        const nextStatus = b.accountStatus === 'active' ? 'deactivated' : 'active'
-        const logAction = nextStatus === 'active' ? 'Blood Bank Activation' : 'Blood Bank Deactivation'
-        const desc = `${nextStatus === 'active' ? 'Activated' : 'Deactivated'} blood bank account: ${b.name}`
-        setAuditLogs(prev => [{ id: `L-${Date.now()}`, admin: profileForm.email, action: logAction, target: b.name, description: desc, timestamp: new Date().toISOString().split('T')[0], status: 'Success' }, ...prev])
-        return { ...b, accountStatus: nextStatus }
+        return { ...b, accountStatus: b.accountStatus === 'active' ? 'deactivated' : 'active' }
       }
       return b
-    })
-    setBloodBanks(updated)
+    }))
   }
 
   // Handle Stock Update per Blood Bank
@@ -367,44 +387,59 @@ const AdminDashboard = () => {
     }))
   }
 
-  // Handle Send Broadcast Alert
-  const handleSendBroadcast = (e) => {
-    e.preventDefault()
-    if (!alertForm.message.trim() || !alertForm.targetCity.trim()) {
-      setBroadcastMsg('Please fill in target city and message content.')
-      return
-    }
+  // ---- Verification actions ----
+  const handleApproveVerification = (type, id) =>
+    runWithBanner(async () => {
+      await approveVerification(type, id)
+      await loadVerification()
+    })
 
-    const newNotification = {
-      id: `N-${Date.now()}`,
-      targetGroup: alertForm.targetGroup,
-      targetCity: alertForm.targetCity,
-      message: alertForm.message,
-      sentAt: new Date().toLocaleString()
-    }
+  const handleRejectVerification = (type, id, reason) =>
+    runWithBanner(async () => {
+      await rejectVerification(type, id, reason)
+      await loadVerification()
+    })
 
-    setNotifications(prev => [newNotification, ...prev])
-    setAuditLogs(prev => [{
-      id: `L-${Date.now()}`,
-      admin: profileForm.email,
-      action: 'Emergency Alert Broadcast',
-      target: `${alertForm.targetGroup} / ${alertForm.targetCity}`,
-      description: `Emergency blood request broadcasted to ${alertForm.targetGroup} donors in ${alertForm.targetCity}`,
-      timestamp: new Date().toISOString().split('T')[0],
-      status: 'Success'
-    }, ...prev])
+  const handleReverify = (type, id, reason) =>
+    runWithBanner(async () => {
+      await requestReverification(type, id, reason)
+      await loadVerification()
+    })
 
-    setAlertForm({ targetGroup: 'all', targetCity: '', message: '' })
-    setBroadcastMsg('Emergency alert broadcasted successfully!')
-    setTimeout(() => setBroadcastMsg(''), 3000)
-  }
+  // ---- Security actions ----
+  const handleSecurityAction = (type, id, action) =>
+    runWithBanner(async () => {
+      await applySecurityAction(type, id, action)
+      await loadSecurity()
+    })
 
-  // Save Settings Form
-  const handleSaveProfile = (e) => {
-    e.preventDefault()
-    setProfileMsg('Settings and credentials updated successfully!')
-    setTimeout(() => setProfileMsg(''), 3000)
-  }
+  // ---- Notification actions ----
+  const handleMarkRead = (id) =>
+    runWithBanner(async () => {
+      await markNotificationRead(id)
+      await loadNotifications()
+    })
+
+  const handleMarkAllRead = () =>
+    runWithBanner(async () => {
+      await markAllNotificationsRead()
+      await loadNotifications()
+    })
+
+  const handleAnnouncement = (title, message, audience, priority) =>
+    runWithBanner(async () => {
+      await publishAnnouncement(title, message, audience, priority)
+      await loadNotifications()
+    })
+
+  // ---- Profile actions ----
+  const handleSaveProfile = (updates) =>
+    runWithBanner(async () => {
+      await updateAdminProfile(updates)
+      await loadProfile()
+    })
+
+  const handleChangePassword = (current, next) => changeAdminPassword(current, next)
 
   // Helper to change tab reset filters
   const navigateTab = (tabName) => {
@@ -442,7 +477,7 @@ const AdminDashboard = () => {
           <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => navigateTab('profile')}><FaUserCog /> Profile</button>
         </nav>
 
-        <button className="admin-logout-btn" onClick={handleLogout}>
+        <button className="admin-logout-btn" onClick={() => setConfirmLogout(true)}>
           <FaSignOutAlt /> Sign Out
         </button>
       </aside>
@@ -451,8 +486,10 @@ const AdminDashboard = () => {
       <main className="admin-main">
         <header className="admin-header">
           <h1>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Control Panel</h1>
-          <span className="admin-current-user">Logged in: {profileForm.email}</span>
+          <span className="admin-current-user">Logged in: {adminEmail}</span>
         </header>
+
+        {errorBanner && <div className="admin-error-banner">{errorBanner}</div>}
 
         {/* Tab Panel Content */}
         {activeTab === 'dashboard' && (
@@ -462,7 +499,7 @@ const AdminDashboard = () => {
             requests={requests}
             bloodBanks={bloodBanks}
             stock={[]}
-            auditLogs={auditLogs}
+            auditLogs={auditData || []}
             onNavigateTab={navigateTab}
           />
         )}
@@ -481,7 +518,6 @@ const AdminDashboard = () => {
         {activeTab === 'requesters' && (
           <RequesterManagement
             requesters={requesters}
-            requests={requests}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             onToggleStatus={toggleRequesterStatus}
@@ -512,53 +548,90 @@ const AdminDashboard = () => {
           <BloodStock
             bloodBanks={bloodBanks}
             onStockUpdate={handleStockUpdate}
-            readOnly={true}
           />
         )}
 
         {activeTab === 'verification' && (
           <VerificationCenter
-            verifications={verifications}
-            onVerify={handleVerification}
+            data={verificationData}
+            loading={verificationLoading}
+            error={verificationError}
+            onRetry={loadVerification}
+            onApprove={handleApproveVerification}
+            onReject={handleRejectVerification}
+            onReverify={handleReverify}
           />
         )}
 
         {activeTab === 'security' && (
           <SecurityPanel
-            alerts={securityAlerts}
-            onResolve={handleResolveAlert}
+            data={securityData}
+            loading={securityLoading}
+            error={securityError}
+            onRetry={loadSecurity}
+            onAction={handleSecurityAction}
           />
         )}
 
         {activeTab === 'reports' && (
-          <ReportsAnalytics />
+          <ReportsAnalytics
+            data={overview}
+            loading={overviewLoading}
+            error={overviewError}
+            onRetry={loadOverview}
+          />
         )}
 
         {activeTab === 'notifications' && (
           <NotificationsCenter
-            notifications={notifications}
-            alertForm={alertForm}
-            setAlertForm={setAlertForm}
-            broadcastMsg={broadcastMsg}
-            onSendBroadcast={handleSendBroadcast}
+            data={notificationsData}
+            loading={notificationsLoading}
+            error={notificationsError}
+            onRetry={loadNotifications}
+            onMarkRead={handleMarkRead}
+            onMarkAllRead={handleMarkAllRead}
+            onAnnouncement={handleAnnouncement}
           />
         )}
 
         {activeTab === 'audit' && (
           <AuditLogsPanel
-            auditLogs={auditLogs}
+            data={auditData}
+            loading={auditLoading}
+            error={auditError}
+            onRetry={loadAudit}
           />
         )}
 
         {activeTab === 'profile' && (
           <AdminProfile
-            profileForm={profileForm}
-            setProfileForm={setProfileForm}
-            profileMsg={profileMsg}
+            data={profileData}
+            loading={profileLoading}
+            error={profileError}
+            onRetry={loadProfile}
             onSaveProfile={handleSaveProfile}
+            onChangePassword={handleChangePassword}
           />
         )}
       </main>
+
+      {/* Logout confirmation */}
+      {confirmLogout && (
+        <div className="admin-modal-overlay" onClick={() => setConfirmLogout(false)}>
+          <div className="admin-modal-card confirm-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">Sign Out</h3>
+            </div>
+            <p className="confirm-modal-message">Are you sure you want to sign out of the Admin Control Panel?</p>
+            <div className="admin-modal-footer">
+              <button className="modal-action-close" onClick={() => setConfirmLogout(false)}>Cancel</button>
+              <button className="confirm-action-btn confirm-action-btn--danger" onClick={confirmSignOut}>
+                <FaSignOutAlt /> Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -16,8 +16,15 @@ export const apiRequest = async (path, options = {}) => {
   const payload = await response.json().catch(() => ({}))
 
   if (!response.ok) {
-    const error = new Error(payload.details || payload.message || 'Something went wrong')
+    // Surface the curated backend message (never raw DB/schema details). The
+    // technical details are kept on the error object and logged to the
+    // developer console so the UI stays clean but debugging stays possible.
+    const error = new Error(payload.message || 'Something went wrong')
     error.status = response.status
+    error.details = payload.details || null
+    if (error.details) {
+      console.error(`[api] ${error.message} ::`, error.details)
+    }
     throw error
   }
 
