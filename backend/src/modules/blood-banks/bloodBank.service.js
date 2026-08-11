@@ -8,6 +8,7 @@ import {
   uploadBloodBankDocument,
   removeBloodBankDocuments,
   insertBloodBank,
+  updateBloodBankProfile as updateBloodBankProfileRecord,
 } from "./bloodBank.repository.js";
 
 const PENDING_VERIFICATION = "PENDING_VERIFICATION";
@@ -33,11 +34,39 @@ const toBloodBankDto = (row) => ({
   authorizedPersonPhone: row.authorized_person_phone,
   authorizedPersonEmail: row.authorized_person_email,
   verificationStatus: row.verification_status,
+  verificationNotes: row.verification_notes,
+  verifiedAt: row.verified_at,
   hasLicenseDocument: Boolean(row.license_doc_path),
   hasAuthorizationDocument: Boolean(row.authorization_doc_path),
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
+
+/**
+ * Whitelist of profile fields the owner may edit. camelCase API key -> column.
+ * Verification columns, document paths, user_id and id are intentionally NOT
+ * listed: they are read-only. The verify_guard trigger is the DB backstop.
+ */
+const PROFILE_UPDATE_FIELDS = {
+  bloodBankName: "blood_bank_name",
+  bloodBankType: "blood_bank_type",
+  registrationNumber: "registration_number",
+  establishedYear: "established_year",
+  officialEmail: "official_email",
+  primaryPhone: "primary_phone",
+  alternatePhone: "alternate_phone",
+  addressLine: "address_line",
+  city: "city",
+  district: "district",
+  state: "state",
+  pincode: "pincode",
+  latitude: "latitude",
+  longitude: "longitude",
+  authorizedPersonName: "authorized_person_name",
+  designation: "designation",
+  authorizedPersonPhone: "authorized_person_phone",
+  authorizedPersonEmail: "authorized_person_email",
+};
 
 const toAuthUserMetadata = (input) => ({
   bloodBank: true,
@@ -223,4 +252,32 @@ export const getBloodBankProfile = async ({ accessToken, user }) => {
   }
 
   return toBloodBankDto(profile);
+};
+
+/**
+ * Update the signed-in blood bank's own profile.
+ *
+ * The bank row is resolved from auth.uid() (findBloodBankByUserId on the
+ * user-scoped client), so the id used for the UPDATE is never supplied by the
+ * client. Only the whitelisted fields are written; updated_at is stamped
+ * explicitly (no trigger on the table). The returned DTO is the committed
+ * row re-read through the same RLS-protected client.
+ */
+export const updateBloodBankProfile = async ({ accessToken, user, input }) => {
+  const client = createUserClient(accessToken);
+  const existing = await findBloodBankByUserId(client, user.id);
+
+  if (!existing) {
+    throw new ApiError(404, "Blood bank profile not found");
+  }
+
+  const updates = { updated_at: new Date().toISOString() };
+  for (const [key, column] of Object.entries(PROFILE_UPDATE_FIELDS)) {
+    if (key in input) {
+      updates[column] = input[key];
+    }
+  }
+
+  const updated = await updateBloodBankProfileRecord(client, existing.id, updates);
+  return toBloodBankDto(updated);
 };

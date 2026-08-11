@@ -8,6 +8,7 @@ import bloodRequestRoutes from "./modules/blood-requests/bloodRequest.routes.js"
 import bloodRequestBankRoutes from "./modules/blood-requests/bloodRequestBank.routes.js";
 import bloodBankRoutes from "./modules/blood-banks/bloodBank.routes.js";
 import bloodBankInventoryRoutes from "./modules/blood-bank-inventory/bloodBankInventory.routes.js";
+import bloodBankCollectionsRoutes from "./modules/blood-bank-collections/bloodBankCollections.routes.js";
 import { notFoundHandler, errorHandler } from "./shared/http/errorHandlers.js";
 const app = express();
 app.use(cors({ origin: env.corsOrigin, credentials: true }));
@@ -21,6 +22,7 @@ app.use(apiRoutes.bloodRequests.bankBase, bloodRequestBankRoutes);
 app.use(apiRoutes.bloodRequests.base, bloodRequestRoutes);
 app.use(apiRoutes.bloodBanks.base, bloodBankRoutes);
 app.use(apiRoutes.bloodBanks.base, bloodBankInventoryRoutes);
+app.use(apiRoutes.bloodBanks.base, bloodBankCollectionsRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 export default app;

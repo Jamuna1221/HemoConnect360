@@ -16,6 +16,10 @@ export const apiRoutes = {
     me: "/me",
     inventory: "/inventory",
     inventoryHistory: "/inventory/history",
+    collections: "/collections",
+    collectionHistory: "/collections/history",
+    collectionDonors: "/collections/donors",
+    collectionDonorDetails: "/collections/donors/:phone",
   },
   bloodRequests: {
     base: "/api/blood-requests",
@@ -26,6 +30,7 @@ export const apiRoutes = {
     cancel: "/:id/cancel",
     matches: "/:id/matches",
     bankList: "/",
+    bankNearby: "/nearby",
     bankDetail: "/:id",
     bankAccept: "/:id/accept",
     bankReject: "/:id/reject",

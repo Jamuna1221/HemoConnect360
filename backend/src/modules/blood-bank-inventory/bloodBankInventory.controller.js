@@ -29,10 +29,21 @@ export const getBloodBankInventoryHistoryHandler = async (req, res) => {
   const limit = Number(req.query.limit || 20);
   const safeLimit = Number.isInteger(limit) ? Math.min(Math.max(limit, 1), 50) : 20;
 
+  const rawPage =
+    req.query.page === undefined || req.query.page === "" ? null : Number(req.query.page);
+  const safePage = Number.isInteger(rawPage) && rawPage >= 1 ? rawPage : null;
+
   const data = await getBloodBankInventoryHistory({
     accessToken: req.accessToken,
     user: req.user,
     limit: safeLimit,
+    page: safePage,
+    filters: {
+      bloodGroup: req.query.bloodGroup,
+      transactionType: req.query.transactionType,
+      from: req.query.from,
+      to: req.query.to,
+    },
   });
 
   res.json({ success: true, data });

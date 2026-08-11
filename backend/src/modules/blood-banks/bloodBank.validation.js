@@ -210,3 +210,81 @@ export const validateBloodBankRegistration = (body, files) => {
     authorizationDoc,
   };
 };
+
+/**
+ * Validate a profile update (PATCH /api/blood-banks/me).
+ *
+ * Every editable field is required/validated exactly like registration, so an
+ * incomplete or invalid payload can never partially overwrite the profile.
+ * Verification fields are explicitly rejected: they are read-only, owned by the
+ * admin flow, and additionally locked by the blood_banks_verify_guard trigger.
+ */
+export const validateBloodBankUpdate = (body = {}) => {
+  const lockedField = [
+    "verificationStatus",
+    "verificationNotes",
+    "verifiedAt",
+    "verifiedBy",
+  ].find((field) => body[field] !== undefined);
+  if (lockedField) {
+    throw new ApiError(400, "Verification details cannot be changed here");
+  }
+
+  const bloodBankName = trimOrFail(body.bloodBankName, "Blood bank name");
+  const registrationNumber = trimOrFail(
+    body.registrationNumber,
+    "Registration number"
+  );
+  const bloodBankType = trimOrFail(body.bloodBankType, "Blood bank type");
+  if (!ALLOWED_BLOOD_BANK_TYPES.includes(bloodBankType)) {
+    throw new ApiError(400, "Invalid blood bank type");
+  }
+  const establishedYear = parseEstablishedYear(body.establishedYear);
+
+  const officialEmail = requireEmail(body.officialEmail, "Official email");
+  const primaryPhone = requireTenDigitPhone(body.primaryPhone, "Primary phone");
+  const alternatePhone = optionalTenDigitPhone(
+    body.alternatePhone,
+    "Alternate phone"
+  );
+
+  const addressLine = trimOrFail(body.addressLine, "Address");
+  const city = trimOrFail(body.city, "City");
+  const district = trimOrUndefined(body.district) || null;
+  const state = trimOrFail(body.state, "State");
+  const pincode = parsePincode(body.pincode);
+  const latitude = parseOptionalNumber(body.latitude, "Latitude", -90, 90);
+  const longitude = parseOptionalNumber(body.longitude, "Longitude", -180, 180);
+
+  const authorizedPersonName = trimOrFail(
+    body.authorizedPersonName,
+    "Authorized person name"
+  );
+  const designation = trimOrFail(body.designation, "Designation");
+  const authorizedPersonPhone = requireTenDigitPhone(
+    body.authorizedPersonPhone,
+    "Authorized person phone"
+  );
+  const authorizedPersonEmail = optionalEmail(body.authorizedPersonEmail);
+
+  return {
+    bloodBankName,
+    registrationNumber,
+    bloodBankType,
+    establishedYear,
+    officialEmail,
+    primaryPhone,
+    alternatePhone,
+    addressLine,
+    city,
+    district,
+    state,
+    pincode,
+    latitude,
+    longitude,
+    authorizedPersonName,
+    designation,
+    authorizedPersonPhone,
+    authorizedPersonEmail,
+  };
+};

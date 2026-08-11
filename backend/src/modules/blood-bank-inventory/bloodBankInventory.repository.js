@@ -50,18 +50,56 @@ export const adjustStock = async (
   return data?.[0]?.new_quantity ?? 0;
 };
 
-export const findRecentInventoryTransactions = async (
+/**
+ * Load the signed-in blood bank's inventory transactions, newest first.
+ *
+ * Supports optional backend-side filtering (blood group, transaction type and
+ * an inclusive created_at date range) and, when `page` is provided, offset
+ * pagination with an exact row count. Without `page` it keeps the legacy
+ * behaviour of returning just the `limit` most recent rows.
+ *
+ * @param {Object} client - request-scoped Supabase client (RLS applies)
+ * @param {string} bloodBankId - resolved from the authenticated user, never client-supplied
+ * @param {Object} [options]
+ * @param {number} [options.limit=20]
+ * @param {number|null} [options.page=null] - 1-based page; null disables paging
+ * @param {Object} [options.filters]
+ * @param {string} [options.filters.bloodGroup]
+ * @param {string} [options.filters.transactionType]
+ * @param {string} [options.filters.from] - ISO timestamp / date string
+ * @param {string} [options.filters.to] - ISO timestamp / date string
+ * @returns {Promise<{ rows: Array, count: number }>}
+ */
+export const findInventoryTransactions = async (
   client,
   bloodBankId,
-  limit = 20
+  options = {}
 ) => {
-  const { data, error } = await client
-    .from(tables.bloodBankInventoryTransactions)
-    .select("*")
-    .eq("blood_bank_id", bloodBankId)
-    .order("created_at", { ascending: false })
-    .limit(limit);
+  const { limit = 20, page = null, filters = {} } = options;
+  const paging = Number.isInteger(page) && page >= 1;
 
+  let query = client
+    .from(tables.bloodBankInventoryTransactions)
+    .select("*", paging ? { count: "exact" } : undefined)
+    .eq("blood_bank_id", bloodBankId);
+
+  if (filters.bloodGroup) query = query.eq("blood_group", filters.bloodGroup);
+  if (filters.transactionType) {
+    query = query.eq("transaction_type", filters.transactionType);
+  }
+  if (filters.from) query = query.gte("created_at", filters.from);
+  if (filters.to) query = query.lte("created_at", filters.to);
+
+  query = query.order("created_at", { ascending: false });
+
+  if (paging) {
+    const start = (page - 1) * limit;
+    query = query.range(start, start + limit - 1);
+  } else {
+    query = query.limit(limit);
+  }
+
+  const { data, error, count } = await query;
   handleSupabaseError(error, "Unable to fetch inventory history");
-  return data || [];
+  return { rows: data || [], count: count ?? 0 };
 };

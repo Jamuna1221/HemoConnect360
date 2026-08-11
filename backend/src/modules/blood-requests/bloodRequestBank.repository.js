@@ -103,6 +103,34 @@ export const countBloodRequests = async (client, filters) => {
   return count ?? (data || []).length;
 };
 
+/**
+ * Server-side nearby search. All filtering/sorting/distance happens inside the
+ * blood_bank_nearby_requests SECURITY DEFINER RPC, which resolves the bank's
+ * real coordinates from auth.uid() and paginates with an exact total count.
+ * Rows carry distance_km (rounded to 0.1 km) and total_count (filtered total).
+ */
+export const findNearbyBloodRequests = async (client, filters) => {
+  const { data, error } = await client.rpc("blood_bank_nearby_requests", {
+    p_radius_km: filters.radiusKm,
+    p_blood_group: filters.bloodGroup || null,
+    p_priority: filters.priority || null,
+    p_status: filters.status,
+    p_from: filters.from || null,
+    p_to: filters.to || null,
+    p_sort: filters.sort,
+    p_page: filters.page,
+    p_limit: filters.limit,
+  });
+
+  handleSupabaseError(error, "Unable to fetch nearby blood requests");
+
+  const rows = data || [];
+  return {
+    rows: rows.map(({ total_count: totalCount, ...rest }) => rest),
+    total: rows.length > 0 ? Number(rows[0].total_count) || 0 : 0,
+  };
+};
+
 export const findBloodRequestById = async (client, id) => {
   const { data, error } = await client
     .from(tables.bloodRequests)
