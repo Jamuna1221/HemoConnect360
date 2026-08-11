@@ -71,10 +71,10 @@ const RequestDetails = () => {
   const baseTimeline = req.timeline?.length
     ? req.timeline
     : TIMELINE_STEPS.map((step, index) => ({
-        ...step,
-        completed: index < getStatusIndex(req.status),
-        time: index < getStatusIndex(req.status) ? 'Completed' : null,
-      }))
+      ...step,
+      completed: index < getStatusIndex(req.status),
+      time: index < getStatusIndex(req.status) ? 'Completed' : null,
+    }))
   const hasMatches = (matches?.length || 0) > 0
   const hasAccepted = matches?.some((match) => ['accepted', 'donated'].includes(match.status))
   const hasDonated = matches?.some((match) => match.status === 'donated')

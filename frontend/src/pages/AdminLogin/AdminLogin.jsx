@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { FaArrowLeft, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaShieldAlt } from 'react-icons/fa'
+import adminBg from '../../assets/admin/admin_login.png'
 import './AdminLogin.css'
 
 const AdminLogin = () => {
@@ -53,7 +54,16 @@ const AdminLogin = () => {
   }
 
   return (
-    <div className="admin-login-page">
+    <div 
+      className="admin-login-page"
+      style={{
+        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.5)), url(${adminBg})`,
+        backgroundSize: '100% 100%',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: '#0f172a'
+      }}
+    >
       <Link to="/" className="admin-login-back">
         <FaArrowLeft /> Back to Home
       </Link>

@@ -1,6 +1,7 @@
 .admin-dashboard-page {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: #f8fafc;
   color: #334155;
   font-family: 'Poppins', 'Inter', sans-serif;
@@ -15,9 +16,8 @@
   flex-direction: column;
   padding: 30px 20px;
   flex-shrink: 0;
-  max-height: 100vh;
-  position: sticky;
-  top: 0;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .admin-sidebar-brand {
@@ -411,6 +411,22 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.stock-summary-grid::-webkit-scrollbar,
+.mini-list::-webkit-scrollbar,
+.mini-log-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.stock-summary-grid::-webkit-scrollbar-thumb,
+.mini-list::-webkit-scrollbar-thumb,
+.mini-log-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
 }
 
 .stock-summary-pill {
@@ -447,6 +463,39 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.mini-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.mini-log-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.85rem;
+}
+
+.log-action {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.log-time {
+  font-size: 0.75rem;
+  color: #94a3b8;
 }
 
 .mini-list-item {
@@ -1016,7 +1065,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
   backdrop-filter: blur(4px);
   animation: adminFade 0.3s ease;
 }
@@ -1025,10 +1074,11 @@
   background: #ffffff;
   border-radius: 20px;
   border: 1px solid #e2e8f0;
-  width: 100%;
+  width: 90%;
   max-width: 480px;
   padding: 24px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  margin: auto;
 }
 
 .modal-header {
@@ -1418,7 +1468,7 @@
 
 @keyframes adminFade {
   from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: none; }
 }
 
 @media (max-width: 1024px) {
