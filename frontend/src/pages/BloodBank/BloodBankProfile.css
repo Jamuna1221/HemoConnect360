@@ -1,3 +1,11 @@
+.bankprof {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 32px 6% 64px;
+  color: #1f2937;
+}
+
+/* Header */
 .bankprof-head {
   display: flex;
   align-items: flex-start;
@@ -7,49 +15,79 @@
 }
 
 .bankprof-head h2 {
+  margin: 0;
   font-size: 28px;
   font-weight: 800;
   color: #1a1a1a;
-  margin: 0;
 }
 
 .bankprof-head p {
+  margin: 6px 0 0;
   font-size: 14px;
   color: #6b7280;
-  margin: 6px 0 0;
 }
 
-.bankprof-edit-btn {
+/* Buttons */
+.bankprof-edit-btn,
+.bankprof-save,
+.bankprof-cancel {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 12px 22px;
-  border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #e53935, #c62828);
-  color: #fff;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 700;
-  font-family: inherit;
   cursor: pointer;
-  white-space: nowrap;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
-.bankprof-edit-btn:hover {
+.bankprof-edit-btn,
+.bankprof-save {
+  border: none;
+  background: linear-gradient(135deg, #e53935, #c62828);
+  color: #fff;
+}
+
+.bankprof-edit-btn:hover,
+.bankprof-save:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(229, 57, 53, 0.3);
 }
 
+.bankprof-cancel {
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+}
+
+.bankprof-cancel:hover:not(:disabled) {
+  border-color: #e53935;
+  color: #dc2626;
+}
+
+.bankprof-save:disabled,
+.bankprof-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Status / Message banners */
 .bankprof-banner {
   display: flex;
   align-items: flex-start;
   gap: 10px;
   padding: 14px 18px;
+  margin-bottom: 20px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 20px;
 }
 
 .bankprof-banner svg {
@@ -69,17 +107,19 @@
   border: 1px solid #fecaca;
 }
 
+/* Main grid */
 .bankprof-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 
+/* Cards */
 .bankprof-card {
+  padding: 24px;
   background: #fff;
   border: 1px solid #eef0f3;
   border-radius: 16px;
-  padding: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
@@ -87,16 +127,17 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 16px;
+  color: #1a1a1a;
   font-size: 14px;
   font-weight: 800;
-  color: #1a1a1a;
-  margin-bottom: 16px;
 }
 
 .bankprof-card-title svg {
   color: #e53935;
 }
 
+/* Profile fields */
 .bankprof-fields {
   margin: 0;
   display: grid;
@@ -122,20 +163,26 @@
 
 .bankprof-fields dd {
   margin: 0;
-  font-size: 14px;
-  color: #1a1a1a;
-  font-weight: 700;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 700;
   word-break: break-word;
 }
 
 .bankprof-fields dd svg {
   color: #e53935;
+  flex-shrink: 0;
 }
 
-/* ---- Status badge ---- */
+/* Verification status */
+.bankprof-verification-status {
+  display: block;
+  margin-bottom: 12px;
+}
+
 .bankprof-status {
   display: inline-flex;
   align-items: center;
@@ -166,7 +213,7 @@
   border: 1px solid #fecaca;
 }
 
-/* ---- Verification card ---- */
+/* Verification */
 .bankprof-verification {
   display: flex;
   flex-direction: column;
@@ -174,13 +221,13 @@
 }
 
 .bankprof-verification-note {
+  margin: 0;
+  color: #6b7280;
   font-size: 13px;
   line-height: 1.7;
-  color: #6b7280;
-  margin: 0;
 }
 
-/* ---- Edit form ---- */
+/* Edit form */
 .bankprof-form {
   display: flex;
   flex-direction: column;
@@ -198,8 +245,8 @@
 }
 
 .bankprof-field label {
-  font-size: 12px;
   color: #374151;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -210,15 +257,17 @@
 .bankprof-field input,
 .bankprof-field select {
   width: 100%;
+  box-sizing: border-box;
   padding: 11px 14px;
   border: 1.5px solid #e5e7eb;
   border-radius: 12px;
   background: #fff;
   color: #1a1a1a;
-  font-size: 14px;
   font-family: inherit;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  box-sizing: border-box;
+  font-size: 14px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .bankprof-field input:focus,
@@ -242,17 +291,18 @@
 }
 
 .bankprof-hint {
-  font-size: 12px;
   color: #9ca3af;
+  font-size: 12px;
   line-height: 1.5;
 }
 
 .bankprof-field-error {
+  color: #dc2626;
   font-size: 12px;
   font-weight: 600;
-  color: #dc2626;
 }
 
+/* Form actions */
 .bankprof-actions {
   display: flex;
   align-items: center;
@@ -260,47 +310,12 @@
   margin-top: 4px;
 }
 
-.bankprof-save,
-.bankprof-cancel {
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.bankprof-save {
-  border: none;
-  background: linear-gradient(135deg, #e53935, #c62828);
-  color: #fff;
-}
-
-.bankprof-save:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(229, 57, 53, 0.3);
-}
-
-.bankprof-cancel {
-  border: 1.5px solid #e5e7eb;
-  background: #fff;
-  color: #374151;
-}
-
-.bankprof-cancel:hover:not(:disabled) {
-  border-color: #e53935;
-  color: #dc2626;
-}
-
-.bankprof-save:disabled,
-.bankprof-cancel:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
+/* Responsive */
 @media (max-width: 768px) {
+  .bankprof {
+    padding: 24px 4% 48px;
+  }
+
   .bankprof-head {
     flex-direction: column;
     align-items: flex-start;
@@ -317,5 +332,29 @@
   .bankprof-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .bankprof-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .bankprof {
+    padding: 20px 16px 40px;
+  }
+
+  .bankprof-head h2 {
+    font-size: 24px;
+  }
+
+  .bankprof-card {
+    padding: 18px;
+  }
+
+  .bankprof-edit-btn,
+  .bankprof-save,
+  .bankprof-cancel {
+    width: 100%;
   }
 }

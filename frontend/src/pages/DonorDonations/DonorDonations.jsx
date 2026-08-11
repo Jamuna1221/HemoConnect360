@@ -27,6 +27,7 @@ const DonorDonations = () => {
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [currentTime] = useState(() => Date.now())
 
   useEffect(() => {
     const load = async () => {
@@ -52,7 +53,7 @@ const DonorDonations = () => {
   const totalUnits = donations.reduce((sum, donation) => sum + (Number(donation.units) || 0), 0)
   const nextEligible = donor && getNextEligible(donor.last_donation, donor.gender)
   const daysLeft = nextEligible
-    ? Math.max(0, Math.ceil((nextEligible.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    ? Math.max(0, Math.ceil((nextEligible.getTime() - currentTime) / (1000 * 60 * 60 * 24)))
     : 0
   const historyItems = [
     ...donations.map((donation) => ({

@@ -15,18 +15,20 @@ const DonorRequestDetails = () => {
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
 
-  const loadRequest = async () => {
-    try {
-      const requests = await fetchDonorRequests()
-      setRequest(requests.find((item) => item.id === id) || null)
-    } catch (err) {
-      setError(err.message || 'Unable to load this request.')
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    const loadRequest = async () => {
+      try {
+        const requests = await fetchDonorRequests()
+        setRequest(requests.find((item) => item.id === id) || null)
+      } catch (err) {
+        setError(err.message || 'Unable to load this request.')
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
-  useEffect(() => { loadRequest() }, [id])
+    loadRequest()
+  }, [id])
 
   const response = location.state?.historyStatus === 'ineligible'
     ? 'ineligible_after_donation'
