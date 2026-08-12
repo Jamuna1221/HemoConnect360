@@ -6,6 +6,7 @@ import { useAuthContext } from '../../context/useAuthContext';
 import { enableDonorNotifications, subscribeToForegroundNotifications } from '../../services/pushNotificationService';
 import { fetchDonorNotifications, markDonorNotificationRead } from '../../services/notificationService';
 import './Navbar.css';
+import GoogleTranslate from '../Common/GoogleTranslate';
 
 const NAV_LINKS = [
   { label: 'Home', href: '#home' },
@@ -159,6 +160,7 @@ const Navbar = () => {
             </a>
           ))}
           <div className="navbar__cta-group navbar__cta-group--mobile">
+            <GoogleTranslate />
             <button type="button" className="navbar__bell" aria-label="Notifications">
               <FaBell />
             </button>
@@ -168,6 +170,7 @@ const Navbar = () => {
         </nav>
 
         <div className="navbar__cta-group">
+          <GoogleTranslate />
           <div className="navbar__notification-wrapper">
             <button type="button" className="navbar__bell" aria-label="Notifications" onClick={() => setShowNotifications((open) => !open)}>
               <FaBell />

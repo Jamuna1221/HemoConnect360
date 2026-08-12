@@ -6,6 +6,7 @@ import { useRequester } from '../../context/RequesterContext'
 import { enableRequesterNotifications, subscribeToForegroundNotifications } from '../../services/pushNotificationService'
 import { fetchRequesterNotifications } from '../../services/notificationService'
 import './RequesterNavbar.css'
+import GoogleTranslate from '../Common/GoogleTranslate'
 
 const NAV_LINKS = [
   { label: 'Dashboard', path: '/requester/dashboard' },
@@ -111,6 +112,7 @@ const RequesterNavbar = () => {
             </Link>
           ))}
           <div className="req-navbar__cta-group req-navbar__cta-group--mobile">
+            <GoogleTranslate />
             <span className="req-navbar__phone">{user?.phone}</span>
             <button type="button" className="req-navbar__bell" onClick={() => { setShowNotif(!showNotif); closeMenu() }}>
               <FaBell />
@@ -126,6 +128,7 @@ const RequesterNavbar = () => {
         </nav>
 
         <div className="req-navbar__cta-group">
+          <GoogleTranslate />
           <div className="req-navbar__user-info">
             <span className="req-navbar__user-name">{user?.fullName || 'User'}</span>
           </div>

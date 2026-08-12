@@ -1,0 +1,128 @@
+/* ─── Floating Language FAB ─── */
+.gt-fab {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Main trigger button */
+.gt-fab__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #e53935, #c62828);
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  box-shadow: 0 4px 20px rgba(229, 57, 53, 0.45);
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.gt-fab__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(229, 57, 53, 0.55);
+}
+
+.gt-fab__globe { font-size: 16px; }
+
+.gt-fab__lang {
+  font-size: 13px;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gt-fab__arrow {
+  font-size: 12px;
+  transition: transform 0.25s ease;
+  display: inline-block;
+}
+.gt-fab__arrow--up { transform: rotate(180deg); }
+
+/* Dropdown list */
+.gt-fab__dropdown {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  width: 210px;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  animation: gt-slide-up 0.2s ease;
+}
+
+@keyframes gt-slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.gt-fab__dropdown-header {
+  padding: 12px 16px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+/* Each language option */
+.gt-fab__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-align: left;
+}
+
+.gt-fab__option:hover { background: #fff5f5; }
+
+.gt-fab__option--active { background: #fff0f0; }
+
+.gt-fab__option-native {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.gt-fab__option-label {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.gt-fab__option--active .gt-fab__option-native { color: #e53935; }
+.gt-fab__option--active .gt-fab__option-label  { color: #e53935; }
+
+/* Hide the raw Google Translate top bar and banner */
+.skiptranslate iframe,
+body > .skiptranslate { display: none !important; }
+body { top: 0px !important; }
+
+/* Hide the Google widget visually but keep it in DOM so goog-te-combo renders */
+.gt-hidden-widget {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  left: -9999px;
+  top: -9999px;
+}
