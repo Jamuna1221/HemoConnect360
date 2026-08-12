@@ -18,7 +18,7 @@
 
 ---
 
-## 🔍 Why HemoConnect360? (SEO & Discovery)
+## 🔍 Why HemoConnect360? 
 
 If you are looking for a comprehensive **blood donation system**, **blood bank inventory management software**, or an **emergency blood request app**, HemoConnect360 provides an open-source architecture built for scale. 
 
@@ -31,7 +31,6 @@ Key search features:
 ## ✨ Key Features
 
 - 📍 **Geospatial Location Matching:** Calculates exact distances between hospitals and donors securely on the database level.
-- 🏢 **Multi-Tenant Architecture:** Multiple independent blood banks can operate on the same system with strict data isolation using PostgreSQL Row Level Security (RLS).
 - 🔔 **Real-time Notifications:** Donors receive instant push alerts when a nearby patient needs their specific blood type.
 - 📊 **Admin & Verification Dashboards:** Robust admin panels to verify hospitals and blood banks to prevent fraud.
 - 🔒 **High Security:** Built on top of Supabase/PostgreSQL with JWT authentication and granular database permissions.
