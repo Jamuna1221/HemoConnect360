@@ -128,17 +128,19 @@ const RequesterNavbar = () => {
                   {pushStatus === 'enabled' ? 'Browser alerts enabled' : pushStatus === 'enabling' ? 'Enabling...' : 'Enable browser alerts'}
                 </button>
                 {pushError && <p className="req-navbar__push-error">{pushError}</p>}
-                {notificationItems.length === 0 ? (
-                  <p className="req-navbar__notif-empty">No notifications</p>
-                ) : (
-                  notificationItems.map((n) => (
-                    <div key={n.id} className={`req-navbar__notif-item ${!n.read ? 'req-navbar__notif-item--unread' : ''}`}>
-                      {n.title && <strong className="req-navbar__notif-title-text">{n.title}</strong>}
-                      <p className="req-navbar__notif-text">{n.text}</p>
-                      <span className="req-navbar__notif-time">{n.time}</span>
-                    </div>
-                  ))
-                )}
+                <div className="req-navbar__notif-list">
+                  {notificationItems.length === 0 ? (
+                    <p className="req-navbar__notif-empty">No notifications</p>
+                  ) : (
+                    notificationItems.map((n) => (
+                      <div key={n.id} className={`req-navbar__notif-item ${!n.read ? 'req-navbar__notif-item--unread' : ''}`}>
+                        {n.title && <strong className="req-navbar__notif-title-text">{n.title}</strong>}
+                        <p className="req-navbar__notif-text">{n.text}</p>
+                        <span className="req-navbar__notif-time">{n.time}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             )}
           </div>

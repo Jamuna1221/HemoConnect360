@@ -110,19 +110,15 @@
 .gt-fab__option--active .gt-fab__option-native { color: #e53935; }
 .gt-fab__option--active .gt-fab__option-label  { color: #e53935; }
 
-/* Hide the raw Google Translate top bar and banner */
+/* Hide Google Translate top bar / banner completely */
 .skiptranslate iframe,
 body > .skiptranslate { display: none !important; }
 body { top: 0px !important; }
 
-/* Hide the Google widget visually but keep it in DOM so goog-te-combo renders */
+/* Keep the hidden widget in flow so Google can render the goog-te-combo select */
 .gt-hidden-widget {
-  position: absolute;
-  width: 1px;
-  height: 1px;
+  visibility: hidden;
+  height: 0;
   overflow: hidden;
-  opacity: 0;
   pointer-events: none;
-  left: -9999px;
-  top: -9999px;
 }

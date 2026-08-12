@@ -170,6 +170,18 @@
   margin: 0 0 16px 0;
 }
 
+.req-navbar__notif-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #D8DCE3 transparent;
+}
+
+.req-navbar__notif-list::-webkit-scrollbar { width: 6px; }
+.req-navbar__notif-list::-webkit-scrollbar-thumb { background: #D8DCE3; border-radius: 99px; }
+.req-navbar__notif-list::-webkit-scrollbar-track { background: transparent; }
+
 .req-navbar__notif-empty {
   font-size: 13px;
   color: #999;
