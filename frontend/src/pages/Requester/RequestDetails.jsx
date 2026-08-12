@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaArrowLeft, FaUser, FaHospital, FaCalendarAlt, FaPhone, FaMapMarkerAlt, FaCheckCircle, FaClock, FaTimes, FaUserFriends } from 'react-icons/fa'
 import { useRequester } from '../../context/RequesterContext'
-import { getBloodRequestMatches } from '../../services/requesterService'
+import { getBloodRequest, getBloodRequestMatches } from '../../services/requesterService'
 import RequesterNavbar from '../../components/Requester/RequesterNavbar'
 import './RequestDetails.css'
 
@@ -17,9 +17,18 @@ const TIMELINE_STEPS = [
   { step: 'completed', label: 'Completed' },
 ]
 
+// Normalize the backend statuses (including aliases used by donors and admin)
+// so every value maps to a timeline step.
+const normalizeStatus = (status) => {
+  if (status === 'pending' || status === 'open' || status === 'submitted') return 'submitted'
+  if (status === 'searching_donors') return 'searching'
+  if (status === 'donor_accepted') return 'accepted'
+  if (status === 'fulfilled') return 'completed'
+  return status
+}
+
 const getStatusIndex = (status) => {
-  const normalized = status === 'searching_donors' ? 'searching' : status
-  const index = TIMELINE_STEPS.findIndex((step) => step.step === normalized)
+  const index = TIMELINE_STEPS.findIndex((step) => step.step === normalizeStatus(status))
   return index < 0 ? 0 : index
 }
 
@@ -36,11 +45,49 @@ const RequestDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, requests, cancelRequest } = useRequester()
+  const [serverRequest, setServerRequest] = useState(null)
+  const [requestLoaded, setRequestLoaded] = useState(false)
   const [matches, setMatches] = useState(null)
   const [matchesError, setMatchesError] = useState('')
-  const req = requests.find((r) => r.id === id) || null
+  const contextRequest = requests.find((r) => r.id === id) || null
+  // Prefer the live backend copy of the exact request from the URL; fall back
+  // to the context cache while the first fetch is in flight.
+  const req = serverRequest || contextRequest
 
   useEffect(() => { if (!user) navigate('/requester/login') }, [user, navigate])
+
+  // Fetch the exact request by its id from the backend so the tracking status
+  // always reflects the latest server state (e.g. approved by the blood bank).
+  useEffect(() => {
+    if (!user || !id) return
+    let active = true
+    let timer
+
+    const fetchRequest = async () => {
+      try {
+        const data = await getBloodRequest(id)
+        if (active) {
+          setServerRequest(data)
+          setRequestLoaded(true)
+        }
+      } catch {
+        // Keep the last known backend state on a transient failure; the next
+        // poll or visibility refresh will retry. Mark loaded so the page does
+        // not keep rendering the loading fallback.
+        if (active) setRequestLoaded(true)
+      }
+    }
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') fetchRequest()
+    }
+
+    fetchRequest()
+    // Poll while the request is still open so new statuses appear automatically.
+    timer = setInterval(fetchRequest, 6000)
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => { active = false; clearInterval(timer); document.removeEventListener('visibilitychange', handleVisibility) }
+  }, [user, id])
 
   useEffect(() => {
     let active = true
@@ -57,13 +104,22 @@ const RequestDetails = () => {
       }
     }
 
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') fetchMatches()
+    }
+
     fetchMatches()
     timer = setInterval(fetchMatches, 8000)
-    return () => { active = false; clearInterval(timer) }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => { active = false; clearInterval(timer); document.removeEventListener('visibilitychange', handleVisibility) }
   }, [id])
 
   if (!user) return null
-  if (!req) return (
+  if (!req) return !requestLoaded && !contextRequest ? (
+    <div className="req-detail-page"><RequesterNavbar />
+      <main className="req-detail-main"><div className="req-detail-container"><div className="req-detail-empty"><p>Loading request…</p></div></div></main>
+    </div>
+  ) : (
     <div className="req-detail-page"><RequesterNavbar />
       <main className="req-detail-main"><div className="req-detail-container"><div className="req-detail-empty"><p>Request not found.</p><button onClick={() => navigate('/requester/history')}>Back to History</button></div></div></main>
     </div>
@@ -79,15 +135,19 @@ const RequestDetails = () => {
   const hasMatches = (matches?.length || 0) > 0
   const hasAccepted = matches?.some((match) => ['accepted', 'donated'].includes(match.status))
   const hasDonated = matches?.some((match) => match.status === 'donated')
-  const currentStep = hasDonated
+  const currentStep = req.status === 'completed' || req.status === 'fulfilled'
     ? 6
-    : req.status === 'approved'
-      ? 4
-      : hasAccepted
-        ? 5
-        : hasMatches
-          ? 3
-          : Math.max(1, getStatusIndex(req.status))
+    : req.status === 'rejected' || req.status === 'cancelled'
+      ? 1
+      : req.status === 'approved'
+        ? 4
+        : hasDonated
+          ? 6
+          : hasAccepted
+            ? 4
+            : hasMatches
+              ? 3
+              : Math.max(1, getStatusIndex(req.status))
   const displayTimeline = baseTimeline.map((step, index) => {
     const stepName = step.step || step.status
     return {

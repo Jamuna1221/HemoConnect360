@@ -121,11 +121,21 @@ const TrackRequest = () => {
       }
     };
 
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchLatestRequest();
+      }
+    };
+
     fetchLatestRequest();
 
     const interval = setInterval(fetchLatestRequest, 8000);
+    document.addEventListener('visibilitychange', handleVisibility);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [requestData?.id]);
 
   if (!user) {
