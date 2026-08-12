@@ -6,6 +6,7 @@ import { useAuthContext } from '../../context/useAuthContext';
 import { enableDonorNotifications, subscribeToForegroundNotifications } from '../../services/pushNotificationService';
 import { fetchDonorNotifications, markDonorNotificationRead } from '../../services/notificationService';
 import './Navbar.css';
+import GoogleTranslate from '../Common/GoogleTranslate';
 
 const NAV_LINKS = [
   { label: 'Home', href: '#home' },
@@ -159,6 +160,7 @@ const Navbar = () => {
             </a>
           ))}
           <div className="navbar__cta-group navbar__cta-group--mobile">
+            <GoogleTranslate />
             <button type="button" className="navbar__bell" aria-label="Notifications">
               <FaBell />
             </button>
@@ -168,6 +170,7 @@ const Navbar = () => {
         </nav>
 
         <div className="navbar__cta-group">
+          <GoogleTranslate />
           <div className="navbar__notification-wrapper">
             <button type="button" className="navbar__bell" aria-label="Notifications" onClick={() => setShowNotifications((open) => !open)}>
               <FaBell />
@@ -175,11 +178,15 @@ const Navbar = () => {
             </button>
             {showNotifications && <div className="navbar__notification-dropdown">
               <h4>Notifications</h4>
-              {notifications.length === 0 ? <p>No notifications yet.</p> : notifications.map((notification) => (
-                <button type="button" key={notification.id} className={`navbar__notification-item ${!notification.read_at ? 'navbar__notification-item--unread' : ''}`} onClick={() => handleNotificationClick(notification)}>
-                  <strong>{notification.title}</strong><span>{notification.message}</span>
-                </button>
-              ))}
+              {notifications.length === 0 ? <p>No notifications yet.</p> : (
+                <div className="navbar__notification-list">
+                  {notifications.map((notification) => (
+                    <button type="button" key={notification.id} className={`navbar__notification-item ${!notification.read_at ? 'navbar__notification-item--unread' : ''}`} onClick={() => handleNotificationClick(notification)}>
+                      <strong>{notification.title}</strong><span>{notification.message}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>}
           </div>
           {user && <button type="button" className="navbar__push-enable" onClick={handleEnableDonorNotifications} disabled={pushStatus === 'enabling'}>{pushStatus === 'enabled' ? 'Alerts On' : 'Enable Alerts'}</button>}
