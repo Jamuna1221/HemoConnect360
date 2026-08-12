@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+let API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+if (API_BASE_URL !== '/api' && !API_BASE_URL.endsWith('/api')) {
+  API_BASE_URL = `${API_BASE_URL.replace(/\/$/, '')}/api`
+}
 
 export const apiRequest = async (path, options = {}) => {
   // multipart/form-data (document uploads) must NOT get a JSON content type -
