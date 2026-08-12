@@ -11,6 +11,7 @@ import {
   getAuditLogs,
   getProfile,
   updateProfile,
+  updateBloodRequestStatus,
 } from "./admin.service.js";
 
 export const getOverviewHandler = async (req, res) => {
@@ -105,3 +106,14 @@ export const updateProfileHandler = async (req, res) => {
   });
   res.json({ success: true, data });
 };
+
+export const updateRequestStatusHandler = async (req, res) => {
+  const { status } = req.body || {};
+  const data = await updateBloodRequestStatus({
+    id: req.params.id,
+    status,
+    adminEmail: req.admin.email,
+  });
+  res.json({ success: true, data });
+};
+

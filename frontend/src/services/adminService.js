@@ -49,6 +49,7 @@ export const fetchAllBloodBanks = () => get('/blood-banks/')
 export const verifyBloodBank = (id, status, notes) => patch(`/blood-banks/${id}/verify`, { status, notes })
 
 export const fetchAdminOverview = () => get('/admin/overview')
+export const updateBloodRequestStatus = (id, status) => patch(`/admin/blood-requests/${id}/status`, { status })
 
 export const fetchAdminVerification = () => get('/admin/verification')
 

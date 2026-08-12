@@ -25,6 +25,7 @@ import {
   listAuditLogs,
   getAdminSettings,
   upsertAdminSettings,
+  updateBloodRequestStatusInDb,
 } from "./admin.repository.js";
 
 const VERIFICATION_STATUS = {
@@ -1136,4 +1137,37 @@ export const updateProfile = async ({ adminEmail, input }) => {
     systemPrefs: saved.system_prefs,
   };
 };
+
+export const updateBloodRequestStatus = async ({ id, status, adminEmail }) => {
+  const client = createAdminClient();
+  
+  // Find current request for details
+  const { data: request, error: fetchError } = await client
+    .from(tables.bloodRequests)
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !request) {
+    throw new ApiError(404, "Blood request not found");
+  }
+
+  const updated = await updateBloodRequestStatusInDb(client, id, status);
+
+  await writeAudit(client, adminEmail, {
+    action: "Request Status Updated",
+    category: "Request Management",
+    target: request.patient_name || request.id,
+    description: `Admin updated status for request ${id} (Patient: ${request.patient_name}) to ${status}`,
+    previous: request.status,
+    next: status,
+  });
+
+  return {
+    id: updated.id,
+    status: updated.status,
+    updatedAt: updated.updated_at
+  };
+};
+
 

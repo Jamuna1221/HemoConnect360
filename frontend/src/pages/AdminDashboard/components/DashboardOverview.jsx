@@ -20,7 +20,7 @@ const DashboardOverview = ({
   const totalRequesters = requesters.length
   const totalRequests = requests.length
   const totalBanks = bloodBanks.length
-  const pendingRequests = requests.filter(r => r.status === 'searching' || r.status === 'submitted').length
+  const pendingRequests = requests.filter(r => r.status === 'searching' || r.status === 'submitted' || r.status === 'notified').length
   const completedRequests = requests.filter(r => r.status === 'completed').length
 
   // Calculate available blood units from bloodBanks stock matrices
@@ -41,6 +41,82 @@ const DashboardOverview = ({
     })
     return acc
   }, {})
+
+  // 1. Blood Request Overview Chart (Trend data based on real dates)
+  // Let's divide the last 4 weeks. If no requests, we show a flat line.
+  const getOverviewTrendPath = () => {
+    if (requests.length === 0) return { path: "M10,80 L300,80", points: [] }
+    const now = new Date()
+    const weeksData = [0, 0, 0, 0] // [Week 4 ago, Week 3 ago, Week 2 ago, Week 1 ago]
+    requests.forEach(r => {
+      if (!r.createdAt) return
+      const diffMs = now - new Date(r.createdAt)
+      const diffDays = diffMs / (1000 * 60 * 60 * 24)
+      if (diffDays <= 7) weeksData[3]++
+      else if (diffDays <= 14) weeksData[2]++
+      else if (diffDays <= 21) weeksData[1]++
+      else if (diffDays <= 28) weeksData[0]++
+    })
+
+    const maxCount = Math.max(...weeksData, 1)
+    // Map to SVG coordinates: width=300, height=100. padding left=10, right=10, top=10, bottom=20
+    const points = weeksData.map((val, idx) => {
+      const x = 10 + idx * 93.33
+      const y = 80 - (val / maxCount) * 60
+      return { x, y, val }
+    })
+
+    const pathD = `M${points[0].x},${points[0].y} ` + points.slice(1).map(p => `L${p.x},${p.y}`).join(' ')
+    const areaD = `${pathD} L300,100 L10,100 Z`
+
+    return { pathD, areaD, points, totalLastMonth: weeksData.reduce((a, b) => a + b, 0) }
+  }
+
+  const trendData = getOverviewTrendPath()
+
+  // 2. Blood Group Demand Chart (Calculated from real requests blood group demand)
+  const groupDemand = requests.reduce((acc, r) => {
+    if (r.bloodGroup) {
+      acc[r.bloodGroup] = (acc[r.bloodGroup] || 0) + 1
+    }
+    return acc
+  }, {})
+  const sortedDemand = Object.entries(groupDemand)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3) // Show top 3 demanded groups
+
+  const totalDemandCount = Object.values(groupDemand).reduce((a, b) => a + b, 0) || 1
+
+  // 3. Request Status Chart Distribution
+  const statusCounts = requests.reduce((acc, r) => {
+    const s = r.status || 'submitted'
+    acc[s] = (acc[s] || 0) + 1
+    return acc
+  }, {})
+
+  const getConicGradient = () => {
+    const total = requests.length || 1
+    let accumulatedPercent = 0
+    const parts = []
+    
+    // Statuses colors
+    const colors = {
+      completed: '#2563eb', // blue
+      cancelled: '#94a3b8', // gray
+      rejected: '#ef4444', // red
+      default: '#e53935' // deep red
+    }
+
+    Object.entries(statusCounts).forEach(([status, count]) => {
+      const pct = Math.round((count / total) * 100)
+      const color = colors[status] || colors.default
+      parts.push(`${color} ${accumulatedPercent}% ${accumulatedPercent + pct}%`)
+      accumulatedPercent += pct
+    })
+
+    if (parts.length === 0) return 'conic-gradient(#e2e8f0 0% 100%)'
+    return `conic-gradient(${parts.join(', ')}, #e2e8f0 ${accumulatedPercent}% 100%)`
+  }
 
   return (
     <div className="tab-panel">
@@ -105,71 +181,52 @@ const DashboardOverview = ({
 
       {/* ─── 2. CHARTS SECTION ─── */}
       <section className="dashboard-charts-section">
-        {/* Blood Request Overview Chart */}
-        <div className="chart-card">
-          <h4>Blood Request Overview</h4>
-          <div className="overview-chart-mock">
-            <div className="trend-line-container">
-              <svg viewBox="0 0 300 100" className="trend-svg" style={{ overflow: 'visible' }}>
-                <defs>
-                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#E53935" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#E53935" stopOpacity="0.00" />
-                  </linearGradient>
-                </defs>
-                <path d="M10,80 Q50,40 100,60 T200,30 T300,10 L300,100 L10,100 Z" fill="url(#chartGradient)" />
-                <path d="M10,80 Q50,40 100,60 T200,30 T300,10" fill="none" stroke="#E53935" strokeWidth="3" />
-                <circle cx="10" cy="80" r="4" fill="#E53935" />
-                <circle cx="100" cy="60" r="4" fill="#E53935" />
-                <circle cx="200" cy="30" r="4" fill="#E53935" />
-                <circle cx="300" cy="10" r="4" fill="#E53935" />
-              </svg>
-            </div>
-            <div className="chart-labels">
-              <span>Week 1</span>
-              <span>Week 2</span>
-              <span>Week 3</span>
-              <span>Week 4</span>
-            </div>
-          </div>
-          <p className="chart-footer-desc">Blood requests matched growth of +15% over the last 30 days.</p>
-        </div>
+
 
         {/* Blood Group Demand Chart */}
         <div className="chart-card">
           <h4>Blood Group Demand</h4>
           <div className="demand-chart-mock">
-            <div className="demand-bar-row">
-              <span className="group-label">O+</span>
-              <div className="bar-track"><div className="bar-fill" style={{ width: '85%', background: '#E53935' }}></div></div>
-              <span className="percent-val">85%</span>
-            </div>
-            <div className="demand-bar-row">
-              <span className="group-label">B+</span>
-              <div className="bar-track"><div className="bar-fill" style={{ width: '60%', background: '#EF5350' }}></div></div>
-              <span className="percent-val">60%</span>
-            </div>
-            <div className="demand-bar-row">
-              <span className="group-label">A-</span>
-              <div className="bar-track"><div className="bar-fill" style={{ width: '40%', background: '#E53935' }}></div></div>
-              <span className="percent-val">40%</span>
-            </div>
+            {sortedDemand.map(([group, val]) => {
+              const percentage = Math.round((val / totalDemandCount) * 100)
+              return (
+                <div key={group} className="demand-bar-row">
+                  <span className="group-label">{group}</span>
+                  <div className="bar-track">
+                    <div className="bar-fill" style={{ width: `${percentage}%`, background: '#E53935' }}></div>
+                  </div>
+                  <span className="percent-val">{percentage}%</span>
+                </div>
+              )
+            })}
+            {sortedDemand.length === 0 && <p className="empty-text">No request data found.</p>}
           </div>
-          <p className="chart-footer-desc">O+ remains the most demanded group this week.</p>
+          <p className="chart-footer-desc">
+            {sortedDemand.length > 0 ? `${sortedDemand[0][0]} remains the most demanded group.` : 'No active demands.'}
+          </p>
         </div>
 
         {/* Request Status Chart */}
         <div className="chart-card">
           <h4>Request Status</h4>
           <div className="progress-radial-mock">
-            <div className="radial-bar" style={{ background: 'conic-gradient(#E53935 65%, #2563eb 20%, #e2e8f0 0)' }}>
-              <div className="radial-center">65% Active</div>
+            <div className="radial-bar" style={{ background: getConicGradient() }}>
+              <div className="radial-center" style={{ fontSize: '0.8rem', textAlign: 'center', lineHeight: '1.2' }}>
+                {requests.length} Total<br/>Requests
+              </div>
             </div>
           </div>
           <div className="status-legend-grid">
-            <div><span className="legend-dot legend-dot--red"></span>Searching (65%)</div>
-            <div><span className="legend-dot legend-dot--blue"></span>Completed (20%)</div>
-            <div><span className="legend-dot legend-dot--gray"></span>Cancelled (15%)</div>
+            {Object.entries(statusCounts).map(([status, count]) => {
+              const pct = Math.round((count / (requests.length || 1)) * 100)
+              const dotClass = status === 'completed' ? 'legend-dot--blue' : status === 'cancelled' ? 'legend-dot--gray' : 'legend-dot--red'
+              return (
+                <div key={status} style={{ textTransform: 'capitalize' }}>
+                  <span className={`legend-dot ${dotClass}`}></span>
+                  {status.replace('_', ' ')} ({pct}%)
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { FaSearch, FaFilter, FaEye, FaHeartbeat } from 'react-icons/fa'
 import AdminModal from './common/AdminModal'
 
-const BloodRequests = ({ requests, searchQuery, setSearchQuery, bloodFilter, setBloodFilter }) => {
+const BloodRequests = ({ requests, searchQuery, setSearchQuery, bloodFilter, setBloodFilter, onUpdateStatus }) => {
   const [selectedRequest, setSelectedRequest] = useState(null)
 
   const filteredRequests = requests.filter(r => {
@@ -12,6 +12,15 @@ const BloodRequests = ({ requests, searchQuery, setSearchQuery, bloodFilter, set
     const matchesBlood = bloodFilter === 'all' || r.bloodGroup === bloodFilter
     return matchesSearch && matchesBlood
   })
+
+  const handleStatusChange = async (newStatus) => {
+    if (onUpdateStatus && selectedRequest) {
+      const success = await onUpdateStatus(selectedRequest.id, newStatus)
+      if (success !== false) {
+        setSelectedRequest(prev => prev ? { ...prev, status: newStatus } : null)
+      }
+    }
+  }
 
   return (
     <div className="tab-panel">
@@ -122,6 +131,21 @@ const BloodRequests = ({ requests, searchQuery, setSearchQuery, bloodFilter, set
               <span className="detail-value">
                 <span className={`status-badge status-badge--${selectedRequest.status}`}>{selectedRequest.status}</span>
               </span>
+            </div>
+            <div className="detail-item" style={{ gridColumn: 'span 2', marginTop: '1rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+              <span className="detail-label font-semibold" style={{ marginBottom: '0.5rem', display: 'block' }}>Update Request Status (Admin Control)</span>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {['submitted', 'searching_donors', 'notified', 'accepted', 'approved', 'completed', 'cancelled', 'rejected'].map(st => (
+                  <button
+                    key={st}
+                    onClick={() => handleStatusChange(st)}
+                    className={`status-badge status-badge--${st}`}
+                    style={{ cursor: 'pointer', border: selectedRequest.status === st ? '2px solid #000' : '1px solid transparent', opacity: selectedRequest.status === st ? 1 : 0.6, transition: 'all 0.2s' }}
+                  >
+                    {st.replace('_', ' ')}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </AdminModal>

@@ -51,6 +51,7 @@ import {
   changeAdminPassword,
   fetchAllBloodBanks,
   verifyBloodBank,
+  updateBloodRequestStatus,
 } from '../../services/adminService'
 
 const AdminDashboard = () => {
@@ -365,6 +366,15 @@ const AdminDashboard = () => {
     }))
   }
 
+  // Handle Request Status Update
+  const handleRequestStatusUpdate = (id, newStatus) =>
+    runWithBanner(async () => {
+      await updateBloodRequestStatus(id, newStatus)
+      await loadLegacyData()
+      await loadOverview()
+    })
+
+
   // Handle Verify Bank Actions
   const handleVerifyBank = (id, verifyStatus) =>
     runWithBanner(async () => {
@@ -552,6 +562,7 @@ const AdminDashboard = () => {
             setSearchQuery={setSearchQuery}
             bloodFilter={bloodFilter}
             setBloodFilter={setBloodFilter}
+            onUpdateStatus={handleRequestStatusUpdate}
           />
         )}
 
