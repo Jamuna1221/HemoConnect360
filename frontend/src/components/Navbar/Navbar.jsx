@@ -13,8 +13,7 @@ const NAV_LINKS = [
   { label: 'Requests', href: '/donor/requests' },
   { label: 'Donations', href: '/donor/donations' },
   { label: 'Profile', href: '/donor/profile' },
-  { label: 'About Us', href: '#about' },
-  { label: 'Contact', href: '#contact' },
+
 ];
 
 const getInitials = (fullName) => {
