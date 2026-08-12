@@ -15,6 +15,7 @@ import {
   getAuditLogsHandler,
   getProfileHandler,
   updateProfileHandler,
+  updateRequestStatusHandler,
 } from "./admin.controller.js";
 
 const router = Router();
@@ -35,5 +36,6 @@ router.post(apiRoutes.admin.announcement, asyncHandler(publishAnnouncementHandle
 router.get(apiRoutes.admin.auditLogs, asyncHandler(getAuditLogsHandler));
 router.get(apiRoutes.admin.profile, asyncHandler(getProfileHandler));
 router.put(apiRoutes.admin.profile, asyncHandler(updateProfileHandler));
+router.patch("/blood-requests/:id/status", asyncHandler(updateRequestStatusHandler));
 
 export default router;

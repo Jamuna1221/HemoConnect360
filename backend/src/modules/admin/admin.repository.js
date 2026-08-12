@@ -316,3 +316,16 @@ export const upsertAdminSettings = async (client, settings) => {
   handleSupabaseError(error, "Unable to save admin settings");
   return data;
 };
+
+export const updateBloodRequestStatusInDb = async (client, id, status) => {
+  const { data, error } = await client
+    .from(tables.bloodRequests)
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single();
+
+  handleSupabaseError(error, "Unable to update blood request status");
+  return data;
+};
+
