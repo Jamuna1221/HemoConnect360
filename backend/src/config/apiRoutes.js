@@ -24,6 +24,8 @@ export const apiRoutes = {
     collectionHistory: "/collections/history",
     collectionDonors: "/collections/donors",
     collectionDonorDetails: "/collections/donors/:phone",
+    notifications: "/me/notifications",
+    notificationRead: "/me/notifications/:id/read",
   },
   bloodRequests: {
     base: "/api/blood-requests",

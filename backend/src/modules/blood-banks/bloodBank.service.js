@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { ApiError } from "../../shared/http/ApiError.js";
 import { createAdminClient, createUserClient } from "../../config/supabase.js";
+import supabaseAdmin from "../../config/supabaseAdmin.js";
 import { env } from "../../config/env.js";
 import {
   findBloodBankByUserId,
@@ -376,4 +377,37 @@ export const updateBloodBankSettings = async ({ accessToken, user, input }) => {
 
   const saved = await upsertBloodBankSettings(client, record);
   return toSettingsDto(saved);
+};
+
+/**
+ * Load the signed-in blood bank's in-app notifications (newest first). The
+ * admin client reads rows filtered to the caller's own auth user id, the same
+ * pattern the requester notification endpoints use.
+ */
+export const getBloodBankNotifications = async (userId) => {
+  if (!supabaseAdmin) throw new ApiError(503, "Notifications are not configured on the backend");
+  const { data, error } = await supabaseAdmin
+    .from("notifications")
+    .select("id, type, title, message, read_at, created_at, request_id")
+    .eq("recipient_type", "blood_bank")
+    .eq("recipient_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(20);
+  if (error) throw new ApiError(500, "Unable to load notifications", error.message);
+  return data || [];
+};
+
+/**
+ * Mark one of the signed-in blood bank's notifications as read. The recipient
+ * guard prevents a bank from touching another recipient's notification.
+ */
+export const markBloodBankNotificationRead = async (userId, notificationId) => {
+  if (!supabaseAdmin) throw new ApiError(503, "Notifications are not configured on the backend");
+  const { error } = await supabaseAdmin
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", notificationId)
+    .eq("recipient_type", "blood_bank")
+    .eq("recipient_id", userId);
+  if (error) throw new ApiError(500, "Unable to update notification", error.message);
 };

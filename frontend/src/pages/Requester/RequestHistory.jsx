@@ -7,6 +7,20 @@ import Footer from '../../components/Footer/Footer';
 import { useRequester } from '../../context/RequesterContext';
 import './RequestHistory.css';
 
+const formatStatus = (status) => ({
+  submitted: 'Submitted',
+  searching: 'Searching Donors',
+  searching_donors: 'Searching Donors',
+  notified: 'Donors Notified',
+  accepted: 'Donor Accepted',
+  approved: 'Approved by Blood Bank',
+  donated: 'Blood Donated',
+  completed: 'Completed',
+  rejected: 'Rejected',
+  fulfilled: 'Fulfilled',
+  cancelled: 'Cancelled',
+}[status] || status);
+
 const RequestHistory = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,8 +76,10 @@ const RequestHistory = () => {
               <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                 {[
                   ['all', 'All Requests'],
+                  ['searching', 'Searching Donors'],
                   ['notified', 'Donors Notified'],
                   ['accepted', 'Donor Accepted'],
+                  ['approved', 'Approved by Blood Bank'],
                   ['completed', 'Blood Donated / Completed'],
                 ].map(([value, label]) => (
                    <option key={value} value={value}>{label}</option>
@@ -111,7 +127,7 @@ const RequestHistory = () => {
                         {req.units} unit(s) <span className="req-history-card-separator">|</span> {req.priority}
                       </span>
                       <span><FaCalendarAlt /> {new Date(req.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                      <span className={`req-history-status req-history-status--${req.status}`}>{req.status}</span>
+                      <span className={`req-history-status req-history-status--${req.status}`}>{formatStatus(req.status)}</span>
                     </div>
                     <button
                       className="req-history-view-btn"

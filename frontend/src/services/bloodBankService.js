@@ -4,7 +4,23 @@ import { apiRequest } from './api'
 const getAccessToken = async () => {
   const supabase = getSupabase()
   const { data } = await supabase.auth.getSession()
-  return data?.session?.access_token || null
+  let token = data?.session?.access_token || null
+  if (!token) return null
+
+  // getSession() reads storage and does NOT refresh, so an expired access
+  // token would otherwise 401 every backend call. Refresh it when it is about
+  // to expire (or already has) so the portal keeps working across hours.
+  const expiresAt = data?.session?.expires_at
+  if (expiresAt && Date.now() / 1000 >= expiresAt - 30) {
+    try {
+      const { data: refreshed } = await supabase.auth.refreshSession()
+      token = refreshed?.session?.access_token || token
+    } catch {
+      // Keep the stale token; the API call will surface the 401 if it truly fails.
+    }
+  }
+
+  return token
 }
 
 const authHeaders = async () => {
@@ -262,6 +278,33 @@ const mapLoginError = (error) => {
 export const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 
 export const STOCK_REASONS = ['Blood Collection', 'Blood Issue', 'Correction', 'Other']
+
+/**
+ * Load the signed-in blood bank's in-app notifications (newest first).
+ *
+ * @returns {Promise<Array>} notifications ({ id, type, title, message,
+ *   read_at, created_at, request_id })
+ */
+export const fetchBloodBankNotifications = async () => {
+  const payload = await apiRequest('/blood-banks/me/notifications', {
+    method: 'GET',
+    headers: await authHeaders(),
+  })
+  return payload.data || []
+}
+
+/**
+ * Mark one of the signed-in blood bank's notifications as read.
+ *
+ * @param {string} id
+ * @returns {Promise<void>}
+ */
+export const markBloodBankNotificationRead = async (id) => {
+  await apiRequest(`/blood-banks/me/notifications/${encodeURIComponent(id)}/read`, {
+    method: 'PATCH',
+    headers: await authHeaders(),
+  })
+}
 
 /**
  * Load the signed-in blood bank's real inventory from the backend.

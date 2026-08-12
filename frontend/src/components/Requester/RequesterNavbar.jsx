@@ -4,7 +4,6 @@ import { FaBell, FaUser, FaBars, FaTimes, FaSignOutAlt } from 'react-icons/fa'
 import logo from '../../assets/logo/Hemoconnectlogo.png'
 import { useRequester } from '../../context/RequesterContext'
 import { enableRequesterNotifications, subscribeToForegroundNotifications } from '../../services/pushNotificationService'
-import { fetchRequesterNotifications } from '../../services/notificationService'
 import './RequesterNavbar.css'
 import GoogleTranslate from '../Common/GoogleTranslate'
 
@@ -23,21 +22,9 @@ const RequesterNavbar = () => {
     typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'enabled' : 'idle'
   ))
   const [pushError, setPushError] = useState('')
-  const [serverNotifications, setServerNotifications] = useState([])
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logoutUser, notifications } = useRequester()
-
-  useEffect(() => {
-    if (!user) return
-    let active = true
-    const loadNotifications = () => fetchRequesterNotifications()
-      .then((items) => { if (active) setServerNotifications(items) })
-      .catch((error) => console.warn('[requester-notifications] Load failed', error))
-    loadNotifications()
-    const timer = setInterval(loadNotifications, 8000)
-    return () => { active = false; clearInterval(timer) }
-  }, [user])
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -81,16 +68,13 @@ const RequesterNavbar = () => {
     navigate('/requester/login')
   }
 
-  const notificationItems = [
-    ...serverNotifications.map((notification) => ({
-      id: notification.id,
-      text: notification.message,
-      title: notification.title,
-      time: new Date(notification.created_at).toLocaleString(),
-      read: Boolean(notification.read_at),
-    })),
-    ...notifications,
-  ]
+  const notificationItems = notifications.map((notification) => ({
+    id: notification.id,
+    text: notification.message,
+    title: notification.title,
+    time: new Date(notification.created_at).toLocaleString(),
+    read: Boolean(notification.read_at),
+  }))
   const unreadCount = notificationItems.filter((n) => !n.read).length
 
   return (
