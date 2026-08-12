@@ -14,6 +14,8 @@ import {
   updateBloodBankProfileHandler,
   getBloodBankSettingsHandler,
   updateBloodBankSettingsHandler,
+  getBloodBankNotificationsHandler,
+  markBloodBankNotificationReadHandler,
   getAllBloodBanksForAdminHandler,
   verifyBloodBankForAdminHandler,
 } from "./bloodBank.controller.js";
@@ -84,6 +86,19 @@ router.patch(
   apiRoutes.bloodBanks.settings,
   supabaseAuth,
   asyncHandler(updateBloodBankSettingsHandler)
+);
+
+// Blood Bank Notifications
+router.get(
+  apiRoutes.bloodBanks.notifications,
+  supabaseAuth,
+  asyncHandler(getBloodBankNotificationsHandler)
+);
+
+router.patch(
+  apiRoutes.bloodBanks.notificationRead,
+  supabaseAuth,
+  asyncHandler(markBloodBankNotificationReadHandler)
 );
 
 // Admin Console Endpoints

@@ -7,7 +7,11 @@ import {
 import { findRequestsByRequesterId } from "../requesters/requester.repository.js";
 import { env } from "../../config/env.js";
 import supabase from "../../config/supabase.js";
-import { notifyDonorsOfRequest, notifyRequesterOfMatch } from "../notifications/push.service.js";
+import {
+  notifyBloodBanksOfRequest,
+  notifyDonorsOfRequest,
+  notifyRequesterOfMatch,
+} from "../notifications/push.service.js";
 
 const toRequestDto = (request) => ({
   id: request.id,
@@ -74,6 +78,11 @@ export const createBloodRequest = async (requesterId, data) => {
 
   await notifyDonorsOfRequest({
     donorIds: matches.map((match) => match.donorId),
+    bloodGroup: request.blood_group,
+    hospitalName: request.hospital_name,
+  });
+  await notifyBloodBanksOfRequest({
+    requestId: request.id,
     bloodGroup: request.blood_group,
     hospitalName: request.hospital_name,
   });

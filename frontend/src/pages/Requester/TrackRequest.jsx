@@ -15,6 +15,7 @@ const STATUS_STEPS = [
   { status: 'searching', label: 'Searching' },
   { status: 'notified', label: 'Donors Notified' },
   { status: 'accepted', label: 'Donor Accepted' },
+  { status: 'approved', label: 'Approved by Blood Bank' },
   { status: 'donated', label: 'Blood Donated' },
   { status: 'completed', label: 'Completed' },
 ];

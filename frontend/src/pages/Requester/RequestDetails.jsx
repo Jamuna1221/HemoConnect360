@@ -12,6 +12,7 @@ const TIMELINE_STEPS = [
   { step: 'searching', label: 'Searching Donors' },
   { step: 'notified', label: 'Donors Notified' },
   { step: 'accepted', label: 'Donor Accepted' },
+  { step: 'approved', label: 'Approved by Blood Bank' },
   { step: 'donated', label: 'Blood Donated' },
   { step: 'completed', label: 'Completed' },
 ]
@@ -79,21 +80,25 @@ const RequestDetails = () => {
   const hasAccepted = matches?.some((match) => ['accepted', 'donated'].includes(match.status))
   const hasDonated = matches?.some((match) => match.status === 'donated')
   const currentStep = hasDonated
-    ? 5
-    : hasAccepted
+    ? 6
+    : req.status === 'approved'
       ? 4
-      : hasMatches
-        ? 3
-        : Math.max(1, getStatusIndex(req.status))
+      : hasAccepted
+        ? 5
+        : hasMatches
+          ? 3
+          : Math.max(1, getStatusIndex(req.status))
   const displayTimeline = baseTimeline.map((step, index) => {
     const stepName = step.step || step.status
     return {
       ...step,
       completed: index < currentStep,
-      time: stepName === 'notified' && hasMatches && !step.time
-        ? 'Donors matched and notified'
-        : stepName === 'accepted' && hasAccepted && !step.time
-          ? 'A donor accepted this request'
+    time: stepName === 'notified' && hasMatches && !step.time
+      ? 'Donors matched and notified'
+      : stepName === 'accepted' && hasAccepted && !step.time
+        ? 'A donor accepted this request'
+        : stepName === 'approved' && req.status === 'approved' && !step.time
+          ? 'Approved by blood bank'
           : ['donated', 'completed'].includes(stepName) && hasDonated && !step.time
             ? 'Donation confirmed'
             : step.time,

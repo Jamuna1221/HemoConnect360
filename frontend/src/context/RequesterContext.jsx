@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react'
-import { clearRequesterToken, requesterPhoneLogin, updateRequesterProfile, createBloodRequest, cancelBloodRequest } from '../services/requesterService'
+import { clearRequesterToken, requesterPhoneLogin, updateRequesterProfile, createBloodRequest, cancelBloodRequest, listBloodRequests } from '../services/requesterService'
+import { fetchRequesterNotifications } from '../services/notificationService'
 
 const RequesterContext = createContext(null)
 
@@ -35,10 +36,7 @@ const getStoredRequesterUsers = () => {
 export const RequesterProvider = ({ children }) => {
   const [user, setUser] = useState(getStoredUser)
   const [requests, setRequests] = useState(() => getStoredRequests(getStoredUser()?.phone))
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: 'Welcome to HemoConnect360 Requester Portal', time: 'Just now', read: false },
-    { id: 2, text: 'Your account is ready. Start requesting blood.', time: '1 min ago', read: false },
-  ])
+  const [notifications, setNotifications] = useState([])
 
   useEffect(() => {
     localStorage.setItem('requester_user', JSON.stringify(user))
@@ -49,6 +47,59 @@ export const RequesterProvider = ({ children }) => {
       localStorage.setItem(`requester_requests_${user.phone}`, JSON.stringify(requests))
     }
   }, [requests, user?.phone])
+
+  // Keep the real request statuses and notifications synchronized with
+  // Supabase through the existing backend APIs (no mock data, no duplicated
+  // architecture). Runs on mount and every 8s while a requester is signed in,
+  // mirroring the existing notification-polling pattern.
+  useEffect(() => {
+    if (!user) return
+    let active = true
+
+    const refreshRequests = async () => {
+      try {
+        const serverRequests = await listBloodRequests()
+        if (!active) return
+        setRequests((prev) => {
+          const serverIds = new Set(serverRequests.map((request) => request.id))
+          const orphaned = prev.filter((request) => !serverIds.has(request.id))
+          return [...serverRequests, ...orphaned].sort(
+            (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+          )
+        })
+      } catch (error) {
+        console.warn('[RequesterContext] Failed to refresh request statuses', error)
+      }
+    }
+
+    const refreshNotifications = async () => {
+      try {
+        const items = await fetchRequesterNotifications()
+        if (active) {
+          setNotifications(items.map((n) => ({
+            ...n,
+            text: n.message,
+            time: new Date(n.created_at).toLocaleString(),
+            read: Boolean(n.read_at),
+          })))
+        }
+      } catch (error) {
+        console.warn('[RequesterContext] Failed to refresh notifications', error)
+      }
+    }
+
+    refreshRequests()
+    refreshNotifications()
+    const timer = setInterval(() => {
+      refreshRequests()
+      refreshNotifications()
+    }, 8000)
+
+    return () => {
+      active = false
+      clearInterval(timer)
+    }
+  }, [user])
 
   const saveUserLocally = (userData) => {
     const phone = userData.phone?.trim()
@@ -121,6 +172,7 @@ const loginUser = async (userData) => {
         { step: 'searching', label: 'Searching Donors', time: null, completed: false },
         { step: 'notified', label: 'Nearby Donors Notified', time: null, completed: false },
         { step: 'accepted', label: 'Donor Accepted', time: null, completed: false },
+        { step: 'approved', label: 'Approved by Blood Bank', time: null, completed: false },
         { step: 'donated', label: 'Blood Donated', time: null, completed: false },
         { step: 'completed', label: 'Completed', time: null, completed: false },
       ],

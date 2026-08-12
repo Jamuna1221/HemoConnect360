@@ -6,6 +6,8 @@ import {
   updateBloodBankSettings,
   getAllBloodBanksForAdmin,
   verifyBloodBankForAdmin,
+  getBloodBankNotifications,
+  markBloodBankNotificationRead,
 } from "./bloodBank.service.js";
 
 import {
@@ -80,6 +82,21 @@ export const updateBloodBankSettingsHandler = async (req, res) => {
     message: "Blood bank settings saved successfully.",
     data: settings,
   });
+};
+
+export const getBloodBankNotificationsHandler = async (req, res) => {
+  const notifications = await getBloodBankNotifications(req.user.id);
+
+  res.json({
+    success: true,
+    data: notifications,
+  });
+};
+
+export const markBloodBankNotificationReadHandler = async (req, res) => {
+  await markBloodBankNotificationRead(req.user.id, req.params.id);
+
+  res.json({ success: true });
 };
 
 export const getAllBloodBanksForAdminHandler = async (req, res) => {
